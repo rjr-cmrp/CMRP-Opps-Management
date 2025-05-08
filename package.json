@@ -1,0 +1,27 @@
+{
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.3"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.1.4",
+    "express": "^5.1.0",
+    "pg": "^8.15.6",
+    "tailwindcss": "^4.1.4",
+    "uuid": "^11.1.0",
+    "xlsx": "^0.18.5"
+  },
+  "name": "cmrp-opps-management",
+  "version": "1.0.0",
+  "description": "A project to manage CMRP opportunities",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "vite",
+    "read-excel": "node readExcel.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}

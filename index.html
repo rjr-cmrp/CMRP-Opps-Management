@@ -1,0 +1,1985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2025 Opportunities Viewer (Filters Added)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <style>
+        /* --- Theme Variables (Copied from dashboard.html for consistency) --- */
+        :root {
+            /* Light Theme Variables */
+            --bg-body: #f9fafb; --text-body: #1f2937; --bg-container: #ffffff; --border-container: #e5e7eb; --text-title: #111827; --text-label: #4b5563; --border-table: #e5e7eb; --bg-header: #f3f4f6; --text-header: #6b7280; --bg-row: #ffffff; --text-row: #374151; --bg-row-hover: #f3f4f6; --bg-op100: #dcfce7; --text-op100: #166534; --bg-op100-hover: #bbf7d0; --bg-lost: #fee2e2; --text-lost: #991b1b; --bg-lost-hover: #fecaca; --bg-declined: #e5e7eb; --text-declined: #4b5563; --bg-declined-hover: #d1d5db; --border-urgent-soon: #f59e0b; --border-urgent-past: #ef4444; --bg-control: #ffffff; --border-control: #d1d5db; --text-control: #111827; --placeholder-control: #9ca3af; --bg-control-hover: #f9fafb; --border-focus: #3b82f6; --shadow-focus: rgba(59, 130, 246, 0.3); --text-secondary: #6b7280; --text-error: #dc2626; --text-link: #3b82f6; --text-link-hover: #2563eb;
+            --select-arrow-url: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            --bg-modal: #ffffff; --border-modal: #e5e7eb; --text-modal-title: #111827; --bg-modal-close-hover: #e5e7eb; --bg-modal-save: #3b82f6; --text-modal-save: #ffffff; --bg-modal-save-hover: #2563eb; --bg-theme-button: #e5e7eb; --text-theme-button: #1f2937; --border-theme-button: #d1d5db; --bg-theme-button-hover: #d1d5db; --bg-filter-button: #e5e7eb; --text-filter-button: #374151; --border-filter-button: #d1d5db; --bg-filter-button-hover: #d1d5db; --bg-filter-button-active: #4f46e5; --text-filter-button-active: #ffffff; --border-filter-button-active: #4f46e5;
+        }
+        .dark {
+            /* Dark Theme Variables */
+             --bg-body: #1e1e1e; --text-body: #e0e0e0; --bg-container: #2d2d2d; --border-container: #404040; --text-title: #ffffff; --text-label: #c0c0c0; --border-table: #4a4a4a; --bg-header: #1a1a1a; --text-header: #a0a0a0; --bg-row: #2d2d2d; --text-row: #e0e0e0; --bg-row-hover: #3c3c3c; --bg-op100: #14532d; --text-op100: #dcfce7; --bg-op100-hover: #166534; --bg-lost: #7f1d1d; --text-lost: #fee2e2; --bg-lost-hover: #991b1b; --bg-declined: #4b5563; --text-declined: #bdc3c7; --bg-declined-hover: #525f70; --border-urgent-soon: #f97316; --border-urgent-past: #dc2626; --bg-control: #3c3c3c; --border-control: #5a5a5a; --text-control: #e0e0e0; --placeholder-control: #8e8e93; --bg-control-hover: #4a4a4a; --border-focus: #0a84ff; --shadow-focus: rgba(10, 132, 255, 0.3); --text-secondary: #a0a0a0; --text-error: #ff8080; --text-link: #8ab4f8; --text-link-hover: #a7c7fa;
+             --select-arrow-url: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23a0a0a0' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+             --bg-modal: #2d2d2d; --border-modal: #404040; --text-modal-title: #ffffff; --bg-modal-close-hover: #6b6b6b; --bg-modal-save: #4f46e5; --text-modal-save: #ffffff; --bg-modal-save-hover: #4338ca; --bg-theme-button: #4b5563; --text-theme-button: #f9fafb; --border-theme-button: #6b7280; --bg-theme-button-hover: #6b7280; --bg-filter-button: #374151; --text-filter-button: #d1d5db; --border-filter-button: #4b5563; --bg-filter-button-hover: #4b5563; --bg-filter-button-active: #6366f1; --text-filter-button-active: #ffffff; --border-filter-button-active: #6366f1;
+        }
+
+        /* Base Styles */
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; background-color: var(--bg-body); color: var(--text-body); transition: background-color 0.3s ease, color 0.3s ease; }
+        .container { background-color: var(--bg-container); border-color: var(--border-container); }
+        h1 { color: var(--text-title); }
+        label { color: var(--text-label); }
+
+        /* Table Styles */
+        .table-container { max-height: 60vh; overflow: auto; border-radius: 0.5rem; margin-top: 1rem; transition: border-color 0.3s ease; border-width: 1px; border-color: var(--border-table); }
+        .table-container th, .table-container td { padding: 8px 10px; text-align: left; transition: border-color 0.3s ease, background-color 0.3s ease; border-bottom-width: 1px; vertical-align: middle; font-size: 0.75rem; line-height: 1rem; border-bottom-color: var(--border-table); }
+        th.numeric-column, td.numeric-column { text-align: right; }
+        th.center-align-cell, td.center-align-cell { text-align: center; }
+        th { font-weight: 600; position: sticky; top: 0; z-index: 10; border-top-width: 1px; cursor: pointer; user-select: none; white-space: nowrap; background-color: var(--bg-header); color: var(--text-header); border-top-color: var(--border-table); }
+        th .sort-indicator { display: inline-block; width: 1em; margin-left: 4px; opacity: 0.5; transition: opacity 0.2s ease; }
+        th.sorted .sort-indicator { opacity: 1; }
+        tbody tr { transition: background-color 0.1s ease-in-out; background-color: var(--bg-row); color: var(--text-row); }
+        tbody tr:hover { background-color: var(--bg-row-hover); }
+        tbody tr.bg-op100 { background-color: var(--bg-op100); color: var(--text-op100); }
+        tbody tr.bg-op100:hover { background-color: var(--bg-op100-hover); }
+        tbody tr.bg-lost { background-color: var(--bg-lost); color: var(--text-lost); }
+        tbody tr.bg-lost:hover { background-color: var(--bg-lost-hover); }
+        tbody tr.bg-declined { background-color: var(--bg-declined); color: var(--text-declined); }
+        tbody tr.bg-declined:hover { background-color: var(--bg-declined-hover); }
+        tbody tr.bg-op100 td, tbody tr.bg-lost td, tbody tr.bg-declined td { color: inherit; }
+        tbody tr.urgent-deadline-soon { box-shadow: inset 0 0 0 1px var(--border-urgent-soon); }
+        tbody tr.urgent-deadline-past { box-shadow: inset 0 0 0 1px var(--border-urgent-past); }
+
+        /* Specific Column Styling */
+        th.project-name-cell, td.project-name-cell { max-width: 350px; min-width: 200px; width: 350px; white-space: normal; vertical-align: top; text-align: left !important; }
+        th.remarks-cell, td.remarks-cell { max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left !important; }
+        th.short-text-cell, td.short-text-cell { max-width: 80px; overflow: hidden; white-space: nowrap; }
+        td.remarks-cell { cursor: pointer; color: var(--text-link); text-decoration: underline; text-decoration-thickness: 0.5px; text-underline-offset: 2px; transition: color 0.3s ease; }
+        td.remarks-cell:hover { color: var(--text-link-hover); }
+        tbody tr.bg-op100 td.remarks-cell, tbody tr.bg-lost td.remarks-cell, tbody tr.bg-declined td.remarks-cell { color: var(--text-link-hover); }
+        tbody tr.bg-op100 td.remarks-cell:hover, tbody tr.bg-lost td.remarks-cell:hover, tbody tr.bg-declined td.remarks-cell:hover { color: var(--text-link); }
+
+        /* Sticky Column Styles */
+        .sticky-col { position: -webkit-sticky; position: sticky; left: 0; z-index: 2; background-color: inherit; border-right: 1px solid var(--border-table); }
+        th.sticky-col { z-index: 11; background-color: var(--bg-header); }
+        tbody td.sticky-col { background-color: var(--bg-row); }
+        tbody tr:hover td.sticky-col { background-color: var(--bg-row-hover); }
+        tbody tr.bg-op100 td.sticky-col { background-color: var(--bg-op100); }
+        tbody tr.bg-op100:hover td.sticky-col { background-color: var(--bg-op100-hover); }
+        tbody tr.bg-lost td.sticky-col { background-color: var(--bg-lost); }
+        tbody tr.bg-lost:hover td.sticky-col { background-color: var(--bg-lost-hover); }
+        tbody tr.bg-declined td.sticky-col { background-color: var(--bg-declined); }
+        tbody tr.bg-declined:hover td.sticky-col { background-color: var(--bg-declined-hover); }
+
+        /* Form Controls */
+        input[type="text"], select, button, textarea, input[type="file"] { padding: 8px 12px; border-radius: 0.375rem; transition: border-color 0.2s, background-color 0.2s, color 0.2s; border-width: 1px; background-color: var(--bg-control); border-color: var(--border-control); color: var(--text-control); }
+        button { font-weight: 500; }
+        select { appearance: none; background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem; min-width: 100px; background-image: var(--select-arrow-url); }
+        select option { background-color: var(--bg-control); color: var(--text-control); }
+        input[type="text"]:focus, select:focus, button:focus, textarea:focus { outline: none; border-color: var(--border-focus); box-shadow: 0 0 0 3px var(--shadow-focus); }
+        input[type="text"]::placeholder { color: var(--placeholder-control); }
+        textarea { min-height: 150px; width: 100%; white-space: pre-wrap; }
+
+        /* Buttons */
+        .theme-button { background-color: var(--bg-theme-button); color: var(--text-theme-button); border: 1px solid var(--border-theme-button); transition: background-color 0.2s; }
+        .theme-button:hover { background-color: var(--bg-theme-button-hover); }
+        .link-button { background-color: var(--bg-modal-save); color: var(--text-modal-save); transition: filter 0.2s; }
+        .link-button:hover { filter: brightness(90%); }
+        .action-button { background-color: var(--bg-modal-save); color: var (--text-modal-save); transition: filter 0.2s; }
+        .action-button:hover { filter: brightness(90%); }
+        .delete-button { background-color: var(--text-error); color: var(--bg-container); transition: filter 0.2s; }
+        .delete-button:hover { filter: brightness(90%); }
+        .filter-button { background-color: var(--bg-filter-button); color: var(--text-filter-button); border: 1px solid var(--border-filter-button); transition: background-color 0.2s, color 0.2s, border-color 0.2s; }
+        .filter-button:hover { background-color: var(--bg-filter-button-hover); }
+        .filter-button.active { background-color: var(--bg-filter-button-active); color: var(--text-filter-button-active); border-color: var(--border-filter-button-active); font-weight: 600; }
+
+
+        /* Modal Styles */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px); z-index: 40; }
+        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); border-radius: 0.5rem; padding: 1.5rem; z-index: 50; width: 90%; max-width: 600px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5); transition: background-color 0.3s ease, border-color 0.3s ease; border-width: 1px; max-height: 80vh; overflow-y: auto; background-color: var(--bg-modal); border-color: var(--border-modal); }
+        .modal h2 { margin-top: 0; margin-bottom: 1rem; font-size: 1.25rem; font-weight: 600; transition: color 0.3s ease; color: var(--text-modal-title); }
+        .modal-actions { margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 0.75rem; }
+        .modal-actions button { padding: 8px 16px; }
+        .modal-close-btn { background-color: var(--border-control); color: var(--text-control); }
+        .modal-close-btn:hover { background-color: var(--bg-control-hover); }
+        .modal-save-btn { background-color: var(--bg-modal-save); color: var(--text-modal-save); }
+        .modal-save-btn:hover { background-color: var(--bg-modal-save-hover); }
+
+        /* Other Styles */
+        .column-hidden { display: none; }
+        #rowCount, .loading-text { color: var(--text-secondary); }
+        .error-text { color: var(--text-error); }
+        #columnToggleContainer { background-color: var(--bg-control); border-color: var(--border-control); }
+        #columnToggleContainer label { color: var(--text-control); }
+        .dashboard-card { background-color: var(--bg-container); border: 1px solid var(--border-container); border-radius: 0.5rem; padding: 1rem 1.5rem; text-align: center; box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06); flex: 1; min-width: 150px; }
+        .dashboard-title { color: var(--text-secondary); font-size: 0.75rem; margin-bottom: 0.25rem; text-transform: uppercase; letter-spacing: 0.05em; }
+        .dashboard-value { color: var(--text-title); font-size: 1.875rem; font-weight: 600; line-height: 1.3; }
+
+    </style>
+     </head>
+<body class="p-4 md:p-8">
+
+    <div class="container mx-auto p-6 rounded-lg shadow-md border">
+        <div class="flex flex-wrap justify-between items-center mb-4 gap-4">
+             <div class="flex items-center gap-3">
+                 <img id="logo" src="https://placehold.co/100x30/cccccc/1e1e1e?text=CMRP" alt="CMRP Logo" class="h-8">
+                 <h1 class="text-2xl font-semibold">2025 Opportunities Viewer</h1>
+             </div>
+             <div class="flex items-center gap-2 flex-wrap">
+                <button id="createOpportunityButton" class="action-button px-3 py-2 rounded text-sm font-semibold">+ Create New</button>
+                <a href="win-loss_dashboard.html" target="_blank" id="dashboardShortcutButton" class="link-button px-3 py-2 rounded text-sm font-semibold">Dashboard</a>
+                <button id="themeToggleButton" title="Toggle theme" class="theme-button px-3 py-2 rounded text-sm font-semibold">Theme</button>
+             </div>
+        </div>
+
+        <div class="mb-4">
+            <input id="searchInput" type="text" placeholder="Search all fields..." class="w-full p-2 border rounded" />
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            <div class="dashboard-card">
+                <div class="dashboard-title">Total OP100 Value</div>
+                <div id="op100Value" class="dashboard-value">--</div>
+            </div>
+             <div class="dashboard-card">
+                <div class="dashboard-title">Total OP90 Value</div>
+                <div id="op90Value" class="dashboard-value">--</div>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <div class="flex flex-wrap gap-2 items-center mb-2" id="statusFilterButtons">
+                <span class="text-sm font-medium mr-2">Filter by Status:</span>
+                <button data-filter-type="status" data-filter-value="all" class="filter-button active px-3 py-1 rounded text-xs">All</button>
+                <button data-filter-type="status" data-filter-value="OP100" class="filter-button px-3 py-1 rounded text-xs">OP100</button>
+                <button data-filter-type="status" data-filter-value="Submitted" class="filter-button px-3 py-1 rounded text-xs">Submitted</button>
+                <button data-filter-type="status" data-filter-value="No Decision Yet" class="filter-button px-3 py-1 rounded text-xs">No Decision Yet</button>
+                <button data-filter-type="status" data-filter-value="On-Going" class="filter-button px-3 py-1 rounded text-xs">On-Going</button>
+                <button data-filter-type="status" data-filter-value="Not Yet Started" class="filter-button px-3 py-1 rounded text-xs">Not Yet Started</button>
+                <button data-filter-type="status" data-filter-value="Pending" class="filter-button px-3 py-1 rounded text-xs">Pending</button>
+                 <button data-filter-type="status" data-filter-value="Lost" class="filter-button px-3 py-1 rounded text-xs">Lost</button>
+                 <button data-filter-type="status" data-filter-value="Declined" class="filter-button px-3 py-1 rounded text-xs">Declined</button>
+            </div>
+             <div class="flex flex-wrap gap-4 items-center">
+                 <div>
+                     <label for="accountMgrFilter" class="text-sm font-medium mr-1">Account Mgr:</label>
+                     <select id="accountMgrFilter" data-filter-type="accountMgr" class="filter-dropdown p-1 text-xs rounded border">
+                         <option value="all">All</option>
+                         </select>
+                 </div>
+                 <div>
+                     <label for="picFilter" class="text-sm font-medium mr-1">PIC:</label>
+                     <select id="picFilter" data-filter-type="pic" class="filter-dropdown p-1 text-xs rounded border">
+                         <option value="all">All</option>
+                         </select>
+                 </div>
+             </div>
+        </div>
+
+        <div class="flex flex-wrap gap-2 mb-4">
+             <button id="toggleColumnsButton" class="theme-button px-3 py-1 rounded text-xs">Toggle Columns</button>
+             <button id="exportExcelButton" class="theme-button px-3 py-1 rounded text-xs">Export Visible to Excel</button>
+        </div>
+        <div id="columnToggleContainer" class="hidden grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-2 mb-4 p-4 border rounded">
+             </div>
+
+
+        <div class="table-container">
+            <table id="opportunitiesTable" class="min-w-full divide-y">
+                <thead class=""></thead>
+                <tbody class="">
+                    <tr><td colspan="100%" class="text-center p-4 loading-text">Loading data...</td></tr>
+                </tbody>
+            </table>
+        </div>
+        <div id="rowCount" class="mt-4 text-sm"></div>
+    </div>
+
+    <div id="remarksModalOverlay" class="modal-overlay hidden"></div>
+    <div id="remarksModal" class="modal hidden">
+        <button type="button" aria-label="Close" onclick="hideRemarksModal()" style="position:absolute;top:0.5rem;right:0.5rem;font-size:1.25rem;line-height:1;color:var(--text-secondary);background:transparent;border:none;cursor:pointer;z-index:10;">&times;</button>
+        <h2>Edit Remarks / Comments</h2>
+        <textarea id="remarksTextarea"></textarea>
+        <div class="modal-actions">
+            <button id="closeModalButton" class="modal-close-btn" type="button">Close</button>
+            <button id="saveRemarksButton" class="modal-save-btn" type="button">Save</button>
+        </div>
+    </div>
+
+    <div id="editRowModalOverlay" class="modal-overlay hidden"></div>
+    <div id="editRowModal" class="modal hidden">
+        <button id="editRowModalCloseX" type="button" aria-label="Close" style="position:absolute;top:0.5rem;right:0.5rem;font-size:1.25rem;line-height:1;color:var(--text-secondary);background:transparent;border:none;cursor:pointer;z-index:10;">&times;</button>
+        <h2>Edit Row</h2>
+        <form id="editRowForm"> </form>
+        <div class="modal-actions">
+            <button id="closeEditRowModalButton" class="modal-close-btn" type="button">Close</button>
+            <button id="saveEditRowButton" class="modal-save-btn" type="submit" form="editRowForm">Save</button>
+        </div>
+    </div>
+
+    <!-- Revision History Modal -->
+    <div id="revisionHistoryModalOverlay" class="modal-overlay hidden"></div>
+    <div id="revisionHistoryModal" class="modal hidden">
+        <button type="button" aria-label="Close" onclick="hideRevisionHistoryModal()" style="position:absolute;top:0.5rem;right:0.5rem;font-size:1.25rem;line-height:1;color:var(--text-secondary);background:transparent;border:none;z-index:10;">&times;</button>
+        <h2>Revision History</h2>
+        <div id="revisionHistoryContent" style="max-height:60vh;overflow:auto;"></div>
+        <div class="modal-actions">
+            <button id="closeRevisionHistoryButton" class="modal-close-btn" type="button">Close</button>
+        </div>
+    </div>
+
+    <script>
+        console.log("Script execution started."); // Log start
+        // --- DOM Elements ---
+        const htmlElement = document.documentElement;
+        const themeToggleButton = document.getElementById('themeToggleButton');
+        const table = document.getElementById('opportunitiesTable');
+        const tableHead = table.querySelector('thead');
+        const tableBody = table.querySelector('tbody');
+        const rowCountDisplay = document.getElementById('rowCount');
+        const toggleColumnsButton = document.getElementById('toggleColumnsButton');
+        const columnToggleContainer = document.getElementById('columnToggleContainer');
+        const remarksModalOverlay = document.getElementById('remarksModalOverlay');
+        const remarksModal = document.getElementById('remarksModal');
+        const remarksTextarea = document.getElementById('remarksTextarea');
+        const closeModalButton = document.getElementById('closeModalButton');
+        const saveRemarksButton = document.getElementById('saveRemarksButton');
+        const logoElement = document.getElementById('logo');
+        const op100ValueElement = document.getElementById('op100Value');
+        const op90ValueElement = document.getElementById('op90Value');
+        const searchInput = document.getElementById('searchInput');
+        const statusFilterButtonsContainer = document.getElementById('statusFilterButtons');
+        const accountMgrFilterDropdown = document.getElementById('accountMgrFilter');
+        const picFilterDropdown = document.getElementById('picFilter');
+        const editRowModalOverlay = document.getElementById('editRowModalOverlay');
+        const editRowModal = document.getElementById('editRowModal');
+        const editRowForm = document.getElementById('editRowForm');
+        const closeEditRowModalButton = document.getElementById('closeEditRowModalButton');
+        // const saveEditRowButton = document.getElementById('saveEditRowButton'); // Reference only needed if attaching listener here
+        const createOpportunityButton = document.getElementById('createOpportunityButton');
+        const editRowModalCloseX = document.getElementById('editRowModalCloseX');
+        // *** ADDED: Export Button Element ***
+        const exportExcelButton = document.getElementById('exportExcelButton');
+
+        // Store username in localStorage for session
+        function getCurrentUserName() {
+            let name = localStorage.getItem('cmrp_username');
+            if (!name) {
+                name = prompt('Please enter your name (for revision history):');
+                if (name) localStorage.setItem('cmrp_username', name);
+            }
+            return name || 'unknown';
+        }
+
+        // --- Data Storage & State ---
+        let opportunities = []; // Raw data from API (array of objects)
+        let filteredOpportunities = []; // Data after filtering & sorting (array of objects)
+        let headers = []; // Actual headers from data (without UID)
+        let displayHeaders = []; // Headers modified for display
+        let columnVisibility = {};
+        let headerIndices = {}; // Map normalized header name to index within the 'headers' array
+        let particularsIndices = []; // Specific indices for 'Particulars' columns (relative to original data maybe?) - CHECK USAGE
+        let currentEditRowIndex = -1; // Index in the *original* opportunities array
+        let currentEditCellElement = null;
+        let currentSortColumnIndex = -1; // Index within the 'headers' array
+        let currentSortDirection = 'asc';
+        let isCreateMode = false; // For edit/create modal
+        let showACRUD = false; // For toggling ACRUD fields in modal
+        let currentFilters = { // Store active filter values
+            search: '',
+            status: 'all',
+            accountMgr: 'all',
+            pic: 'all'
+        };
+        // *** Define DROPDOWN_FIELDS globally ***
+        const DROPDOWN_FIELDS = [
+            'solutions', 'industries', 'sol-particulars', 'ind-particulars',
+            'account manager', 'account mgr', 'pic', 'bom', 'decision', 'status', 'opp status',
+            'a', 'c', 'r', 'u', 'd'
+        ];
+
+
+        // --- Date Constants & Helpers ---
+        const today = new Date(); // Use actual current date
+        today.setHours(0, 0, 0, 0); // Normalize to midnight
+        const oneWeekFromToday = new Date(today);
+        oneWeekFromToday.setDate(today.getDate() + 7);
+
+        // --- Formatting Functions ---
+        function formatDate(dateString) { // Target format: Jan-01
+            if (!dateString) return '';
+            let date = parseDateString(dateString); // Use robust parser
+            if (date && !isNaN(date.getTime())) {
+                try {
+                    const month = date.toLocaleDateString('en-US', { month: 'short' });
+                    const day = date.toLocaleDateString('en-US', { day: '2-digit' });
+                    return `${month}-${day}`;
+                } catch (e) { console.error("Error formatting date (formatDate):", dateString, e); return dateString; }
+            }
+            return dateString; // Fallback
+        }
+        function formatDateWithDay(dateString) { // Target format: Mon, Jan-01
+            if (!dateString) return '';
+            let date = parseDateString(dateString); // Use robust parser
+            if (date && !isNaN(date.getTime())) {
+                try {
+                    const weekday = date.toLocaleDateString('en-US', { weekday: 'short' });
+                    const month = date.toLocaleDateString('en-US', { month: 'short' });
+                    const day = date.toLocaleDateString('en-US', { day: '2-digit' });
+                    return `${weekday}, ${month}-${day}`;
+                } catch (e) { console.error("Error formatting date (formatDateWithDay):", dateString, e); return dateString; }
+            }
+            return dateString; // Fallback
+        }
+        // *** ADDED: Function to format date as YYYY-MM-DD for Excel ***
+        function formatDateForExcel(dateString) {
+             if (!dateString) return '';
+             let date = parseDateString(dateString);
+             if (date && !isNaN(date.getTime())) {
+                 try {
+                     const year = date.getFullYear();
+                     const month = String(date.getMonth() + 1).padStart(2, '0');
+                     const day = String(date.getDate()).padStart(2, '0');
+                     return `${year}-${month}-${day}`;
+                 } catch (e) { console.error("Error formatting date for Excel:", dateString, e); return dateString; }
+             }
+             return dateString; // Fallback
+        }
+        function formatMargin(marginValue) {
+             if (marginValue === null || marginValue === undefined || marginValue === '') return '';
+             const stringValue = String(marginValue).trim();
+             if (stringValue.endsWith('%')) {
+                 const numPart = parseFloat(stringValue.substring(0, stringValue.length - 1));
+                 return !isNaN(numPart) ? stringValue : '';
+             }
+             const num = parseFloat(stringValue);
+             if (!isNaN(num)) { return num + '%'; }
+             return '';
+        }
+        // *** ADDED: Function to parse margin to number for Excel ***
+        function parseMarginForExcel(marginValue) {
+             if (marginValue === null || marginValue === undefined || marginValue === '') return null; // Return null for empty
+             const stringValue = String(marginValue).trim().replace('%', '');
+             const num = parseFloat(stringValue);
+             return isNaN(num) ? null : num; // Return null if not a valid number
+        }
+        function formatCurrency(amountValue) {
+            const cleanedValue = typeof amountValue === 'string' ? amountValue.replace(/[^0-9.-]+/g,"") : amountValue;
+            const num = parseFloat(cleanedValue);
+            if (!isNaN(num)) {
+                try { return new Intl.NumberFormat('en-PH', { style: 'currency', currency: 'PHP', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num); }
+                catch (e) { console.error("Error formatting currency:", amountValue, e); return amountValue; }
+            }
+            return '';
+        }
+        // *** UPDATED: formatShortCurrency to show one decimal for M/B ***
+        function formatShortCurrency(value) {
+             if (isNaN(value)) { return 'P0'; }
+             const absValue = Math.abs(value);
+             let formattedValue;
+             let suffix = '';
+
+             if (absValue >= 1e9) {         // Billions
+                 suffix = 'B';
+                 formattedValue = (value / 1e9).toFixed(1); // One decimal place
+             } else if (absValue >= 1e6) { // Millions
+                 suffix = 'M';
+                 formattedValue = (value / 1e6).toFixed(1); // One decimal place
+             } else if (absValue >= 1e3) { // Thousands
+                 suffix = 'K';
+                 formattedValue = Math.round(value / 1e3); // Round to whole number
+             } else {                        // Less than 1000
+                 formattedValue = Math.round(value); // Round to whole number
+             }
+
+             // Remove trailing .0 if it exists after toFixed(1)
+             if ((suffix === 'M' || suffix === 'B') && formattedValue.endsWith('.0')) {
+                formattedValue = formattedValue.slice(0, -2);
+             }
+
+
+             return `P${formattedValue}${suffix}`;
+        }
+
+        // --- Helper Functions ---
+        function parseDateString(dateString) {
+            // [Keep the robust parseDateString function from the previous version]
+             if (!dateString || typeof dateString !== 'string') return null;
+             let date = null;
+             const trimmedDate = dateString.trim();
+             if (/^\d{4}-\d{2}-\d{2}/.test(trimmedDate)) {
+                 date = new Date(trimmedDate);
+                 if (!isNaN(date.getTime())) {
+                     // Adjust for potential timezone offset if only date is provided
+                     if (trimmedDate.length === 10) {
+                         const [year, month, day] = trimmedDate.split('-').map(Number);
+                         // Create date using local year, month, day to avoid UTC interpretation
+                         date = new Date(year, month - 1, day);
+                     }
+                     if (!isNaN(date.getTime())) {
+                         date.setHours(0, 0, 0, 0); return date;
+                     }
+                 }
+             }
+             if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(trimmedDate)) {
+                 const [month, day, year] = trimmedDate.split('/').map(Number);
+                 if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+                     date = new Date(year, month - 1, day);
+                     if (!isNaN(date.getTime()) && date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day) {
+                         date.setHours(0, 0, 0, 0); return date;
+                     }
+                 }
+             }
+              if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(trimmedDate)) {
+                  const [day, month, year] = trimmedDate.split('/').map(Number);
+                  if (day > 12 || (day <= 12 && month >= 1 && month <= 12 && day >= 1 && day <= 31)) {
+                      date = new Date(year, month - 1, day);
+                      if (!isNaN(date.getTime()) && date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day) {
+                          date.setHours(0, 0, 0, 0); return date;
+                      }
+                  }
+              }
+              if (/^[A-Za-z]{3},\s[A-Za-z]{3}-\d{1,2}$/.test(trimmedDate)) {
+                  const currentYear = new Date().getFullYear();
+                  const datePart = trimmedDate.split(', ')[1];
+                  date = new Date(`${datePart} ${currentYear}`);
+                  if (!isNaN(date.getTime())) { date.setHours(0, 0, 0, 0); return date; }
+              }
+             if (/^[A-Za-z]{3}-\d{1,2}$/.test(trimmedDate)) {
+                 const currentYear = new Date().getFullYear();
+                 date = new Date(`${trimmedDate} ${currentYear}`);
+                 if (!isNaN(date.getTime())) { date.setHours(0, 0, 0, 0); return date; }
+             }
+             console.warn("Could not parse date string:", dateString);
+             return null;
+        }
+        function parseCurrency(currencyString) {
+             if (currencyString === null || currencyString === undefined) return NaN;
+             if (typeof currencyString === 'number') return currencyString;
+             if (typeof currencyString === 'string') {
+                 const numString = currencyString.replace(/[^0-9.-]+/g,"");
+                 // Handle case where string might be just "-" or "." after cleaning
+                 if (numString === '-' || numString === '.') return NaN;
+                 const num = parseFloat(numString);
+                 return isNaN(num) ? NaN : num; // Ensure NaN is returned if parsing fails
+             }
+             return NaN; // Return NaN for other types
+        }
+        function normalizeField(str) { // For robust matching
+            return (str || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+        }
+        function buildHeaderMap(headersToMap) { // Map normalized header to actual header
+            const map = {};
+            headerIndices = {}; // Reset global indices map
+            headersToMap.forEach((h, i) => {
+                if (h) {
+                    const norm = normalizeField(h);
+                    // Store index relative to the headersToMap array
+                    headerIndices[norm] = i;
+                    // Map normalized to original header name and its index
+                    map[norm] = { header: h, index: i };
+                }
+            });
+            // console.log("Built Header Indices:", headerIndices); // Debug log
+            return map;
+        }
+        // *** Moved getDropdownOptions definition earlier ***
+        function getDropdownOptions(headersToUse, data) {
+            const options = {};
+            // DROPDOWN_FIELDS is now defined globally
+            DROPDOWN_FIELDS.forEach(field => {
+                const normField = normalizeField(field);
+                // Find the original header name corresponding to the normalized field
+                let originalHeader = null;
+                let idx = -1;
+                 for (let i = 0; i < headersToUse.length; i++) {
+                     if (normalizeField(headersToUse[i]) === normField) {
+                         originalHeader = headersToUse[i];
+                         idx = i;
+                         break;
+                     }
+                 }
+
+                if (idx !== -1 && originalHeader) {
+                    // Extract unique values using the original header name
+                    options[normField] = Array.from(new Set(data.map(row => row[originalHeader]).filter(v => v && String(v).trim() !== ''))).sort();
+                } else if (normField === 'accountmgr') {
+                     // Special case: try 'account manager' if 'account mgr' not found directly
+                     for (let i = 0; i < headersToUse.length; i++) {
+                         if (normalizeField(headersToUse[i]) === 'accountmanager') {
+                             originalHeader = headersToUse[i];
+                             idx = i;
+                             break;
+                         }
+                     }
+                     if (idx !== -1 && originalHeader) {
+                          options[normField] = Array.from(new Set(data.map(row => row[originalHeader]).filter(v => v && String(v).trim() !== ''))).sort();
+                     }
+                }
+            });
+            // console.log("Dropdown Options:", options); // Debug log
+            return options;
+        }
+        // *** Define field type checkers earlier ***
+        function isDateField(header) {
+            const norm = normalizeField(header || '');
+            return norm.includes('date') || norm.includes('deadline');
+        }
+        function isCurrencyField(header) {
+            return normalizeField(header || '').includes('amt');
+        }
+        function isMarginField(header) {
+            return normalizeField(header || '').includes('margin');
+        }
+
+
+        // --- Theme Management ---
+        function applyTheme(theme) {
+            const isDark = theme === 'dark';
+            htmlElement.classList.toggle('dark', isDark);
+            themeToggleButton.textContent = isDark ? '☀️ Light' : '🌙 Dark';
+            themeToggleButton.title = `Switch to ${isDark ? 'light' : 'dark'} theme`;
+            if (logoElement) {
+                logoElement.src = isDark ? 'Logo/CMRP Logo Light.svg' : 'Logo/CMRP Logo Dark.svg';
+                logoElement.onerror = () => { logoElement.src = `https://placehold.co/100x30/${isDark ? 'e0e0e0/1f2937' : '1f2937/e0e0e0'}?text=CMRP+Logo`; };
+            }
+        }
+        function toggleTheme() {
+            const currentTheme = htmlElement.classList.contains('dark') ? 'dark' : 'light';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            applyTheme(newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+
+        // --- Core Table/Data Functions ---
+        function updateColumnVisibility() {
+            headers.forEach((header, index) => {
+                if (!header) return;
+                const isVisible = columnVisibility[index];
+                // Target the specific TH and all TDs in that column index (use index+1 for nth-child)
+                const th = tableHead.querySelector(`tr th:nth-child(${index + 1})`);
+                const tds = tableBody.querySelectorAll(`tr td:nth-child(${index + 1})`);
+                if (th) th.classList.toggle('column-hidden', !isVisible);
+                tds.forEach(td => td.classList.toggle('column-hidden', !isVisible));
+            });
+            updateNoResultsColspan();
+            applyStickyColToFirstVisible(); // <-- Ensure sticky-col is reapplied
+            // --- FIX: Force table layout recalculation to fix misalignment ---
+            table.offsetHeight; // Force reflow
+        }
+        // Add this helper to re-apply sticky-col to the first visible column
+        function applyStickyColToFirstVisible() {
+            // Remove sticky-col from all th/td
+            tableHead.querySelectorAll('th').forEach(th => th.classList.remove('sticky-col'));
+            tableBody.querySelectorAll('td').forEach(td => td.classList.remove('sticky-col'));
+            // Find first visible column index
+            let firstVisibleIndex = headers.findIndex((h, i) => h && columnVisibility[i]);
+            if (firstVisibleIndex === -1) return;
+            // Apply sticky-col to header
+            const th = tableHead.querySelector(`tr th:nth-child(${firstVisibleIndex + 1})`);
+            if (th) th.classList.add('sticky-col');
+            // Apply sticky-col to all rows in that column
+            tableBody.querySelectorAll(`tr td:nth-child(${firstVisibleIndex + 1})`).forEach(td => td.classList.add('sticky-col'));
+        }
+        function updateNoResultsColspan() {
+            const noResultsRow = tableBody.querySelector('td[colspan]');
+            if (noResultsRow) {
+                // Count visible headers + 1 for the actions column
+                const visibleColumnCount = headers.filter((h, i) => h && columnVisibility[i]).length + 1;
+                noResultsRow.colSpan = visibleColumnCount > 0 ? visibleColumnCount : 1;
+            }
+        }
+        function populateTableHead() {
+            tableHead.innerHTML = ''; // Clear existing headers
+            const headerRow = document.createElement('tr');
+            const headerAliases = { 'Account Mgr': 'Mgr', 'Opp Status': 'Opp', 'Date Awarded/Lost': 'Award/Lost Date', 'Submitted Date': 'Submit Date', 'Client Deadline': 'Deadline', 'Date Received': 'Rcvd Date' };
+            const shortColumns = ['accountmgr', 'pic', 'bom', 'oppstatus', 'rev#']; // Normalized
+            const centerAlignColumns = ['rev#', 'decision', 'margin']; // Normalized
+            const rightAlignColumns = ['finalamt']; // Normalized
+
+            // Generate display headers based on the *current* headers array (which excludes UID)
+            displayHeaders = headers.map((header, index) => {
+                if (!header) return '';
+                const lowerHeader = header.toLowerCase();
+                // Add specific handling if needed (e.g., for 'Particulars')
+                return headerAliases[header] || header.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+            });
+
+            displayHeaders.forEach((displayHeader, index) => {
+                if (!displayHeader) return; // Should not happen if headers array is clean
+                const originalHeader = headers[index]; // Get original from current headers array
+                const th = document.createElement('th');
+                th.textContent = displayHeader;
+                th.dataset.columnIndex = index; // Index within the current headers array
+
+                const sortIndicator = document.createElement('span');
+                sortIndicator.classList.add('sort-indicator');
+                th.appendChild(sortIndicator);
+
+                const lowerNormHeader = normalizeField(originalHeader);
+                if (rightAlignColumns.includes(lowerNormHeader)) th.classList.add('numeric-column');
+                else if (centerAlignColumns.includes(lowerNormHeader)) th.classList.add('center-align-cell');
+
+                if (lowerNormHeader === 'projectname') th.classList.add('project-name-cell'); // Add sticky-col later
+                if (lowerNormHeader === 'remarkscomments') th.classList.add('remarks-cell');
+                if (shortColumns.includes(lowerNormHeader)) th.classList.add('short-text-cell');
+
+                // Use columnVisibility based on the index in the current headers array
+                th.classList.toggle('column-hidden', !columnVisibility[index]);
+                th.addEventListener('click', handleSortClick);
+                headerRow.appendChild(th);
+            });
+
+            // Add Actions column header
+            const actionsTh = document.createElement('th');
+            actionsTh.textContent = 'Actions';
+            actionsTh.className = 'center-align-cell'; // Center align actions
+            // Make actions column sticky if Project Name is hidden
+            const projNameIdx = headerIndices['projectname'];
+            if (projNameIdx === undefined || !columnVisibility[projNameIdx]) {
+                 actionsTh.classList.add('sticky-col'); // Apply base sticky class
+            }
+            headerRow.appendChild(actionsTh);
+
+            // Ensure first visible column is sticky
+            const ths = headerRow.querySelectorAll('th');
+            let firstVisibleFound = false;
+            for (let i = 0; i < ths.length -1; i++) { // Exclude actions column initially
+                if (!ths[i].classList.contains('column-hidden')) {
+                    ths[i].classList.add('sticky-col'); // Apply base sticky class
+                    firstVisibleFound = true;
+                    break;
+                }
+            }
+             // If no data columns are visible, make the actions column sticky
+             if (!firstVisibleFound && ths.length > 0) {
+                 ths[ths.length - 1].classList.add('sticky-col');
+             }
+
+
+            tableHead.appendChild(headerRow);
+            updateSortIndicators();
+        }
+        function handleSortClick(event) {
+            const clickedIndex = parseInt(event.currentTarget.dataset.columnIndex);
+            if (isNaN(clickedIndex)) return;
+            if (clickedIndex === currentSortColumnIndex) {
+                currentSortDirection = currentSortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                currentSortColumnIndex = clickedIndex;
+                currentSortDirection = 'asc';
+            }
+            updateSortIndicators();
+            filterAndSortData(); // Re-filter and sort
+        }
+        function updateSortIndicators() {
+            tableHead.querySelectorAll('th').forEach(th => {
+                const indicator = th.querySelector('.sort-indicator');
+                if (!indicator) return;
+                const colIndex = parseInt(th.dataset.columnIndex);
+                 // Check if it's the actions column
+                 if (isNaN(colIndex)) {
+                     th.classList.remove('sorted');
+                     indicator.textContent = '';
+                     return;
+                 }
+
+                if (colIndex === currentSortColumnIndex) {
+                    th.classList.add('sorted');
+                    indicator.textContent = currentSortDirection === 'asc' ? '▲' : '▼';
+                } else {
+                    th.classList.remove('sorted');
+                    indicator.textContent = '';
+                }
+            });
+        }
+        function populateTableBody(dataToDisplay) {
+            tableBody.innerHTML = ''; // Clear existing rows
+            if (!dataToDisplay || dataToDisplay.length === 0) {
+                const tr = document.createElement('tr');
+                const td = document.createElement('td');
+                td.textContent = 'No opportunities match the current filters.';
+                td.className = 'text-center p-4 loading-text';
+                tr.appendChild(td);
+                tableBody.appendChild(tr);
+                updateNoResultsColspan(); // Set colspan correctly
+                rowCountDisplay.textContent = `Showing 0 of ${opportunities.length} total opportunities.`;
+                return;
+            }
+
+            // Column type definitions for formatting/styling (using normalized names)
+            const encodedDateHeaders = ['encodeddate'];
+            const withDayHeaders = ['datereceived', 'clientdeadline', 'submitteddate', 'dateawardedlost'];
+            const shortColumns = ['accountmgr', 'pic', 'bom', 'oppstatus', 'rev#'];
+            const centerAlignColumns = ['rev#', 'decision', 'margin'];
+            const rightAlignColumns = ['finalamt'];
+
+            // Get indices needed for row styling (using normalized keys relative to current headers)
+            const oppStatusIdx = headerIndices['oppstatus'];
+            const decisionIdx = headerIndices['decision'];
+            const statusIdx = headerIndices['status'];
+            const deadlineIdx = headerIndices['clientdeadline'];
+
+            dataToDisplay.forEach((oppDataRowObject) => { // dataToDisplay is now array of objects
+                 // Find the original full data row using UID
+                 const originalFullRow = opportunities.find(origOpp => origOpp._uid === oppDataRowObject._uid);
+                 if (!originalFullRow) {
+                     console.warn("Could not find original data for UID:", oppDataRowObject._uid);
+                     return; // Skip if we can't find the original row
+                 }
+                 // Find the index of this original row in the main `opportunities` array
+                 const originalIndex = opportunities.indexOf(originalFullRow);
+
+                 const tr = document.createElement('tr');
+                 tr.dataset.originalIndex = originalIndex; // Store original index for modals
+                 tr.dataset.uid = oppDataRowObject._uid; // Store UID on the row
+
+                 // Apply row styling based on status/decision/deadline from the original full row
+                 // Use original header names to access properties in originalFullRow
+                 const oppStatusHeader = headers[oppStatusIdx];
+                 const decisionHeader = headers[decisionIdx];
+                 const statusHeader = headers[statusIdx];
+                 const deadlineHeader = headers[deadlineIdx];
+
+                 const oppStatus = oppStatusHeader ? String(originalFullRow[oppStatusHeader] || '').trim().toUpperCase() : '';
+                 const status = statusHeader ? String(originalFullRow[statusHeader] || '').trim().toLowerCase() : '';
+                 const decision = decisionHeader ? String(originalFullRow[decisionHeader] || '').trim().toUpperCase() : '';
+                 const deadlineString = deadlineHeader ? originalFullRow[deadlineHeader] : '';
+
+
+                 tr.classList.remove('urgent-deadline-soon', 'urgent-deadline-past', 'bg-op100', 'bg-lost', 'bg-declined');
+                 if (decision === 'DECLINE' || decision === 'DECLINED') {
+                     tr.classList.add('bg-declined');
+                 } else {
+                     if (oppStatus === 'OP100') tr.classList.add('bg-op100');
+                     else if (oppStatus === 'LOST') tr.classList.add('bg-lost');
+
+                     // *** FIX: Check deadline only if NOT OP100, Lost, Declined, AND NOT Submitted ***
+                     if (oppStatus !== 'OP100' && oppStatus !== 'LOST' &&
+                         decision !== 'DECLINE' && decision !== 'DECLINED' &&
+                         status !== 'submitted' && deadlineString)
+                     {
+                         const deadlineDate = parseDateString(deadlineString);
+                         if (deadlineDate) {
+                             if (deadlineDate < today) tr.classList.add('urgent-deadline-past');
+                             else if (deadlineDate <= oneWeekFromToday) tr.classList.add('urgent-deadline-soon');
+                         }
+                     }
+                 }
+
+                 // Populate cells based on the *current* headers array (which excludes UID)
+                 let firstVisibleCell = true;
+                 headers.forEach((header, index) => { // Iterate using the headers array (UID already removed)
+                     if (header && columnVisibility[index]) { // Check visibility based on index in current headers array
+                         const td = document.createElement('td');
+                         // Get value using the header name from the original row object
+                         let value = originalFullRow[header] ?? ''; // Use header name directly
+                         const normHeader = normalizeField(header);
+
+                         // Apply formatting
+                         if (encodedDateHeaders.includes(normHeader)) value = formatDate(value);
+                         else if (withDayHeaders.includes(normHeader)) value = formatDateWithDay(value);
+                         else if (normHeader === 'margin') value = formatMargin(value);
+                         else if (rightAlignColumns.includes(normHeader)) value = formatCurrency(value);
+
+                         // Apply CSS classes
+                         if (rightAlignColumns.includes(normHeader)) td.classList.add('numeric-column');
+                         else if (centerAlignColumns.includes(normHeader)) td.classList.add('center-align-cell');
+
+                         if (normHeader === 'projectname') td.classList.add('project-name-cell');
+                         if (shortColumns.includes(normHeader)) td.classList.add('short-text-cell');
+
+                         if (normHeader === 'remarkscomments') {
+                             td.classList.add('remarks-cell');
+                             td.dataset.fullRemarks = value;
+                             td.dataset.rowIndex = originalIndex; // Use original index
+                             td.onclick = () => showRemarksModal(originalIndex, originalFullRow[header] || ''); // Pass original remarks
+                             td.title = "Click to view/edit remarks";
+                         }
+
+                         // Apply sticky class to the first *visible* column
+                         if (firstVisibleCell) {
+                            td.classList.add('sticky-col');
+                            firstVisibleCell = false;
+                         }
+
+                         td.textContent = value;
+                         tr.appendChild(td);
+                     }
+                 });
+
+                 // Add Edit and Delete buttons
+                 const actionsTd = document.createElement('td');
+                 actionsTd.className = 'center-align-cell'; // Center buttons
+                 // Make actions column sticky if Project Name is hidden OR if it's the only visible column
+                 const projNameIdx = headerIndices['projectname'];
+                 const visibleDataColumns = headers.filter((h, i) => h && columnVisibility[i]).length;
+                 if ( (projNameIdx === undefined || !columnVisibility[projNameIdx]) || visibleDataColumns === 0 ) {
+                       actionsTd.classList.add('sticky-col');
+                 }
+
+                 const btnContainer = document.createElement('div');
+                 btnContainer.className = 'flex justify-center items-center gap-2'; // Use flex for layout
+
+                 const editBtn = document.createElement('button');
+                 editBtn.textContent = 'Edit';
+                 editBtn.className = 'action-button px-2 py-1 rounded text-xs';
+                 editBtn.onclick = () => showEditRowModal(originalIndex); // Use original index
+                 btnContainer.appendChild(editBtn);
+
+                 const deleteBtn = document.createElement('button');
+                 deleteBtn.textContent = 'Delete';
+                 deleteBtn.className = 'delete-button px-2 py-1 rounded text-xs';
+                 deleteBtn.onclick = async () => {
+                     if (!confirm('Are you sure you want to delete this opportunity?')) return;
+                     const uidToDelete = oppDataRowObject._uid; // Get UID from the current row's data
+                     if (!uidToDelete) { alert('UID not found for this record.'); return; }
+                     try {
+                         const response = await fetch(`/api/opportunities/${encodeURIComponent(uidToDelete)}`, { method: 'DELETE' });
+                         if (!response.ok) {
+                             const err = await response.json();
+                             alert('Failed to delete: ' + (err.error || response.statusText));
+                             return;
+                         }
+                         await loadDataFromApi(); // Reload all data after delete
+                     } catch (err) { alert('Error deleting row: ' + err.message); }
+                 };
+                 btnContainer.appendChild(deleteBtn);
+
+                 // Add History button
+                 const historyBtn = document.createElement('button');
+                 historyBtn.textContent = 'History';
+                 historyBtn.className = 'theme-button px-2 py-1 rounded text-xs';
+                 historyBtn.onclick = () => showRevisionHistoryModal(oppDataRowObject._uid); // Use UID
+                 btnContainer.appendChild(historyBtn);
+
+                 actionsTd.appendChild(btnContainer);
+                 tr.appendChild(actionsTd);
+
+                 tableBody.appendChild(tr);
+            });
+
+            updateNoResultsColspan();
+            rowCountDisplay.textContent = `Showing ${dataToDisplay.length} of ${opportunities.length} total opportunities.`;
+        }
+        // *** UPDATED: updateDashboardCardsAllOpportunities uses formatShortCurrency ***
+        function updateDashboardCardsAllOpportunities() {
+            // Use headerIndices which are based on the 'headers' array (no UID)
+            const oppStatusIdx = headerIndices['oppstatus'];
+            const finalAmtIdx = headerIndices['finalamt'];
+
+            if (oppStatusIdx === undefined || finalAmtIdx === undefined) {
+                console.warn("Cannot update dashboard cards: 'Opp Status' or 'Final amt' column index not found in current headers.");
+                op100ValueElement.textContent = 'N/A';
+                op90ValueElement.textContent = 'N/A';
+                return;
+            }
+
+            let totalOp100 = 0; let totalOp90 = 0;
+            // Iterate over the *original* full dataset (opportunities array of objects)
+            opportunities.forEach(originalFullRow => {
+                // Access properties using the actual header names from the 'headers' array
+                const oppStatusHeader = headers[oppStatusIdx];
+                const finalAmtHeader = headers[finalAmtIdx];
+
+                const oppStatus = String(originalFullRow[oppStatusHeader] || '').trim().toUpperCase();
+                const amount = parseCurrency(originalFullRow[finalAmtHeader]);
+
+                if (!isNaN(amount)) {
+                    if (oppStatus === 'OP100') totalOp100 += amount;
+                    else if (oppStatus === 'OP90') totalOp90 += amount;
+                }
+            });
+            // *** CHANGE: Use formatShortCurrency instead of formatCurrency ***
+            op100ValueElement.textContent = formatShortCurrency(totalOp100);
+            op90ValueElement.textContent = formatShortCurrency(totalOp90);
+        }
+        function populateColumnToggles() {
+            columnToggleContainer.innerHTML = ''; // Clear existing toggles
+            const headerAliases = { 'Account Mgr': 'Mgr', 'Opp Status': 'Opp', 'Date Awarded/Lost': 'Award/Lost Date', 'Submitted Date': 'Submit Date', 'Client Deadline': 'Deadline', 'Date Received': 'Rcvd Date' };
+            headers.forEach((header, index) => { // Iterate using current headers (UID excluded)
+                if (!header) return;
+                // columnVisibility should already be initialized based on headers without UID
+                if (columnVisibility[index] === undefined) {
+                     console.warn(`Visibility not set for header index ${index}: ${header}. Defaulting to true.`);
+                     columnVisibility[index] = true;
+                 }
+
+                const div = document.createElement('div'); // Wrapper for styling
+                const label = document.createElement('label');
+                label.className = 'flex items-center space-x-2 text-xs cursor-pointer'; // Styling for label
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.value = index; // Index within the current headers array
+                checkbox.checked = columnVisibility[index];
+                checkbox.dataset.columnIndex = index;
+                checkbox.className = 'form-checkbox h-3 w-3 rounded text-indigo-600 transition duration-150 ease-in-out'; // Smaller checkbox
+                checkbox.addEventListener('change', (event) => {
+                    const changedIndex = parseInt(event.target.value);
+                    columnVisibility[changedIndex] = event.target.checked;
+                    // --- FIX: Force full table re-render after toggling columns ---
+                    populateTableHead();
+                    filterAndSortData();
+                    // Optionally scroll table container to left to avoid scroll artifacts
+                    const tableContainer = document.querySelector('.table-container');
+                    if (tableContainer) tableContainer.scrollLeft = 0;
+                });
+
+                // Get display header name
+                let displayHeader = headerAliases[header] || header.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+                // Add specific handling if needed (e.g., for 'Particulars')
+
+                label.appendChild(checkbox);
+                label.appendChild(document.createTextNode(` ${displayHeader}`));
+                div.appendChild(label);
+                columnToggleContainer.appendChild(div);
+            });
+        }
+        function populateFilterDropdowns() {
+            // Indices based on current 'headers' array (no UID)
+            const accountMgrIdx = headerIndices['accountmgr'];
+            const picIdx = headerIndices['pic'];
+
+            const accountMgrs = new Set();
+            const pics = new Set();
+
+            // Populate sets from the *original* full data using current header names
+            opportunities.forEach(originalFullRow => {
+                if (accountMgrIdx !== undefined && headers[accountMgrIdx]) {
+                     const val = originalFullRow[headers[accountMgrIdx]];
+                     if (val) accountMgrs.add(String(val).trim());
+                 }
+                 if (picIdx !== undefined && headers[picIdx]) {
+                     const val = originalFullRow[headers[picIdx]];
+                     if (val) pics.add(String(val).trim());
+                 }
+            });
+
+            // Populate Account Manager Dropdown
+            accountMgrFilterDropdown.innerHTML = '<option value="all">All</option>'; // Reset
+            Array.from(accountMgrs).sort().forEach(mgr => {
+                const option = document.createElement('option');
+                option.value = mgr;
+                option.textContent = mgr;
+                accountMgrFilterDropdown.appendChild(option);
+            });
+
+            // Populate PIC Dropdown
+            picFilterDropdown.innerHTML = '<option value="all">All</option>'; // Reset
+            Array.from(pics).sort().forEach(pic => {
+                const option = document.createElement('option');
+                option.value = pic;
+                option.textContent = pic;
+                picFilterDropdown.appendChild(option);
+            });
+
+             // Restore previously selected values if any
+             accountMgrFilterDropdown.value = currentFilters.accountMgr;
+             picFilterDropdown.value = currentFilters.pic;
+        }
+
+        /** Filters and sorts the data based on currentFilters state */
+        function filterAndSortData() {
+            console.log("Filtering data with:", currentFilters); // Debug log
+            let tempData = [...opportunities]; // Start with full dataset (array of objects with _uid)
+
+            // 1. Apply Search Filter
+            if (currentFilters.search) {
+                const q = currentFilters.search.toLowerCase();
+                tempData = tempData.filter(originalFullRow => // Filter original data
+                    // Check against all values in the original row *except* UID
+                    Object.entries(originalFullRow).some(([key, cell]) =>
+                         key !== '_uid' && normalizeField(key) !== 'uid' && String(cell || '').toLowerCase().includes(q)
+                    )
+                );
+            }
+
+            // 2. Apply Status Button Filter
+            if (currentFilters.status !== 'all') {
+                const statusFilterValue = currentFilters.status;
+                // Get indices based on the *current* headers array (no UID)
+                const oppStatusIdx = headerIndices['oppstatus'];
+                const statusIdx = headerIndices['status'];
+                const decisionIdx = headerIndices['decision'];
+
+                if (oppStatusIdx === undefined || statusIdx === undefined || decisionIdx === undefined) {
+                    console.warn("Status/Decision indices not found for filtering.");
+                } else {
+                    // Get the actual header names
+                    const oppStatusHeader = headers[oppStatusIdx];
+                    const statusHeader = headers[statusIdx];
+                    const decisionHeader = headers[decisionIdx];
+
+                    tempData = tempData.filter(originalFullRow => {
+                        const oppStatus = String(originalFullRow[oppStatusHeader] || '').trim().toUpperCase();
+                        const status = String(originalFullRow[statusHeader] || '').trim().toLowerCase();
+                        const decision = String(originalFullRow[decisionHeader] || '').trim().toUpperCase();
+
+                        if (statusFilterValue === 'OP100') return oppStatus === 'OP100';
+                        if (statusFilterValue === 'Submitted') return status === 'submitted';
+                        if (statusFilterValue === 'Lost') return oppStatus === 'LOST';
+                        if (statusFilterValue === 'Declined') return decision === 'DECLINE' || decision === 'DECLINED';
+                        if (statusFilterValue === 'No Decision Yet') return !decision && oppStatus !== 'LOST';
+                        if (statusFilterValue === 'On-Going') return status === 'on-going';
+                        if (statusFilterValue === 'Not Yet Started') return status === 'not yet started';
+                        if (statusFilterValue === 'Pending') return status === 'pending';
+                        return false;
+                    });
+                }
+            }
+
+
+            // 3. Apply Account Manager Filter
+            if (currentFilters.accountMgr !== 'all') {
+                const mgrFilterValue = currentFilters.accountMgr;
+                const accountMgrIdx = headerIndices['accountmgr']; // Index from headers *without* UID
+                 if (accountMgrIdx !== undefined) {
+                     const accountMgrHeader = headers[accountMgrIdx];
+                     tempData = tempData.filter(originalFullRow => String(originalFullRow[accountMgrHeader] || '').trim() === mgrFilterValue);
+                 } else {
+                     console.warn("Account Manager index not found for filtering.");
+                 }
+            }
+
+            // 4. Apply PIC Filter
+            if (currentFilters.pic !== 'all') {
+                const picFilterValue = currentFilters.pic;
+                const picIdx = headerIndices['pic']; // Index from headers *without* UID
+                if (picIdx !== undefined) {
+                      const picHeader = headers[picIdx];
+                     tempData = tempData.filter(originalFullRow => String(originalFullRow[picHeader] || '').trim() === picFilterValue);
+                 } else {
+                      console.warn("PIC index not found for filtering.");
+                 }
+            }
+
+            // 5. Apply Sorting (using headers *without* UID)
+            if (currentSortColumnIndex > -1 && currentSortColumnIndex < headers.length) {
+                sortTable(tempData, currentSortColumnIndex, currentSortDirection);
+            } else if (currentSortColumnIndex !== -1) {
+                 console.warn("Invalid sort column index:", currentSortColumnIndex);
+            }
+
+
+            // Update the global filteredOpportunities (still contains full rows with _uid)
+            filteredOpportunities = tempData;
+            populateTableBody(filteredOpportunities); // Pass filtered data to populate
+        }
+        function sortTable(dataToSort, columnIndex, direction) {
+            const sortModifier = direction === 'asc' ? 1 : -1;
+            // Use the header name from the *current* headers array (no UID)
+            const headerName = headers[columnIndex];
+            const headerToSort = normalizeField(headerName || '');
+
+            if (!headerName) {
+                 console.warn("Invalid header for sorting at index:", columnIndex);
+                 return; // Don't sort if header is invalid
+            }
+
+
+            // Define column types for sorting logic
+            const dateColumns = ['encodeddate', 'datereceived', 'clientdeadline', 'submitteddate', 'dateawardedlost'];
+            const numericColumns = ['rev#', 'margin']; // Add other purely numeric columns if any
+            const currencyColumns = ['finalamt']; // Columns to parse as currency before sorting
+
+            dataToSort.sort((a, b) => {
+                // Access values using the actual header name from the original data objects
+                let valA = a[headerName] ?? '';
+                let valB = b[headerName] ?? '';
+
+
+                if (dateColumns.includes(headerToSort)) {
+                    valA = parseDateString(valA); // Use robust parser
+                    valB = parseDateString(valB);
+                    if (valA === null && valB === null) return 0;
+                    if (valA === null) return 1 * sortModifier; // Nulls last in asc
+                    if (valB === null) return -1 * sortModifier; // Nulls last in asc
+                    return (valA.getTime() - valB.getTime()) * sortModifier;
+                } else if (numericColumns.includes(headerToSort)) {
+                    valA = parseFloat(String(valA).replace(/[^0-9.-]+/g,"")); // Clean before parse
+                    valB = parseFloat(String(valB).replace(/[^0-9.-]+/g,""));
+                    if (isNaN(valA) && isNaN(valB)) return 0;
+                    if (isNaN(valA)) return 1 * sortModifier; // NaN last
+                    if (isNaN(valB)) return -1 * sortModifier; // NaN last
+                    return (valA - valB) * sortModifier;
+                } else if (currencyColumns.includes(headerToSort)) {
+                    valA = parseCurrency(valA); // Use currency parser
+                    valB = parseCurrency(valB);
+                    if (isNaN(valA) && isNaN(valB)) return 0;
+                    if (isNaN(valA)) return 1 * sortModifier; // NaN last
+                    if (isNaN(valB)) return -1 * sortModifier; // NaN last
+                    return (valA - valB) * sortModifier;
+                } else {
+                    // Default string comparison
+                    return String(valA).localeCompare(String(valB), undefined, { numeric: true, sensitivity: 'base' }) * sortModifier;
+                }
+            });
+        }
+
+        // --- Modal Functions ---
+        function showRemarksModal(originalRowIndex, currentRemarks) {
+             if (originalRowIndex === undefined || originalRowIndex < 0 || originalRowIndex >= opportunities.length) {
+                 console.error("Invalid row index provided for remarks modal:", originalRowIndex);
+                 return;
+             }
+             currentEditRowIndex = originalRowIndex; // Store the original index
+             // Find the corresponding row element in the *currently displayed* table body
+             const uid = opportunities[currentEditRowIndex]._uid;
+             const rowElement = tableBody.querySelector(`tr[data-uid="${uid}"]`);
+             const remarksColIndex = headerIndices['remarkscomments']; // Use normalized index from current headers
+
+             // Calculate the visible index of the remarks column
+             let visibleRemarksColIndex = -1;
+             let currentVisibleIndex = 0;
+             for(let i = 0; i < headers.length; i++) {
+                 if (columnVisibility[i]) {
+                     if (i === remarksColIndex) {
+                         visibleRemarksColIndex = currentVisibleIndex;
+                         break;
+                     }
+                     currentVisibleIndex++;
+                 }
+             }
+
+             // Find the TD using the calculated visible index (+1 because nth-child is 1-based)
+             currentEditCellElement = rowElement && visibleRemarksColIndex !== -1
+                 ? rowElement.querySelector(`td:nth-child(${visibleRemarksColIndex + 1})`)
+                 : null;
+
+
+            if (!currentEditCellElement && rowElement && remarksColIndex !== undefined && columnVisibility[remarksColIndex]) {
+                 console.warn("Could not find remarks cell element even though column should be visible.");
+            }
+
+
+             remarksTextarea.value = currentRemarks;
+             remarksModalOverlay.classList.remove('hidden');
+             remarksModal.classList.remove('hidden');
+             remarksTextarea.focus();
+        }
+        // Helper to get array of visible column indices (relative to current headers)
+        function columnVisibilityArray() {
+            return headers.map((h, i) => columnVisibility[i] ? i : -1).filter(i => i !== -1);
+        }
+        function hideRemarksModal() {
+            console.log("Hiding remarks modal"); // Log
+            remarksModalOverlay.classList.add('hidden');
+            remarksModal.classList.add('hidden');
+            currentEditRowIndex = -1;
+            currentEditCellElement = null;
+        }
+        async function saveRemarks() {
+             if (currentEditRowIndex > -1 && currentEditRowIndex < opportunities.length) {
+                 const newRemarks = remarksTextarea.value;
+                 const remarksColIndex = headerIndices['remarkscomments']; // Index in current headers array
+                 const uid = opportunities[currentEditRowIndex]._uid;
+
+                 if (remarksColIndex === undefined || !uid) {
+                     console.error("Cannot save remarks: Missing column index or UID.");
+                     hideRemarksModal();
+                     return;
+                 }
+
+                 // Prepare update data using the actual header name
+                 const updateData = {};
+                 updateData[headers[remarksColIndex]] = newRemarks; // Use header name from current headers array
+
+                 try {
+                     // --- Send update to backend ---
+                     console.log(`Saving remarks for UID: ${uid}`, updateData); // Debug log
+                     const response = await fetch(`/api/opportunities/${encodeURIComponent(uid)}`, {
+                         method: 'PUT',
+                         headers: { 'Content-Type': 'application/json' },
+                         body: JSON.stringify(updateData)
+                     });
+
+                     if (!response.ok) {
+                         const err = await response.json();
+                         throw new Error(`Failed to save remarks: ${err.error || response.statusText}`);
+                     }
+                     console.log("Remarks saved successfully on backend."); // Debug log
+
+                     // --- Update local data (original opportunities array) ---
+                     opportunities[currentEditRowIndex][headers[remarksColIndex]] = newRemarks;
+                     console.log("Local opportunities data updated."); // Debug log
+
+                     // --- Update cell in currently displayed table (if visible) ---
+                     if (currentEditCellElement) {
+                         currentEditCellElement.textContent = newRemarks;
+                         currentEditCellElement.dataset.fullRemarks = newRemarks;
+                         // Re-attach click listener with updated remarks
+                         currentEditCellElement.onclick = () => showRemarksModal(currentEditRowIndex, newRemarks);
+                         console.log("Remarks cell updated in DOM."); // Debug log
+                     } else {
+                         // If cell wasn't found (maybe column hidden), re-filter/sort to ensure data consistency on next render
+                         console.log("Remarks cell not visible, re-filtering data."); // Debug log
+                         filterAndSortData();
+                     }
+
+                     hideRemarksModal();
+
+                 } catch (error) {
+                     console.error("Error saving remarks:", error);
+                     alert(`Error saving remarks: ${error.message}`);
+                     // Optionally, don't hide modal on error
+                 }
+
+             } else {
+                 console.error("Could not save remarks: Invalid row index", currentEditRowIndex);
+                 hideRemarksModal();
+             }
+          }
+        function showEditRowModal(rowIdx, createMode = false) {
+            console.log(`Showing edit/create modal. Row index: ${rowIdx}, Create mode: ${createMode}`); // Log
+            // *** Check if functions are defined before calling ***
+            if (typeof getDropdownOptions !== 'function' || typeof isDateField !== 'function') {
+                 console.error("Error: Required helper functions (getDropdownOptions, isDateField, etc.) are not defined before showEditRowModal.");
+                 alert("A script error occurred. Please check the console (F12).");
+                 return;
+            }
+
+            currentEditRowIndex = rowIdx; // Store original index or -1 for create
+            isCreateMode = createMode;
+            editRowForm.innerHTML = ''; // Clear previous form
+
+            const modalTitle = document.querySelector('#editRowModal h2');
+            if (modalTitle) modalTitle.textContent = isCreateMode ? 'Create New Opportunity' : 'Edit Row';
+
+            // Use the *original* full data to get dropdown options
+            // Need the original headers for this
+            const originalHeaders = opportunities.length > 0 ? Object.keys(opportunities[0]) : headers; // Use current headers if no data yet
+            const dropdownOptions = getDropdownOptions(originalHeaders, opportunities);
+
+            const acrudFields = ['a','c','r','u','d'];
+            let acrudButtonInserted = false;
+            // Get values from the *original* full data row if editing, or empty object for create
+            const originalFullRow = (rowIdx === -1) ? {} : opportunities[rowIdx];
+
+             // Iterate using the *current* headers array (UID excluded) to build the form
+            headers.forEach((header, i) => {
+                const normHeader = normalizeField(header);
+                // UID should already be excluded from headers array, but double-check
+                if (normHeader === 'uid') return;
+
+                const isACRUD = acrudFields.includes(normHeader);
+
+                // Insert ACRUD toggle button before the first ACRUD field
+                if (!acrudButtonInserted && isACRUD) {
+                    const toggleBtn = document.createElement('button');
+                    toggleBtn.id = 'toggleACRUDButton';
+                    toggleBtn.type = 'button';
+                    toggleBtn.className = 'theme-button w-full my-2 px-3 py-1 rounded text-xs'; // Style the button
+                    toggleBtn.textContent = showACRUD ? 'Hide Opportunity Analysis' : 'Show Opportunity Analysis';
+                    toggleBtn.onclick = function() {
+                        showACRUD = !showACRUD;
+                        showEditRowModal(currentEditRowIndex, isCreateMode); // Re-render modal
+                    };
+                    editRowForm.appendChild(toggleBtn);
+                    acrudButtonInserted = true;
+                }
+
+                // Skip ACRUD fields if they are currently hidden
+                if (isACRUD && !showACRUD) return;
+
+                // Create Label
+                const label = document.createElement('label');
+                label.textContent = header.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+                label.className = 'block mt-2 font-semibold text-xs uppercase tracking-wider'; // Style label
+
+                let input;
+                // *** Use the globally defined DROPDOWN_FIELDS ***
+                const DROPDOWN_FIELDS_NORM = DROPDOWN_FIELDS.map(normalizeField); // Normalize list once
+                // Get value using header name from original row (use current header name)
+                const currentValue = originalFullRow[header] ?? '';
+
+                // Create Input/Select/Textarea
+                if (DROPDOWN_FIELDS_NORM.includes(normHeader)) {
+                    input = document.createElement('select');
+                    input.className = 'w-full p-1 border rounded mt-1 text-sm'; // Style select
+                    // Get options using normalized header key from dropdownOptions
+                    const opts = dropdownOptions[normHeader] || [];
+                    input.innerHTML = '<option value="">-- Select --</option>'; // Add default empty option
+                    opts.forEach(opt => input.innerHTML += `<option value="${opt}">${opt}</option>`);
+                    input.value = currentValue; // Set value after adding options
+                } else if (isDateField(header)) { // *** Use the defined isDateField function ***
+                    input = document.createElement('input');
+                    input.type = 'date';
+                    input.className = 'w-full p-1 border rounded mt-1 text-sm'; // Style date input
+                    let dateVal = '';
+                    if (currentValue) {
+                        const d = parseDateString(currentValue); // Use robust parser
+                        if (d && !isNaN(d.getTime())) {
+                            // Format date consistently as<x_bin_880>-MM-DD for the input value
+                            const year = d.getFullYear();
+                            const month = String(d.getMonth() + 1).padStart(2, '0');
+                            const day = String(d.getDate()).padStart(2, '0');
+                            dateVal = `${year}-${month}-${day}`;
+                        }
+                    }
+                     // Default Encoded Date to today in create mode
+                     if (isCreateMode && normalizeField(header) === 'encodeddate' && !dateVal) {
+                         const today = new Date();
+                         dateVal = today.toISOString().split('T')[0];
+                     }
+                    input.value = dateVal;
+                } else if (isCurrencyField(header)) { // *** Use the defined isCurrencyField function ***
+                    input = document.createElement('input');
+                    input.type = 'text'; // Use text initially for formatting
+                    input.inputMode = 'decimal'; // Hint for mobile keyboards
+                    input.className = 'w-full p-1 border rounded mt-1 text-sm text-right'; // Style currency input
+                    input.value = formatCurrency(currentValue);
+                    input.onfocus = function() { this.value = parseCurrency(this.value) || ''; this.type='number'; this.step='0.01'; }; // Switch to number on focus
+                    input.onblur = function() { this.type='text'; this.value = formatCurrency(this.value); }; // Format back on blur
+                } else if (isMarginField(header)) { // *** Use the defined isMarginField function ***
+                    input = document.createElement('input');
+                    input.type = 'text'; // Use text initially
+                    input.inputMode = 'decimal';
+                    input.className = 'w-full p-1 border rounded mt-1 text-sm text-right'; // Style margin input
+                    input.value = formatMargin(currentValue);
+                    input.onfocus = function() { this.value = parseFloat(this.value) || ''; this.type='number'; this.step='0.1';};
+                    input.onblur = function() { this.type='text'; this.value = formatMargin(this.value); };
+                } else if (normHeader === 'remarkscomments') {
+                    input = document.createElement('textarea');
+                    input.className = 'w-full p-1 border rounded mt-1 text-sm'; // Style textarea
+                    input.value = currentValue;
+                    input.rows = 4;
+                } else { // Default text input
+                    input = document.createElement('input');
+                    input.type = 'text';
+                    input.className = 'w-full p-1 border rounded mt-1 text-sm'; // Style text input
+                    input.value = currentValue;
+                }
+
+                input.name = header; // Use original header name for form submission
+                label.appendChild(input);
+                // Special handling for rev# field
+                if (normHeader === 'rev#') {
+                    label.innerHTML += ' <span style="color:#888;font-size:0.9em;">(Changing this will create a new revision history entry)</span>';
+                }
+                editRowForm.appendChild(label);
+            });
+
+            // Show modal
+            editRowModalOverlay.classList.remove('hidden');
+            editRowModal.classList.remove('hidden');
+
+            // Set ACRUD button text correctly after rendering
+            const toggleBtn = document.getElementById('toggleACRUDButton');
+            if (toggleBtn) toggleBtn.textContent = showACRUD ? 'Hide Opportunity Analysis' : 'Show Opportunity Analysis';
+        }
+        function hideEditRowModal() {
+            console.log("Hiding edit/create modal"); // Log
+            editRowModalOverlay.classList.add('hidden');
+            editRowModal.classList.add('hidden');
+            currentEditRowIndex = -1;
+            isCreateMode = false; // Reset mode
+            editRowForm.innerHTML = ''; // Clear form content
+        }
+        async function handleEditFormSubmit(event) {
+            event.preventDefault(); // Prevent default form submission
+            console.log('Form submit handler fired. isCreateMode:', isCreateMode);
+
+            // Build object with data from the form
+            const formData = {};
+            let hasData = false;
+            // Iterate over the *current* headers (no UID) to find form elements
+            headers.forEach(h => {
+                if (editRowForm.elements[h]) { // Check if element exists by name (original header name)
+                     let value = editRowForm.elements[h].value;
+                     // Clean currency/margin fields before sending
+                     if (isCurrencyField(h)) {
+                         value = parseCurrency(value); // Parse to number or NaN
+                         if (isNaN(value)) value = null; // Send null if invalid currency
+                     }
+                     else if (isMarginField(h)) {
+                         value = parseFloat(value); // Parse to number or NaN
+                         if (isNaN(value)) value = null; // Send null if invalid margin
+                     }
+                     else if (isDateField(h)) {
+                         // *** Send the YYYY-MM-DD string directly, or null if empty ***
+                         value = value.trim() === '' ? null : value;
+                     }
+
+                     // Handle empty strings as null for backend consistency (except for dates handled above)
+                     if (!isDateField(h)) {
+                          formData[h] = (typeof value === 'string' && value.trim() === '') ? null : value;
+                     } else {
+                          formData[h] = value; // Assign date value (YYYY-MM-DD or null)
+                     }
+                     hasData = true;
+                 } else {
+                     // If an ACRUD field was hidden, it won't be in the form elements.
+                     // Decide if we should send its original value or null.
+                     // For now, assume hidden fields are not submitted for change.
+                 }
+            });
+
+              if (!hasData) {
+                  alert("No data entered or found in form.");
+                  return;
+              }
+              console.log("Form Data to Send:", formData); // Debug log
+
+            try {
+                let response;
+                let url;
+                let method;
+
+                if (isCreateMode) {
+                    // --- CREATE ---
+                    console.log("Attempting to CREATE"); // Debug log
+                    url = '/api/opportunities';
+                    method = 'POST';
+                    response = await fetch(url, {
+                        method: method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
+                } else {
+                     // --- UPDATE ---
+                     const uid = opportunities[currentEditRowIndex]?._uid;
+                     if (!uid) { throw new Error('Original row UID not found for updating.'); }
+                     console.log(`Attempting to UPDATE UID: ${uid}`); // Debug log
+                     url = `/api/opportunities/${encodeURIComponent(uid)}`;
+                     method = 'PUT';
+                      response = await fetch(url, {
+                         method: method,
+                         headers: { 'Content-Type': 'application/json' },
+                         body: JSON.stringify(formData) // Send collected form data
+                     });
+                }
+
+                if (!response.ok) {
+                    const errText = await response.text(); // Get raw response text
+                    let errorDetail = errText;
+                    try {
+                        const errJson = JSON.parse(errText); // Try parsing as JSON
+                        errorDetail = errJson.error || errJson.message || errText;
+                    } catch (parseError) {
+                        // Keep raw text if JSON parsing fails
+                    }
+                    throw new Error(`Failed to ${isCreateMode ? 'create' : 'update'} (${response.status}): ${errorDetail}`);
+                }
+
+                // --- Success ---
+                console.log(`${isCreateMode ? 'Create' : 'Update'} successful.`); // Debug log
+
+                if (isCreateMode) {
+                    // Reload all data after CREATE to get the new row and potentially updated dropdowns
+                    await loadDataFromApi();
+                } else {
+                    // --- SUCCESSFUL UPDATE ---
+                    // 1. Update local 'opportunities' array
+                    opportunities[currentEditRowIndex] = {
+                        ...opportunities[currentEditRowIndex], // Keep existing properties like _uid
+                        ...formData // Overwrite with updated values from the form
+                    };
+                    console.log("Local opportunities data updated at index:", currentEditRowIndex);
+
+                    // 2. Re-apply filters and sorting to refresh the view
+                    filterAndSortData();
+                    console.log("Table re-rendered with existing filters/sort.");
+                }
+
+                // 3. Close modal
+                hideEditRowModal();
+
+            } catch (err) {
+                console.error(`Error ${isCreateMode ? 'creating' : 'updating'} row:`, err);
+                alert(`Error ${isCreateMode ? 'creating' : 'updating'} row: ${err.message}`);
+            }
+        }
+
+        /** Resets filters, sorting, and clears the table */
+        function resetTable() {
+            // Reset Sorting
+            currentSortColumnIndex = -1;
+            currentSortDirection = 'asc';
+            // Reset Filters
+            currentFilters = { search: '', status: 'all', accountMgr: 'all', pic: 'all' };
+            searchInput.value = '';
+             // Reset status buttons visual state
+             statusFilterButtonsContainer.querySelectorAll('.filter-button').forEach(btn => {
+                 btn.classList.toggle('active', btn.dataset.filterValue === 'all');
+             });
+             // Reset dropdowns
+             if (accountMgrFilterDropdown) accountMgrFilterDropdown.value = 'all';
+             if (picFilterDropdown) picFilterDropdown.value = 'all';
+
+            // Clear table body and counts
+            tableBody.innerHTML = `<tr><td colspan="1" class="text-center p-4 loading-text">Loading data...</td></tr>`; // Use colspan 1 initially
+            rowCountDisplay.textContent = '';
+            op100ValueElement.textContent = '--';
+            op90ValueElement.textContent = '--';
+        }
+        /** Sets the initial default column visibility */
+        function initializeColumnVisibility() {
+            // Use the *current* headers array (UID excluded)
+            const columnsToHide = [ 'encodeddate', 'projectcode', 'solparticulars', 'indparticulars', 'lostrca', 'lparticulars', 'a', 'c', 'r', 'u', 'd']; // Normalized names, UID removed
+            columnVisibility = {};
+            headers.forEach((header, index) => {
+                if (header) {
+                    const norm = normalizeField(header);
+                    columnVisibility[index] = !columnsToHide.includes(norm);
+                }
+            });
+        }
+
+        /** Fetches and processes the opportunities data from the API */
+        async function loadDataFromApi() {
+            console.log("Loading data from API..."); // Debug log
+            // Don't reset filters/sort here if we want to preserve them across loads (e.g., after create/delete)
+            // resetTable(); // Reset state before loading - REMOVED FOR PRESERVING FILTERS
+
+            // Show loading indicator
+            tableBody.innerHTML = `<tr><td colspan="${headers.length > 0 ? headers.length + 1 : 1}" class="text-center p-4 loading-text">Loading data from database...</td></tr>`;
+            updateNoResultsColspan(); // Update colspan for loading message
+
+            try {
+                const response = await fetch('/api/opportunities');
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
+                const data = await response.json();
+                console.log(`Fetched ${data?.length} records.`); // Debug log
+
+                if (data && data.length > 0) {
+                    // Process headers and data
+                    const originalHeaders = Object.keys(data[0]);
+
+                    // --- REORDER HEADERS: Project Name first, then Encoded Date, then the rest ---
+                    const norm = s => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                    let projectNameHeader = originalHeaders.find(h => norm(h) === 'projectname');
+                    let encodedDateHeader = originalHeaders.find(h => norm(h) === 'encodeddate');
+                    let restHeaders = originalHeaders.filter(h => norm(h) !== 'projectname' && norm(h) !== 'encodeddate' && norm(h) !== 'uid');
+                    // Set the global headers array *excluding* UID, with new order
+                    const currentHeaders = [projectNameHeader, encodedDateHeader, ...restHeaders].filter(Boolean);
+                    // --- Check if headers have changed ---
+                    const headersChanged = JSON.stringify(headers) !== JSON.stringify(currentHeaders);
+                    headers = currentHeaders; // Update global headers
+
+                    // Map data, ensuring _uid is attached
+                    opportunities = data.map(row => {
+                        const newRow = {...row}; // Clone row
+                        newRow._uid = row.uid || row.UID || row.Uid || null; // Attach UID
+                        if (!newRow._uid) console.warn("Row missing UID:", row);
+                        return newRow;
+                    });
+
+                    // Build header map based on headers *without* UID
+                    buildHeaderMap(headers);
+
+                    // --- Initialize/Update UI based on headers ---
+                    if (headersChanged) {
+                         console.log("Headers changed, re-initializing visibility and UI elements.");
+                         initializeColumnVisibility(); // Set defaults based on new headers
+                         populateColumnToggles();
+                         populateTableHead(); // Re-create table head
+                         // --- Set default sort: Encoded Date descending ---
+                         const encodedDateIdx = headers.findIndex(h => normalizeField(h) === 'encodeddate');
+                         if (encodedDateIdx !== -1) {
+                             currentSortColumnIndex = encodedDateIdx;
+                             currentSortDirection = 'desc';
+                         } else {
+                             currentSortColumnIndex = -1;
+                             currentSortDirection = 'asc';
+                         }
+                         updateSortIndicators();
+                     } else {
+                         // Headers are the same, just update visibility toggles if needed
+                         // (This might not be necessary if visibility state is preserved)
+                         // populateColumnToggles(); // Optionally refresh toggles
+                     }
+
+                    populateFilterDropdowns(); // Populate dropdowns based on full data
+                    filterAndSortData(); // Apply current filters & sort to the new data
+                    updateDashboardCardsAllOpportunities(); // Calculate totals based on full data
+
+                } else {
+                    // Handle empty data scenario
+                    console.log("No data returned from API."); // Debug log
+                    headers = [];
+                    opportunities = [];
+                    filteredOpportunities = [];
+                    tableHead.innerHTML = ''; // Clear headers
+                    tableBody.innerHTML = `<tr><td colspan="1" class="text-center p-4 loading-text">No opportunities found in the database.</td></tr>`;
+                    updateDashboardCardsAllOpportunities();
+                }
+            } catch (error) {
+                console.error(`Error loading or processing data from the API:`, error);
+                tableBody.innerHTML = `<tr><td colspan="1" class="text-center p-4 error-text">Error loading data: ${error.message}. Please check server connection and console logs.</td></tr>`;
+                opportunities = [];
+                filteredOpportunities = [];
+                updateDashboardCardsAllOpportunities(); // Update cards even on error
+            }
+        }
+
+        // *** ADDED: Function to export data to Excel ***
+        function exportToExcel() {
+            console.log("Exporting to Excel...");
+
+            // Check if SheetJS library is loaded
+            if (typeof XLSX === 'undefined') {
+                alert('Error: Excel export library (xlsx.js) not loaded.');
+                console.error('XLSX library not found.');
+                return;
+            }
+
+            // 1. Get Visible Headers (using displayHeaders for user-friendly names)
+            const visibleDisplayHeaders = displayHeaders.filter((header, index) => columnVisibility[index]);
+
+            // 2. Get Corresponding Original Header Keys for data access
+            const visibleOriginalHeaderKeys = headers.filter((header, index) => columnVisibility[index]);
+
+            // 3. Prepare Data Array for SheetJS (Array of Arrays)
+            const dataForExcel = [visibleDisplayHeaders]; // Start with header row
+
+            filteredOpportunities.forEach(row => {
+                const rowData = [];
+                visibleOriginalHeaderKeys.forEach(headerKey => {
+                    let value = row[headerKey] ?? ''; // Get raw value
+                    const normHeader = normalizeField(headerKey);
+
+                    // Format specific types for better Excel compatibility
+                    if (isDateField(headerKey)) {
+                        value = formatDateForExcel(value); // Format as YYYY-MM-DD string
+                    } else if (isCurrencyField(headerKey)) {
+                        value = parseCurrency(value); // Export as number
+                        if (isNaN(value)) value = ''; // Use empty string if not a valid number
+                    } else if (isMarginField(headerKey)) {
+                        value = parseMarginForExcel(value); // Export as number (without %)
+                         if (value === null) value = ''; // Use empty string if not valid
+                    }
+                    // For other types, export the raw value (or potentially format booleans, etc. if needed)
+
+                    rowData.push(value);
+                });
+                dataForExcel.push(rowData);
+            });
+
+            // 4. Create Worksheet and Workbook
+            try {
+                const ws = XLSX.utils.aoa_to_sheet(dataForExcel);
+
+                // Optional: Set column widths (example: auto-fit based on header length)
+                // This is a basic example; more complex auto-fitting might require more logic
+                const colWidths = visibleDisplayHeaders.map(header => ({ wch: Math.max(header.length, 15) })); // Min width 15
+                ws['!cols'] = colWidths;
+
+                // Optional: Apply number formatting to currency/margin columns
+                visibleOriginalHeaderKeys.forEach((headerKey, index) => {
+                    if (isCurrencyField(headerKey)) {
+                        // Apply currency format (e.g., PHP currency) to all cells in this column (starting from row 2)
+                        for (let R = 1; R < dataForExcel.length; ++R) { // R=1 to skip header row
+                            const cell_address = XLSX.utils.encode_cell({c:index, r:R});
+                            if(!ws[cell_address]) continue; // Skip empty cells
+                            ws[cell_address].t = 'n'; // Ensure type is number
+                            ws[cell_address].z = '"₱"#,##0.00'; // PHP currency format
+                        }
+                    } else if (isMarginField(headerKey)) {
+                         // Apply percentage format to all cells in this column (starting from row 2)
+                         for (let R = 1; R < dataForExcel.length; ++R) { // R=1 to skip header row
+                             const cell_address = XLSX.utils.encode_cell({c:index, r:R});
+                             if(!ws[cell_address]) continue; // Skip empty cells
+                             ws[cell_address].t = 'n'; // Ensure type is number
+                             ws[cell_address].z = '0.0"%"'; // Percentage format
+                         }
+                    }
+                });
+
+
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Opportunities"); // Sheet name
+
+                // 5. Trigger Download
+                const filename = `Opportunities_Export_${new Date().toISOString().slice(0,10)}.xlsx`;
+                XLSX.writeFile(wb, filename);
+                console.log("Excel export initiated.");
+
+            } catch (error) {
+                console.error("Error creating Excel file:", error);
+                alert("An error occurred while creating the Excel file. Please check the console.");
+            }
+        }
+
+        // --- Initialization & Event Listeners ---
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("DOM Content Loaded - Initializing page..."); // Log
+
+             // *** Explicitly hide modals on load ***
+             hideRemarksModal();
+             hideEditRowModal();
+             // *** End explicit hide ***
+
+            // Theme Setup
+            const savedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
+            applyTheme(initialTheme);
+            themeToggleButton.addEventListener('click', toggleTheme);
+
+            // Column Toggle Listener
+            toggleColumnsButton.addEventListener('click', () => { columnToggleContainer.classList.toggle('hidden'); });
+
+            // *** ADDED: Export Button Listener ***
+            exportExcelButton.addEventListener('click', exportToExcel);
+
+            // Modal Listeners (Remarks)
+            closeModalButton.addEventListener('click', hideRemarksModal);
+            saveRemarksButton.addEventListener('click', saveRemarks);
+            remarksModalOverlay.addEventListener('click', hideRemarksModal);
+
+             // Modal Listeners (Edit/Create)
+            closeEditRowModalButton.addEventListener('click', hideEditRowModal);
+            editRowModalOverlay.addEventListener('click', hideEditRowModal);
+            if (editRowModalCloseX) editRowModalCloseX.onclick = hideEditRowModal; // Listener for 'X' button
+            createOpportunityButton.addEventListener('click', () => {
+                 console.log("Create New button clicked"); // Debug log
+                 showEditRowModal(-1, true);
+            });
+            // Assign form submit listener ONCE here
+            editRowForm.addEventListener('submit', handleEditFormSubmit);
+
+
+             // Global Escape Key Listener for Modals
+             document.addEventListener('keydown', (event) => {
+                 if (event.key === 'Escape') {
+                     console.log("Escape key pressed"); // Log
+                     if (!remarksModal.classList.contains('hidden')) {
+                         console.log("Hiding remarks modal via Escape"); // Log
+                         hideRemarksModal();
+                     } else if (!editRowModal.classList.contains('hidden')) {
+                         console.log("Hiding edit modal via Escape"); // Log
+                         hideEditRowModal();
+                     }
+                 }
+             });
+
+            // Search Input Listener
+            searchInput.addEventListener('input', (e) => {
+                currentFilters.search = e.target.value.trim();
+                filterAndSortData();
+            });
+
+            // Filter Button Listeners
+            statusFilterButtonsContainer.addEventListener('click', (e) => {
+                if (e.target.tagName === 'BUTTON' && e.target.dataset.filterType === 'status') {
+                    const value = e.target.dataset.filterValue;
+                    currentFilters.status = value;
+                    // Update active class
+                    statusFilterButtonsContainer.querySelectorAll('.filter-button').forEach(btn => {
+                        btn.classList.toggle('active', btn.dataset.filterValue === value);
+                    });
+                    filterAndSortData();
+                }
+            });
+
+            // Filter Dropdown Listeners
+            accountMgrFilterDropdown.addEventListener('change', (e) => {
+                currentFilters.accountMgr = e.target.value;
+                filterAndSortData();
+            });
+            picFilterDropdown.addEventListener('change', (e) => {
+                currentFilters.pic = e.target.value;
+                filterAndSortData();
+            });
+
+
+            // Initial Data Load
+            loadDataFromApi().catch(error => {
+                 console.error("Failed to initialize page due to data loading error:", error);
+            });
+        });
+
+        // *** ADDED: Function to show revision history modal ***
+        function showRevisionHistoryModal(uid) {
+            const overlay = document.getElementById('revisionHistoryModalOverlay');
+            const modal = document.getElementById('revisionHistoryModal');
+            const content = document.getElementById('revisionHistoryContent');
+            overlay.classList.remove('hidden');
+            modal.classList.remove('hidden');
+            content.innerHTML = '<div class="loading-text">Loading revision history...</div>';
+            fetch(`/api/opportunities/${uid}/revisions`).then(r => r.json()).then(data => {
+                if (!Array.isArray(data) || data.length === 0) {
+                    content.innerHTML = '<div class="loading-text">No revision history found.</div>';
+                    return;
+                }
+                let html = '<table class="min-w-full text-xs"><thead><tr>' +
+                    '<th class="px-2 py-1">Revision #</th>' +
+                    '<th class="px-2 py-1">Changed By</th>' +
+                    '<th class="px-2 py-1">Changed At</th>' +
+                    '<th class="px-2 py-1">Fields</th>' +
+                    '</tr></thead><tbody>';
+                data.forEach(rev => {
+                    // Use the same field labels and formatting as the table/edit modal
+                    const fieldsToShow = [
+                        { label: 'Client Deadline', key: 'Client Deadline' },
+                        { label: 'Submitted Date', key: 'Submitted Date' },
+                        { label: 'Final amt', key: 'Final amt' },
+                        { label: 'Margin', key: 'Margin' }
+                    ];
+                    let fieldsHtml = fieldsToShow.map(f => {
+                        let v = rev.changed_fields && (rev.changed_fields[f.key] ?? rev.changed_fields[f.key.toLowerCase()] ?? rev.changed_fields[f.key.replace(/ /g, '_')]);
+                        // Format date fields
+                        if (f.key === 'Client Deadline' || f.key === 'Submitted Date') {
+                            v = v ? formatDateForDisplay(v) : '';
+                        }
+                        // Format currency
+                        if (f.key === 'Final amt') {
+                            v = v !== undefined && v !== null && v !== '' ? formatCurrency(v) : '';
+                        }
+                        // Format margin
+                        if (f.key === 'Margin') {
+                            v = v !== undefined && v !== null && v !== '' ? formatMargin(v) : '';
+                        }
+                        return `<div><b>${f.label}:</b> ${v !== undefined && v !== null ? v : ''}</div>`;
+                    }).join('');
+                    html += `<tr>` +
+                        `<td class="px-2 py-1 text-center">${rev.revision_number}</td>` +
+                        `<td class="px-2 py-1">${rev.changed_by || ''}</td>` +
+                        `<td class="px-2 py-1">${rev.changed_at ? new Date(rev.changed_at).toLocaleString() : ''}</td>` +
+                        `<td class="px-2 py-1">${fieldsHtml}</td>` +
+                        `</tr>`;
+                });
+                html += '</tbody></table>';
+                content.innerHTML = html;
+            }).catch(err => {
+                content.innerHTML = '<div class="error-text">Failed to load revision history.</div>';
+            });
+        }
+        // Helper for formatting date fields in history
+        function formatDateForDisplay(dateString) {
+            if (!dateString) return '';
+            const d = new Date(dateString);
+            if (isNaN(d)) return dateString;
+            // Format: Sun, May-04
+            const weekday = d.toLocaleDateString('en-US', { weekday: 'short' });
+            const month = d.toLocaleDateString('en-US', { month: 'short' });
+            const day = d.toLocaleDateString('en-US', { day: '2-digit' });
+            return `${weekday}, ${month}-${day}`;
+        }
+
+        function hideRevisionHistoryModal() {
+            document.getElementById('revisionHistoryModalOverlay').classList.add('hidden');
+            document.getElementById('revisionHistoryModal').classList.add('hidden');
+        }
+        document.getElementById('closeRevisionHistoryButton').onclick = hideRevisionHistoryModal;
+
+        // Patch form submission to include changed_by
+        async function handleEditFormSubmit(event) {
+            event.preventDefault();
+            console.log('Form submit handler fired. isCreateMode:', isCreateMode);
+
+            // Build object with data from the form
+            const formData = {};
+            let hasData = false;
+            // Iterate over the *current* headers (no UID) to find form elements
+            headers.forEach(h => {
+                if (editRowForm.elements[h]) { // Check if element exists by name (original header name)
+                     let value = editRowForm.elements[h].value;
+                     // Clean currency/margin fields before sending
+                     if (isCurrencyField(h)) {
+                         value = parseCurrency(value); // Parse to number or NaN
+                         if (isNaN(value)) value = null; // Send null if invalid currency
+                     }
+                     else if (isMarginField(h)) {
+                         value = parseFloat(value); // Parse to number or NaN
+                         if (isNaN(value)) value = null; // Send null if invalid margin
+                     }
+                     else if (isDateField(h)) {
+                         // *** Send the YYYY-MM-DD string directly, or null if empty ***
+                         value = value.trim() === '' ? null : value;
+                     }
+
+                     // Handle empty strings as null for backend consistency (except for dates handled above)
+                     if (!isDateField(h)) {
+                          formData[h] = (typeof value === 'string' && value.trim() === '') ? null : value;
+                     } else {
+                          formData[h] = value; // Assign date value (YYYY-MM-DD or null)
+                     }
+                     hasData = true;
+                 } else {
+                     // If an ACRUD field was hidden, it won't be in the form elements.
+                     // Decide if we should send its original value or null.
+                     // For now, assume hidden fields are not submitted for change.
+                 }
+            });
+
+              if (!hasData) {
+                  alert("No data entered or found in form.");
+                  return;
+              }
+              console.log("Form Data to Send:", formData); // Debug log
+
+            // Add changed_by to formData
+            formData.changed_by = getCurrentUserName();
+
+            try {
+                let response;
+                let url;
+                let method;
+
+                if (isCreateMode) {
+                    // --- CREATE ---
+                    console.log("Attempting to CREATE"); // Debug log
+                    url = '/api/opportunities';
+                    method = 'POST';
+                    response = await fetch(url, {
+                        method: method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
+                } else {
+                     // --- UPDATE ---
+                     const uid = opportunities[currentEditRowIndex]?._uid;
+                     if (!uid) { throw new Error('Original row UID not found for updating.'); }
+                     console.log(`Attempting to UPDATE UID: ${uid}`); // Debug log
+                     url = `/api/opportunities/${encodeURIComponent(uid)}`;
+                     method = 'PUT';
+                      response = await fetch(url, {
+                         method: method,
+                         headers: { 'Content-Type': 'application/json' },
+                         body: JSON.stringify(formData) // Send collected form data
+                     });
+                }
+
+                if (!response.ok) {
+                    const errText = await response.text(); // Get raw response text
+                    let errorDetail = errText;
+                    try {
+                        const errJson = JSON.parse(errText); // Try parsing as JSON
+                        errorDetail = errJson.error || errJson.message || errText;
+                    } catch (parseError) {
+                        // Keep raw text if JSON parsing fails
+                    }
+                    throw new Error(`Failed to ${isCreateMode ? 'create' : 'update'} (${response.status}): ${errorDetail}`);
+                }
+
+                // --- Success ---
+                console.log(`${isCreateMode ? 'Create' : 'Update'} successful.`); // Debug log
+
+                if (isCreateMode) {
+                    // Reload all data after CREATE to get the new row and potentially updated dropdowns
+                    await loadDataFromApi();
+                } else {
+                    // --- SUCCESSFUL UPDATE ---
+                    // 1. Update local 'opportunities' array
+                    opportunities[currentEditRowIndex] = {
+                        ...opportunities[currentEditRowIndex], // Keep existing properties like _uid
+                        ...formData // Overwrite with updated values from the form
+                    };
+                    console.log("Local opportunities data updated at index:", currentEditRowIndex);
+
+                    // 2. Re-apply filters and sorting to refresh the view
+                    filterAndSortData();
+                    console.log("Table re-rendered with existing filters/sort.");
+                }
+
+                // 3. Close modal
+                hideEditRowModal();
+
+            } catch (err) {
+                console.error(`Error ${isCreateMode ? 'creating' : 'updating'} row:`, err);
+                alert(`Error ${isCreateMode ? 'creating' : 'updating'} row: ${err.message}`);
+            }
+        }
+
+    </script>
+
+</body>
+</html>
