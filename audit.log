@@ -1,0 +1,921 @@
+=== SERVER.JS STARTED ===
+Server listening at http://localhost:3000
+Serving static files from: /Users/reuelrivera/Documents/CMRP Opps Management
+Win/Loss Dashboard available at http://localhost:3000/win-loss_dashboard.html
+Forecast Dashboard available at http://localhost:3000/forecast_dashboard.html
+[2025-05-11T23:15:12.856Z] Unauthorized user-management page access attempt by: unknown (IP: ::ffff:127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36) Reason: Non-admin attempted to access User Management page.
+[2025-05-11T23:15:12.859Z] Unauthorized user-management page access attempt by: unknown (IP: ::ffff:127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36) Reason: Non-admin attempted to access User Management page.
+[2025-05-11T23:15:23.154Z] Unauthorized user-management page access attempt by: unknown (IP: ::ffff:127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36) Reason: Non-admin attempted to access User Management page.
+[2025-05-11T23:15:23.156Z] Unauthorized user-management page access attempt by: unknown (IP: ::ffff:127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36) Reason: Non-admin attempted to access User Management page.
+=== SERVER.JS STARTED ===
+Server listening at http://localhost:3000
+Serving static files from: /Users/reuelrivera/Documents/CMRP Opps Management
+Win/Loss Dashboard available at http://localhost:3000/win-loss_dashboard.html
+Forecast Dashboard available at http://localhost:3000/forecast_dashboard.html
+[2025-05-11T23:17:31.270Z] Unauthorized user-management page access attempt by: unknown (IP: ::ffff:127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36) Reason: Non-admin attempted to access User Management page.
+[2025-05-11T23:17:31.272Z] Unauthorized user-management page access attempt by: unknown (IP: ::ffff:127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36) Reason: Non-admin attempted to access User Management page.
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[2025-05-11T23:18:12.252Z] Unauthorized user-management page access attempt by: unknown (IP: ::ffff:127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36) Reason: Non-admin attempted to access User Management page.
+[2025-05-11T23:18:12.254Z] Unauthorized user-management page access attempt by: unknown (IP: ::ffff:127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36) Reason: Non-admin attempted to access User Management page.
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[2025-05-11T23:41:02.061Z] Unauthorized user-management page access attempt by: unknown (IP: ::ffff:127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36) Reason: Non-admin attempted to access User Management page.
+[2025-05-11T23:41:02.062Z] Unauthorized user-management page access attempt by: unknown (IP: ::ffff:127.0.0.1, UA: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Safari/537.36) Reason: Non-admin attempted to access User Management page.
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/dashboard] Request received.
+[API /api/dashboard] Unique Solutions found: Automation, Digitalization, Electrification
+[API /api/dashboard] Unique Account Managers found: CBD, ISP, JMO, LOS, NSG, RTR
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+[API /api/forecast-dashboard] Request received. Status filter: undefined
+[API /api/forecast-dashboard] Executing SQL: 
+        SELECT forecast_date, final_amt, opp_status, project_name
+        FROM opps_monitoring
+        WHERE forecast_date IS NOT NULL
+          AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
+          AND (opp_status IS NULL OR opp_status NOT IN ('LOST', 'OP100'))
+    
+[API /api/forecast-dashboard] Parameters: []
+=== SERVER.JS STARTED ===
+Server listening at http://localhost:3000
+Serving static files from: /Users/reuelrivera/Documents/CMRP Opps Management
+Win/Loss Dashboard available at http://localhost:3000/win-loss_dashboard.html
+Forecast Dashboard available at http://localhost:3000/forecast_dashboard.html
+=== SERVER.JS STARTED ===
+Server listening at http://localhost:3000
+Serving static files from: /Users/reuelrivera/Documents/CMRP Opps Management
+Win/Loss Dashboard available at http://localhost:3000/win-loss_dashboard.html
+Forecast Dashboard available at http://localhost:3000/forecast_dashboard.html

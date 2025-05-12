@@ -2,9 +2,11 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport"="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self';">
     <title>CMRP Win/Loss Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
         /* --- Theme Variables --- */
         :root {
@@ -40,653 +42,256 @@
         h1, h3 { color: var(--text-title); }
         .dashboard-card { background-color: var(--bg-container); border: 1px solid var(--border-container); border-radius: 0.5rem; padding: 1rem 1.5rem; text-align: center; box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px 0 rgba(0,0,0,0.06); flex: 1; min-width: 150px; }
         .dashboard-title { color: var(--text-secondary); font-size: 0.75rem; margin-bottom: 0.25rem; text-transform: uppercase; letter-spacing: 0.05em; }
-        .dashboard-value {
-            color: var(--text-title);
-            font-size: 1.1rem;
-            font-weight: 600;
-            line-height: 1.3;
-            white-space: nowrap;
-        }
-        @media (min-width: 640px) {
-            .dashboard-value { font-size: 1.25rem; }
-        }
-        @media (min-width: 1024px) {
-            .dashboard-value { font-size: 1.5rem; }
-        }
-        /* Responsive font size for very large numbers */
-        .dashboard-value {
-            font-size: clamp(0.8rem, 2vw, 1.5rem);
-        }
+        .dashboard-value { color: var(--text-title); font-size: 1.875rem; font-weight: 600; line-height: 1.3; }
         .chart-section-container { background-color: var(--bg-container); border-radius: 0.5rem; box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px 0 rgba(0,0,0,0.06); }
         /* Form Controls (for filter dropdown) */
         select.filter-dropdown { appearance: none; background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem; min-width: 150px; background-image: var(--select-arrow-url); background-color: var(--bg-control); border-color: var(--border-control); color: var(--text-control); border-width: 1px; }
         select.filter-dropdown:focus { outline: none; border-color: var(--border-focus); box-shadow: 0 0 0 3px var(--shadow-focus); }
         select.filter-dropdown option { background-color: var(--bg-control); color: var(--text-control); }
         /* Ensure buttons use theme colors */
-        .theme-button { background-color: var(--bg-theme-button); color: var(--text-theme-button); border: 1px solid var(--border-theme-button); transition: background-color 0.2s; }
-        .theme-button:hover { background-color: var(--bg-theme-button-hover); }
-        .link-button { background-color: var(--bg-modal-save); color: var(--text-modal-save); transition: filter 0.2s; }
+        .theme-button { background-color: var(--bg-theme-button); color: var(--text-theme-button); border: 1.5px solid var(--border-theme-button); transition: background 0.18s, color 0.18s, border-color 0.18s, box-shadow 0.18s; box-shadow: 0 2px 8px 0 rgba(59,130,246,0.06); }
+        .theme-button:hover, .theme-button:focus { background-color: var(--bg-theme-button-hover); box-shadow: 0 4px 16px 0 rgba(59,130,246,0.10); }
+        .link-button { background-color: var (--bg-modal-save); color: var (--text-modal-save); transition: filter 0.2s; }
         .link-button:hover { filter: brightness(90%); }
          /* Explicit height for chart wrapper */
          .chart-wrapper { position: relative; height: 400px; width: 100%; }
+        .dashboard-table th.project-name-cell, .dashboard-table td.project-name-cell {
+            max-width: 300px;
+            min-width: 120px;
+            white-space: normal;
+            word-break: break-word;
+            text-align: left;
+        }
+        .dashboard-table th, .dashboard-table td {
+            /* Use theme variables for consistency */
+            background-color: var(--bg-row);
+            color: var(--text-row);
+            border-bottom: 1px solid var(--border-table);
+        }
+        .dashboard-table th {
+            background-color: var(--bg-header);
+            color: var(--text-header);
+        }
+        .dashboard-table tr:hover td {
+            background-color: var(--bg-row-hover);
+        }
+        .filter-button.table-status-btn {
+            border: 1px solid var(--border-table);
+            background-color: var(--bg-filter-button);
+            color: var (--text-filter-button);
+            transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+        }
+        .filter-button.table-status-btn.active {
+            background-color: var(--bg-filter-button-active);
+            color: var(--text-filter-button-active);
+            border-color: var(--border-filter-button-active);
+            font-weight: 600;
+        }
+        .filter-button.table-status-btn:hover {
+            background-color: var(--bg-filter-button-hover);
+        }
+        .simple-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            z-index: 100;
+            box-shadow: 0 2px 8px 0 rgba(0,0,0,0.08);
+            background: var(--bg-header);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            min-height: 3.5rem;
+            gap: 1.5rem;
+        }
+        .main-content {
+            margin-top: 4.5rem;
+        }
+        .nav-square-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            border-radius: 0.75rem;
+            background: var(--bg-theme-button);
+            color: var(--text-theme-button);
+            border: 1.5px solid var(--border-theme-button);
+            font-size: 1.6rem;
+            transition: background 0.18s, color 0.18s, border-color 0.18s, box-shadow 0.18s;
+            box-shadow: 0 2px 8px 0 rgba(59,130,246,0.06);
+            margin: 0;
+            padding: 0;
+        }
+        .nav-square-btn:hover, .nav-square-btn:focus {
+            background: var(--bg-theme-button-hover);
+            color: var(--text-theme-button);
+            box-shadow: 0 4px 16px 0 rgba(59,130,246,0.10);
+            outline: none;
+        }
+        .nav-square-btn.active, .nav-square-btn.bg-blue-600 {
+            background: #6366f1;
+            color: #fff !important;
+            border-color: #6366f1;
+            cursor: default;
+            pointer-events: none;
+        }
+        .nav-square-btn .material-icons {
+            font-size: 1.7rem;
+        }
+        .dark .nav-square-btn.active {
+            background: #6366f1;
+            color: #fff !important;
+            border-color: #6366f1;
+        }
+        .dark .nav-square-btn:hover:not(.active) {
+            background: #6b7280;
+            color: #fff;
+        }
     </style>
 </head>
-<body class="min-h-screen">
-    <div class="main-container container mx-auto p-6 rounded-lg shadow-md">
-        <div class="flex justify-between items-center mb-6">
-            <div class="flex items-center gap-3">
-                <img id="logo" src="https://placehold.co/100x30/cccccc/1e1e1e?text=CMRP" alt="CMRP Logo" class="h-8">
-                <h1 class="text-2xl font-semibold">Win/Loss Dashboard</h1>
-            </div>
-            <div class="flex items-center gap-2">
-                <a href="index.html" class="link-button px-3 py-2 rounded text-sm font-semibold">Table View</a>
-                <a href="Forecast_Dashboard.html" class="link-button px-3 py-2 rounded text-sm font-semibold">Forecast</a>
-                <button id="themeToggleButton" title="Toggle theme" class="theme-button px-3 py-2 rounded text-sm font-semibold">Theme</button>
-            </div>
+<body>
+    <div class="simple-header">
+        <div class="title-group">
+            <img id="cmrpLogo" src="Logo/CMRP Logo Light.svg" alt="CMRP Logo" style="height:2.2rem;width:auto;display:inline-block;vertical-align:middle;transition:filter 0.2s;" />
+            <span class="subtitle">Win-Loss Dashboard</span>
         </div>
-
-        <div class="flex flex-wrap gap-4 items-center mb-6" id="filterBar">
-            <div>
-                <label for="solutionFilter" class="text-sm font-medium mr-1">Solution:</label>
-                <select id="solutionFilter" class="filter-dropdown p-1 text-xs rounded border">
-                    <option value="all">All Solutions</option>
+        <div class="flex items-center gap-2">
+            <nav class="flex gap-2" id="mainNav">
+                <a href="index.html" class="nav-square-btn" title="Opportunities"><span class="material-icons">dashboard</span></a>
+                <a href="win-loss_dashboard.html" class="nav-square-btn active" title="Win-Loss Dashboard"><span class="material-icons">line_axis</span></a>
+                <a href="forecastr_dashboard.html" class="nav-square-btn" title="Forecast Dashboard"><span class="material-icons">insights</span></a>
+                <a href="user_management.html" class="nav-square-btn" id="userMgmtNavBtn" title="User Management" style="display:none;"><span class="material-icons">group</span></a>
+            </nav>
+            <button id="themeToggle" class="nav-square-btn" title="Toggle Theme"><span class="material-icons">light_mode</span></button>
+            <button id="logoutBtn" class="nav-square-btn" title="Logout"><span class="material-icons">logout</span></button>
+        </div>
+    </div>
+    <div class="main-content">
+        <div class="main-container container mx-auto p-6 rounded-lg shadow-md">
+            <div class="flex flex-wrap gap-4 items-center mb-6" id="filterBar">
+                <div>
+                    <label for="solutionFilter" class="text-sm font-medium mr-1">Solution:</label>
+                    <select id="solutionFilter" class="filter-dropdown p-1 text-xs rounded border">
+                        <option value="all">All Solutions</option>
                     </select>
-            </div>
-            </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4 mb-6">
-            <div class="dashboard-card">
-                <div id="op100-total-count-title" class="dashboard-title">Total OP100 Count</div>
-                <div id="op100-total-count" class="dashboard-value">0</div>
-            </div>
-            <div class="dashboard-card">
-                 <div id="op100-total-amount-title" class="dashboard-title">Total OP100 Amount</div>
-                <div id="op100-total-amount" class="dashboard-value">₱0</div>
-            </div>
-             <div class="dashboard-card">
-                <div id="loss-total-count-title" class="dashboard-title">Total Loss Count</div>
-                <div id="loss-total-count" class="dashboard-value">0</div>
-            </div>
-            <div class="dashboard-card">
-                 <div id="loss-total-amount-title" class="dashboard-title">Total Loss Amount</div>
-                <div id="loss-total-amount" class="dashboard-value">₱0</div>
-            </div>
-            <div class="dashboard-card">
-                <div id="win-percentage-title" class="dashboard-title">Win(%)</div>
-                <div id="win-percentage-value" class="dashboard-value">0%</div>
-            </div>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-            <div class="chart-section-container p-6">
-                <h3 class="text-lg font-semibold mb-4">Monthly Wins (OP100)</h3>
-                <div class="chart-wrapper">
-                    <canvas id="winMonthlyChart"></canvas>
+                </div>
+                <div>
+                    <label for="accountMgrFilter" class="text-sm font-medium mr-1">Account Mgr:</label>
+                    <select id="accountMgrFilter" class="filter-dropdown p-1 text-xs rounded border">
+                        <option value="all">All</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="clientFilter" class="text-sm font-medium mr-1">Client:</label>
+                    <select id="clientFilter" class="filter-dropdown p-1 text-xs rounded border">
+                        <option value="all">All</option>
+                    </select>
                 </div>
             </div>
-            <div class="chart-section-container p-6">
-                <h3 class="text-lg font-semibold mb-4">Monthly Losses</h3>
-                <div class="chart-wrapper">
-                    <canvas id="lossMonthlyChart"></canvas>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                <div class="dashboard-card">
+                    <div id="op100-total-count-title" class="dashboard-title">Total OP100 Count</div>
+                    <div id="op100-total-count" class="dashboard-value">0</div>
+                </div>
+                <div class="dashboard-card">
+                     <div id="op100-total-amount-title" class="dashboard-title">Total OP100 Amount</div>
+                    <div id="op100-total-amount" class="dashboard-value">₱0</div>
+                </div>
+                 <div class="dashboard-card">
+                    <div id="loss-total-count-title" class="dashboard-title">Total Lost Opportunity Count</div>
+                    <div id="loss-total-count" class="dashboard-value">0</div>
+                </div>
+                <div class="dashboard-card">
+                     <div id="loss-total-amount-title" class="dashboard-title">Total Lost Opportunity Amount</div>
+                    <div id="loss-total-amount" class="dashboard-value">₱0</div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                <div class="chart-section-container p-6">
+                    <h3 class="text-lg font-semibold mb-4">Monthly Wins (OP100)</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="winMonthlyChart"></canvas>
+                    </div>
+                </div>
+                <div class="chart-section-container p-6">
+                    <h3 class="text-lg font-semibold mb-4">Monthly Lost Opportunities</h3>
+                    <div class="chart-wrapper">
+                        <canvas id="lossMonthlyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Opportunities Table Section -->
+            <div class="mt-10">
+                <h3 class="text-lg font-semibold mb-4">Opportunities List</h3>
+                <div class="flex flex-wrap gap-2 mb-2">
+                    <button id="filterOP100Btn" class="filter-button table-status-btn px-3 py-1 rounded text-xs">OP100</button>
+                    <button id="filterLOSTBtn" class="filter-button table-status-btn px-3 py-1 rounded text-xs">LOST</button>
+                    <button id="filterAllBtn" class="filter-button table-status-btn px-3 py-1 rounded text-xs active">All</button>
+                </div>
+                <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                    <table id="opportunitiesTable" class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 dashboard-table">
+                        <thead class="bg-gray-100 dark:bg-gray-800">
+                            <tr>
+                                <th class="project-name-cell px-4 py-2 text-left text-xs font-semibold">Project Name</th>
+                                <th class="px-4 py-2 text-left text-xs font-semibold">Client</th>
+                                <th class="px-4 py-2 text-left text-xs font-semibold">Account Mgr</th>
+                                <th class="px-4 py-2 text-left text-xs font-semibold">Date Awarded</th>
+                                <th class="px-4 py-2 text-right text-xs font-semibold">Final Amt</th>
+                                <th class="px-4 py-2 text-right text-xs font-semibold">Margin</th>
+                            </tr>
+                        </thead>
+                        <tbody id="opportunitiesTableBody" class="bg-white dark:bg-gray-900">
+                            <!-- Rows will be inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            </div>
+
+        <!-- Authentication Modal (Unified) -->
+        <div id="authModalOverlay" style="display:none;position:fixed;z-index:1000;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.25);backdrop-filter:blur(1.5px);">
+            <div id="authModal" style="display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg-modal,#fff);border:1.5px solid var(--border-modal,#e5e7eb);border-radius:1rem;box-shadow:0 8px 32px 0 rgba(31,38,135,0.15);padding:2.5rem 2.2rem;min-width:320px;max-width:95vw;">
+                <h2 id="authModalTitle" style="font-size:1.3rem;font-weight:600;margin-bottom:1.2rem;color:var(--text-modal-title,#111827);">Login</h2>
+                <form id="authForm" autocomplete="off">
+                    <div style="margin-bottom:1rem;">
+                        <label for="authEmail" style="display:block;font-size:0.95rem;font-weight:500;margin-bottom:0.2rem;">Email</label>
+                        <input id="authEmail" name="email" type="email" required style="width:100%;padding:0.5rem;border-radius:0.4rem;border:1px solid #d1d5db;">
+                    </div>
+                    <div style="margin-bottom:1rem;">
+                        <label for="authPassword" style="display:block;font-size:0.95rem;font-weight:500;margin-bottom:0.2rem;">Password</label>
+                        <input id="authPassword" name="password" type="password" required minlength="8" style="width:100%;padding:0.5rem;border-radius:0.4rem;border:1px solid #d1d5db;">
+                    </div>
+                    <div id="registerFields" style="display:none;">
+                        <div style="margin-bottom:1rem;">
+                            <label for="authName" style="display:block;font-size:0.95rem;font-weight:500;margin-bottom:0.2rem;">Name</label>
+                            <input id="authName" name="name" type="text" minlength="2" maxlength="100" style="width:100%;padding:0.5rem;border-radius:0.4rem;border:1px solid #d1d5db;">
+                        </div>
+                        <div style="margin-bottom:1rem;">
+                            <label style="display:block;font-size:0.95rem;font-weight:500;margin-bottom:0.2rem;">Role(s)</label>
+                            <label style="margin-right:1rem;"><input type="checkbox" name="role" value="admin"> Admin</label>
+                            <label style="margin-right:1rem;"><input type="checkbox" name="role" value="manager"> Manager</label>
+                            <label><input type="checkbox" name="role" value="user"> User</label>
+                        </div>
+                    </div>
+                    <div id="authError" style="display:none;color:#dc2626;font-size:0.97rem;margin-bottom:0.7rem;"></div>
+                    <div id="authSuccess" style="display:none;color:#16a34a;font-size:0.97rem;margin-bottom:0.7rem;"></div>
+                    <button id="authSubmitBtn" type="submit" style="width:100%;background:var(--bg-modal-save,#3b82f6);color:var(--text-modal-save,#fff);padding:0.6rem 0;font-size:1.08rem;font-weight:600;border:none;border-radius:0.4rem;cursor:pointer;transition:background 0.18s;">Login</button>
+                </form>
+                <div style="margin-top:1.1rem;text-align:center;">
+                    <button id="switchAuthMode" type="button" style="background:none;border:none;color:var(--text-link,#3b82f6);font-size:0.98rem;cursor:pointer;text-decoration:underline;">Don't have an account? Register</button>
                 </div>
             </div>
         </div>
-
-        </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script>
-    // --- Global Variables ---
-    let dashboardDataCache = null; // Cache fetched data (includes ALL opportunities)
-    let winChartInstance = null;   // Instance for the Wins chart
-    let lossChartInstance = null;  // Instance for the Losses chart
-    let currentSolutionFilter = 'all'; // State for the solution filter
-
-    // *** DOM elements for card titles and values ***
-    let op100CountTitleElement = null;
-    let op100AmountTitleElement = null;
-    let op100CountValueElement = null;
-    let op100AmountValueElement = null;
-    let lossCountTitleElement = null;
-    let lossAmountTitleElement = null;
-    let lossCountValueElement = null;
-    let lossAmountValueElement = null;
-    let winPercentageValueElement = null;
-
-    // --- Helper Functions ---
-    async function fetchDashboardData() {
-        // Fetch data only once if not already cached
-        if (dashboardDataCache) {
-            return dashboardDataCache;
-        }
-        try {
-            // Fetch from the updated endpoint that returns all data + unique solutions
-            const res = await fetch('/api/dashboard');
-            if (!res.ok) {
-                throw new Error(`HTTP error! status: ${res.status}`);
-            }
-            dashboardDataCache = await res.json(); // Store the full dataset
-            console.log("Fetched Dashboard Data:", dashboardDataCache);
-            // Add default empty arrays if needed (though backend should handle this)
-            if (!dashboardDataCache.opportunities) dashboardDataCache.opportunities = [];
-            if (!dashboardDataCache.uniqueSolutions) dashboardDataCache.uniqueSolutions = [];
-            return dashboardDataCache;
-        } catch (error) {
-            console.error("Failed to fetch dashboard data:", error);
-            return null; // Indicate failure
-        }
-    }
-
-    function formatCurrency(num) {
-        const number = Number(num);
-        if (isNaN(number)) return '₱0.00';
-        return '₱' + number.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
-
-     // --- Helper Functions (Copied from server.js for client-side use) ---
-     function getColumnInsensitive(obj, target) {
-        if (!obj || typeof obj !== 'object') return null;
-        const norm = s => (s || '').toLowerCase().replace(/\s|_/g, '');
-        const targetNorm = norm(target);
-        for (const key of Object.keys(obj)) { if (norm(key) === targetNorm) return key; }
-        return null;
-    }
-    // *** UPDATED: robustParseDate on Client-Side ***
-    function robustParseDate(val) {
-        if (!val) return null;
-        // 1. Try direct parsing (handles ISO 8601 like '2025-01-31T16:00:00.000Z')
-        let d = new Date(val);
-        if (!isNaN(d)) {
-             // Normalize to UTC midnight for consistency
-            return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
-        }
-
-        // Keep other parsing attempts as fallbacks if direct parsing fails
-        if (typeof val === 'number' && val > 25569) { try { const utc_days = val - 25569; const utc_milliseconds = utc_days * 86400 * 1000; const date_info = new Date(utc_milliseconds); if (!isNaN(date_info)) { return new Date(Date.UTC(date_info.getUTCFullYear(), date_info.getUTCMonth(), date_info.getUTCDate())); } } catch (e) { console.warn("Error parsing potential Excel date number:", val, e); } }
-        if (typeof val !== 'string') return null;
-        const trimmedVal = val.trim();
-        // --- FIX: Parse YYYY-MM-DD as UTC ---
-        if (trimmedVal.match(/^\d{4}-\d{1,2}-\d{1,2}/)) {
-            d = new Date(trimmedVal + 'T00:00:00Z'); // Append Z to ensure UTC interpretation
-            if (!isNaN(d)) return d;
-        }
-        if (trimmedVal.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) { const [m, d1, y] = trimmedVal.split('/').map(Number); if (m >= 1 && m <= 12 && d1 >= 1 && d1 <= 31) { d = new Date(Date.UTC(y, m - 1, d1)); if (!isNaN(d) && d.getUTCFullYear() === y && d.getUTCMonth() === m - 1 && d.getUTCDate() === d1) return d; } }
-        if (trimmedVal.match(/^\d{1,2}\/\d{1,2}\/\d{4}$/)) { const [d1, m, y] = trimmedVal.split('/').map(Number); if (d1 > 12 && m >= 1 && m <= 12 && d1 >= 1 && d1 <= 31) { d = new Date(Date.UTC(y, m - 1, d1)); if (!isNaN(d) && d.getUTCFullYear() === y && d.getUTCMonth() === m - 1 && d.getUTCDate() === d1) return d; } }
-        if (trimmedVal.match(/^\d{4}\/\d{1,2}\/\d{1,2}$/)) { const [y, m, d1] = trimmedVal.split('/').map(Number); if (m >= 1 && m <= 12 && d1 >= 1 && d1 <= 31) { d = new Date(Date.UTC(y, m - 1, d1)); if (!isNaN(d) && d.getUTCFullYear() === y && d.getUTCMonth() === m - 1 && d.getUTCDate() === d1) return d; } }
-        if (trimmedVal.match(/^[A-Za-z]{3},\s[A-Za-z]{3}-\d{1,2}$/)) { const currentYear = new Date().getUTCFullYear(); const timestamp = Date.parse(`${trimmedVal.split(', ')[1]} ${currentYear} 00:00:00 GMT`); if (!isNaN(timestamp)) { d = new Date(timestamp); return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())); } }
-        if (trimmedVal.match(/^[A-Za-z]{3}-\d{1,2}$/)) { const currentYear = new Date().getUTCFullYear(); const timestamp = Date.parse(`${trimmedVal} ${currentYear} 00:00:00 GMT`); if (!isNaN(timestamp)) { d = new Date(timestamp); return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())); } }
-        return null; // Return null if all parsing attempts fail
-     }
-     // *** UPDATED: formatMonthYear to use short month name ***
-     function formatMonthYear(date) {
-        if (!(date instanceof Date) || isNaN(date)) { return 'Invalid Date'; }
-        // Shift month forward by one
-        let year = date.getUTCFullYear();
-        let monthIdx = date.getUTCMonth() + 1;
-        if (monthIdx > 11) {
-            monthIdx = 0;
-            year += 1;
-        }
-        const monthAbbr = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-        const month = monthAbbr[monthIdx];
-        return `${month} ${year}`;
-     }
-     function parseCurrency(value) { /* ... keep parseCurrency function ... */
-        if (typeof value === 'number') return value;
-        if (typeof value === 'string') { const cleanedValue = value.replace(/[₱,]/g, '').trim(); if (cleanedValue.startsWith('(') && cleanedValue.endsWith(')')) { return parseFloat(cleanedValue.replace(/[()]/g, '')) * -1 || 0; } return parseFloat(cleanedValue) || 0; }
-        return 0;
-     }
-    // --- End Helper Functions ---
-
-
-    // *** ADDED: Function to filter data and calculate summaries client-side ***
-    function filterAndSummarizeData(allData, solutionFilter) {
-        if (!allData || !allData.opportunities) {
-            console.warn("filterAndSummarizeData called with invalid data.");
-            return { // Return empty structure
-                totalOp100Count: 0, totalOp100Amount: 0, op100CurrentMonthCount: 0, op100CurrentMonthAmount: 0,
-                op100MonthlySummary: [], totalLossCount: 0, totalLossAmount: 0, opLossMonthlySummary: [],
-                uniqueSolutions: allData?.uniqueSolutions || [] // Keep solutions if available
-            };
-        }
-
-        // Filter based on solution
-        // *** Use the correct column name 'solutions' from the backend response ***
-        const solutionKey = 'solutions'; // Use the exact key from the fetched data
-        const filteredOpportunities = (solutionFilter && solutionFilter !== 'all' && solutionKey)
-            ? allData.opportunities.filter(opp => opp[solutionKey] === solutionFilter)
-            : allData.opportunities; // Use all if no filter, filter is 'all', or key not found
-
-        // Calculate summaries based on filtered data using the copied/adapted logic
-        const summaries = calculateWinLossDashboardData_ClientSide(filteredOpportunities); // Use client-side version
-
-        // Return combined object
-        return {
-            ...summaries, // Includes calculated totals and monthly summaries
-            uniqueSolutions: allData.uniqueSolutions // Pass through unique solutions for dropdown
-        };
-    }
-
-    // *** UPDATED: Client-side version of the summary calculation logic with logging ***
-    function calculateWinLossDashboardData_ClientSide(filteredOpportunities) {
-        console.log(`[Client] Calculating summaries for ${filteredOpportunities?.length ?? 0} opportunities.`); // Log start of calculation
-        const now = new Date();
-        const currentUTCMonth = now.getUTCMonth();
-        const currentUTCYear = now.getUTCFullYear();
-        let op100Total = 0, op100TotalAmount = 0, op100CurrentMonthCount = 0, op100CurrentMonthAmount = 0, totalLossCount = 0, totalLossAmount = 0;
-        const op100Monthly = {}, opLossMonthly = {};
-
-        if (!filteredOpportunities || !Array.isArray(filteredOpportunities)) {
-            filteredOpportunities = [];
-        }
-
-        filteredOpportunities.forEach((opp, index) => { // Added index for logging
-            if (typeof opp !== 'object' || opp === null) return;
-            // *** Use correct lowercase column names based on logs/hints ***
-            const statusKey = 'opp_status'; // Use exact key from fetched data
-            let dateKey = 'date_awarded_lost'; // Use exact key
-            const amtKey = 'final_amt'; // Use exact key
-            const status = opp[statusKey] ? String(opp[statusKey]).trim().toUpperCase() : 'UNKNOWN_STATUS';
-            const dateValue = opp[dateKey] || null;
-            const finalAmt = opp[amtKey] ? parseCurrency(opp[amtKey]) : 0;
-
-            // *** Add logging for date parsing ***
-            let parsedDate = robustParseDate(dateValue); // Use updated parser
-            let monthYear = 'Unknown Month';
-            if (parsedDate && !isNaN(parsedDate)) {
-                 monthYear = formatMonthYear(parsedDate); // Use updated formatter
-            }
-            // Debug log for each opportunity
-            console.log(`[DEBUG] index ${index} | status: ${status} | dateValue: '${dateValue}' | parsedDate:`, parsedDate, '| monthYear:', monthYear);
-            // ...existing code...
-            if (parsedDate && !isNaN(parsedDate)) {
-                // ...existing code...
-            } else if ((status === 'OP100' || status === 'LOST') && dateValue) {
-                console.warn(`[Client Calc index ${index}] Failed to parse date '${dateValue}' for status ${status}. Grouping as '${monthYear}'.`);
-            }
-            // ...existing code...
-            if (status === 'OP100') {
-                op100Total++; op100TotalAmount += finalAmt;
-                if (!op100Monthly[monthYear]) op100Monthly[monthYear] = { count: 0, totalAmount: 0 };
-                op100Monthly[monthYear].count++; op100Monthly[monthYear].totalAmount += finalAmt;
-                // *** Use UTC month/year for current month check ***
-                if (parsedDate && parsedDate.getUTCMonth() === currentUTCMonth && parsedDate.getUTCFullYear() === currentUTCYear) {
-                    op100CurrentMonthCount++; op100CurrentMonthAmount += finalAmt;
-                }
-            } else if (status === 'LOST') {
-                totalLossCount++; totalLossAmount += finalAmt;
-                if (!opLossMonthly[monthYear]) opLossMonthly[monthYear] = { count: 0, totalAmount: 0 };
-                opLossMonthly[monthYear].count++; opLossMonthly[monthYear].totalAmount += finalAmt;
-            }
-        });
-
-        const createMonthlySummary = (monthlyData) => {
-            const currentYear = new Date().getUTCFullYear();
-            const monthAbbr = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-            const sortedMonths = Object.keys(monthlyData)
-                .filter(m => {
-                    if (m === 'Unknown Month' || m === 'Invalid Date') return false;
-                    const [mon, year] = m.split(' ');
-                    const monthIdx = monthAbbr.indexOf(mon);
-                    if (monthIdx === -1 || isNaN(Number(year))) return false;
-                    // Only include months from the current year
-                    return Number(year) === currentYear;
-                })
-                .sort((a, b) => {
-                    const [monA, yearA] = a.split(' ');
-                    const [monB, yearB] = b.split(' ');
-                    const dateA = new Date(Date.UTC(Number(yearA), monthAbbr.indexOf(monA), 1));
-                    const dateB = new Date(Date.UTC(Number(yearB), monthAbbr.indexOf(monB), 1));
-                    return dateA - dateB;
-                });
-            // Add Unknown/Invalid month back if it has data
-            if (monthlyData['Unknown Month'] && (monthlyData['Unknown Month'].count > 0 || monthlyData['Unknown Month'].totalAmount > 0)) sortedMonths.push('Unknown Month');
-            if (monthlyData['Invalid Date'] && (monthlyData['Invalid Date'].count > 0 || monthlyData['Invalid Date'].totalAmount > 0)) sortedMonths.push('Invalid Date');
-            // Debug log
-            console.log('[DEBUG] Sorted months:', sortedMonths);
-            return sortedMonths.map(monthYear => ({ monthYear, count: monthlyData[monthYear]?.count || 0, totalAmount: monthlyData[monthYear]?.totalAmount || 0 }));
-        };
-        const op100MonthlySummary = createMonthlySummary(op100Monthly);
-        const opLossMonthlySummary = createMonthlySummary(opLossMonthly);
-
-        // Log the generated summaries
-        console.log("[Client Calc] OP100 Summary:", op100MonthlySummary);
-        console.log("[Client Calc] Loss Summary:", opLossMonthlySummary);
-
-
-        // *** FIX: Correct property name in return object ***
-        return {
-            totalOp100Count: op100Total,
-            totalOp100Amount: op100TotalAmount, // Corrected: Explicit assignment
-            op100CurrentMonthCount,
-            op100CurrentMonthAmount,
-            op100MonthlySummary,
-            totalLossCount,
-            totalLossAmount,
-            opLossMonthlySummary
-        };
-    }
-
-
-    // *** UPDATED: Function to update ALL summary card titles and values ***
-    function updateSummaryCards(data) {
-        // Ensure elements are fetched
-        if (!op100CountValueElement) op100CountValueElement = document.getElementById('op100-total-count');
-        if (!op100AmountValueElement) op100AmountValueElement = document.getElementById('op100-total-amount');
-        if (!lossCountValueElement) lossCountValueElement = document.getElementById('loss-total-count');
-        if (!lossAmountValueElement) lossAmountValueElement = document.getElementById('loss-total-amount');
-        if (!op100CountTitleElement) op100CountTitleElement = document.getElementById('op100-total-count-title');
-        if (!op100AmountTitleElement) op100AmountTitleElement = document.getElementById('op100-total-amount-title');
-        if (!lossCountTitleElement) lossCountTitleElement = document.getElementById('loss-total-count-title');
-        if (!lossAmountTitleElement) lossAmountTitleElement = document.getElementById('loss-total-amount-title');
-        if (!winPercentageValueElement) winPercentageValueElement = document.getElementById('win-percentage-value');
-
-        // Set titles based on filter
-        const filterText = currentSolutionFilter === 'all' ? '' : ` (${currentSolutionFilter})`; // Add filter text
-        if (op100CountTitleElement) op100CountTitleElement.textContent = `Total OP100 Count${filterText}`;
-        if (op100AmountTitleElement) op100AmountTitleElement.textContent = `Total OP100 Amount${filterText}`;
-        if (lossCountTitleElement) lossCountTitleElement.textContent = `Total Loss Count${filterText}`;
-        if (lossAmountTitleElement) lossAmountTitleElement.textContent = `Total Loss Amount${filterText}`;
-
-        // Use calculated totals from the (potentially filtered) data object
-        const totalOp100Count = data?.totalOp100Count ?? 0;
-        const totalOp100Amount = data?.totalOp100Amount ?? 0;
-        const totalLossCount = data?.totalLossCount ?? 0;
-        const totalLossAmount = data?.totalLossAmount ?? 0;
-
-        // Update values
-        if (op100CountValueElement) op100CountValueElement.textContent = totalOp100Count;
-        if (op100AmountValueElement) op100AmountValueElement.textContent = formatCurrency(totalOp100Amount);
-        if (lossCountValueElement) lossCountValueElement.textContent = totalLossCount;
-        if (lossAmountValueElement) lossAmountValueElement.textContent = formatCurrency(totalLossAmount);
-
-        // Calculate and update winning percentage
-        if (winPercentageValueElement) {
-            const totalDecisions = totalOp100Count + totalLossCount;
-            let winPct = 0;
-            if (totalDecisions > 0) {
-                winPct = (totalOp100Count / totalDecisions) * 100;
-            }
-            winPercentageValueElement.textContent = Math.round(winPct) + '%';
-        }
-    }
-
-
-    // *** Function to create a chart configuration (reusable) ***
-    function createMonthlyChartConfig(chartData, colors, chartId) { // Added chartId parameter
-        const months = chartData.map(m => m.monthYear);
-        const counts = chartData.map(m => m.count || 0);
-        const amounts = chartData.map(m => m.totalAmount || 0);
-
-        // Theme-dependent colors
-        const gridColor = getComputedStyle(document.documentElement).getPropertyValue('--chart-grid-color').trim();
-        const tickColor = getComputedStyle(document.documentElement).getPropertyValue('--chart-tick-color').trim();
-        const titleColor = getComputedStyle(document.documentElement).getPropertyValue('--chart-title-color').trim();
-        const legendColor = getComputedStyle(document.documentElement).getPropertyValue('--chart-legend-color').trim();
-        const tooltipBgColor = getComputedStyle(document.documentElement).getPropertyValue('--chart-tooltip-bg').trim();
-        const tooltipTextColor = getComputedStyle(document.documentElement).getPropertyValue('--chart-tooltip-text').trim();
-
-        const config = {
-            type: 'bar',
-            data: {
-                labels: months,
-                datasets: [
-                    {
-                        label: 'Amount',
-                        data: amounts,
-                        backgroundColor: colors.amountBg,
-                        borderColor: colors.amountBorder,
-                        borderWidth: 1,
-                        yAxisID: 'yAmount',
-                        type: 'bar',
-                        order: 2
-                    },
-                    {
-                        label: 'Count',
-                        data: counts,
-                        borderColor: colors.countBorder,
-                        backgroundColor: 'rgba(0,0,0,0)', // Transparent fill for line
-                        borderWidth: 2,
-                        fill: false,
-                        tension: 0.1,
-                        yAxisID: 'yCount',
-                        type: 'line',
-                        order: 1
-                    }
-                ]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                interaction: { mode: 'index', intersect: false },
-                plugins: {
-                    tooltip: {
-                        backgroundColor: tooltipBgColor,
-                        titleColor: tooltipTextColor,
-                        bodyColor: tooltipTextColor,
-                        callbacks: {
-                            label: function(ctx) {
-                                let label = ctx.dataset.label || '';
-                                if (label) label += ': ';
-                                if (ctx.dataset.label === 'Amount') {
-                                    label += formatCurrency(ctx.parsed.y);
-                                } else {
-                                     label += ctx.parsed.y;
-                                }
-                                return label;
-                            }
-                        }
-                    },
-                    legend: { position: 'top', labels: { color: legendColor } }
-                },
-                scales: {
-                    x: {
-                        ticks: { color: tickColor },
-                        grid: { color: gridColor, drawOnChartArea: false },
-                        title: { display: false, color: titleColor }
-                    },
-                    yAmount: { // Amount Axis (Left)
-                        beginAtZero: true,
-                        title: { display: true, text: 'Amount (₱)', color: titleColor },
-                        position: 'left',
-                        ticks: { color: tickColor, callback: value => formatCurrency(value) },
-                        grid: { color: gridColor }
-                    },
-                    yCount: { // Count Axis (Right)
-                        beginAtZero: true,
-                        title: { display: true, text: 'Count', color: titleColor },
-                        position: 'right',
-                        ticks: {
-                            color: tickColor,
-                            stepSize: 1, precision: 0,
-                            callback: function(value) {if (Number.isInteger(value)) {return value;}}
-                        },
-                        grid: { drawOnChartArea: false } // No grid lines for secondary axis
-                    }
-                }
-            }
-        };
-
-        // Remove onClick handler as it's not needed for Win/Loss charts with filters
-        delete config.options.onClick;
-
-        return config; // Return the generated config
-    }
-
-
-    // --- Main Rendering Function ---
-    function renderDashboard(data) { // Accepts the (potentially filtered and summarized) data object
-        if (!data) {
-             console.error("No data provided to renderDashboard");
-             return;
-        }
-
-        updateSummaryCards(data); // Update the 4 summary cards
-
-        // Get theme colors for charts
-        const winAmountColor = getComputedStyle(document.documentElement).getPropertyValue('--color-win-cost').trim();
-        const winAmountBgColor = getComputedStyle(document.documentElement).getPropertyValue('--color-win-cost-bg').trim();
-        const winCountColor = getComputedStyle(document.documentElement).getPropertyValue('--color-win').trim();
-
-        const lossAmountColor = getComputedStyle(document.documentElement).getPropertyValue('--color-loss-cost').trim();
-        const lossAmountBgColor = getComputedStyle(document.documentElement).getPropertyValue('--color-loss-cost-bg').trim();
-        const lossCountColor = getComputedStyle(document.documentElement).getPropertyValue('--color-loss').trim();
-
-
-        // --- Render Win Chart ---
-        const winChartCanvas = document.getElementById('winMonthlyChart');
-        if (winChartCanvas) {
-            const winChartConfig = createMonthlyChartConfig(
-                data.op100MonthlySummary || [], // Use summary from passed data
-                { amountBg: winAmountBgColor, amountBorder: winAmountColor, countBorder: winCountColor },
-                'winMonthlyChart' // Pass ID
-            );
-            if (winChartInstance) winChartInstance.destroy();
-            winChartInstance = new Chart(winChartCanvas.getContext('2d'), winChartConfig);
-        } else { console.error("Canvas element #winMonthlyChart not found!"); }
-
-        // --- Render Loss Chart ---
-        const lossChartCanvas = document.getElementById('lossMonthlyChart');
-        if (lossChartCanvas) {
-             const lossData = data.opLossMonthlySummary || []; // Use summary from passed data
-             if (lossData.length > 0) {
-                 const lossChartConfig = createMonthlyChartConfig(
-                     lossData,
-                     { amountBg: lossAmountBgColor, amountBorder: lossAmountColor, countBorder: lossCountColor },
-                     'lossMonthlyChart' // Pass ID
-                 );
-                 if (lossChartInstance) lossChartInstance.destroy();
-                 lossChartInstance = new Chart(lossChartCanvas.getContext('2d'), lossChartConfig);
-             } else {
-                 console.log("No loss data to display in the loss chart.");
-                 if (lossChartInstance) lossChartInstance.destroy();
-                 const ctx = lossChartCanvas.getContext('2d');
-                 ctx.clearRect(0, 0, lossChartCanvas.width, lossChartCanvas.height);
-                 ctx.textAlign = 'center';
-                 ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-secondary').trim();
-                 ctx.fillText('No Loss Data Available', lossChartCanvas.width / 2, lossChartCanvas.height / 2);
-             }
-        } else { console.error("Canvas element #lossMonthlyChart not found!"); }
-    }
-
-    // --- Theme Toggle ---
-    function applyTheme(theme) {
-        const isDark = theme === 'dark';
-        document.documentElement.classList.toggle('dark', isDark);
-        const themeToggleButton = document.getElementById('themeToggleButton');
-        if(themeToggleButton) {
-            themeToggleButton.textContent = isDark ? '☀️ Light' : '🌙 Dark';
-            themeToggleButton.title = `Switch to ${isDark ? 'light' : 'dark'} theme`;
-        }
-        const logo = document.getElementById('logo');
-        if (logo) {
-             logo.src = isDark ? 'Logo/CMRP Logo Light.svg' : 'Logo/CMRP Logo Dark.svg';
-             logo.onerror = () => { logo.src = `https://placehold.co/100x30/${isDark ? 'e0e0e0/1f2937' : '1f2937/e0e0e0'}?text=CMRP+Logo`; };
-        }
-        // Re-render dashboard with current filters on theme change
-        if (dashboardDataCache) {
-            applyFiltersAndRender();
-        }
-    }
-
-    function toggleTheme() {
-        const currentTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
-        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-        localStorage.setItem('theme', newTheme);
-        applyTheme(newTheme);
-    }
-
-     // *** ADDED: Function to populate solution filter dropdown ***
-    function populateFilterDropdowns(data) {
-        const solutionSelect = document.getElementById('solutionFilter');
-        if (!solutionSelect || !data || !data.uniqueSolutions) {
-            console.warn("Could not populate solution filter.");
-            return;
-        }
-
-        const currentVal = solutionSelect.value; // Preserve selection if possible
-        solutionSelect.innerHTML = '<option value="all">All Solutions</option>'; // Reset
-        data.uniqueSolutions.forEach(solution => {
-            const option = document.createElement('option');
-            option.value = solution;
-            option.textContent = solution;
-            solutionSelect.appendChild(option);
-        });
-        // Try to restore previous selection, default to 'all' if not possible
-        solutionSelect.value = data.uniqueSolutions.includes(currentVal) ? currentVal : 'all';
-    }
-
-    // *** ADDED: Function to apply filters and re-render ***
-    function applyFiltersAndRender() {
-        if (!dashboardDataCache) {
-            console.log("Waiting for initial data fetch...");
-            return;
-        }
-        console.log(`Applying filters. Solution: ${currentSolutionFilter}`);
-        const filteredData = filterAndSummarizeData(dashboardDataCache, currentSolutionFilter);
-        renderDashboard(filteredData);
-    }
-
-    // *** ADDED: Function to set up filter event listeners ***
-    function setupFilterListeners() {
-        const solutionSelect = document.getElementById('solutionFilter');
-        if (solutionSelect) {
-            solutionSelect.addEventListener('change', function() {
-                currentSolutionFilter = this.value;
-                applyFiltersAndRender(); // Re-filter and render on change
-            });
-        }
-        // Add listeners for other filters here if needed
-    }
-
-    // --- Initialization ---
-    document.addEventListener('DOMContentLoaded', () => {
-        // Get references to ALL card elements
-        op100CountTitleElement = document.getElementById('op100-total-count-title');
-        op100AmountTitleElement = document.getElementById('op100-total-amount-title');
-        op100CountValueElement = document.getElementById('op100-total-count');
-        op100AmountValueElement = document.getElementById('op100-total-amount');
-        lossCountTitleElement = document.getElementById('loss-total-count-title');
-        lossAmountTitleElement = document.getElementById('loss-total-amount-title');
-        lossCountValueElement = document.getElementById('loss-total-count');
-        lossAmountValueElement = document.getElementById('loss-total-amount');
-
-        // Set initial theme
-        const savedTheme = localStorage.getItem('theme');
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
-        applyTheme(initialTheme);
-
-        // Add theme toggle listener
-        const themeToggleButton = document.getElementById('themeToggleButton');
-        if(themeToggleButton) {
-           themeToggleButton.addEventListener('click', toggleTheme);
-        }
-
-        // Fetch initial data, populate filters, setup listeners, and render
-        fetchDashboardData().then(data => {
-             if (data) {
-                 populateFilterDropdowns(data); // Populate dropdowns first
-                 setupFilterListeners();       // Then setup listeners
-                 applyFiltersAndRender();      // Then apply initial filters and render
-             } else {
-                 console.error("Initial data fetch failed.");
-                 // Display error message on page?
-                 updateSummaryCards(null); // Clear cards on error
-                 // Optionally display error on charts
-                 const winCtx = document.getElementById('winMonthlyChart')?.getContext('2d');
-                 const lossCtx = document.getElementById('lossMonthlyChart')?.getContext('2d');
-                 [winCtx, lossCtx].forEach(ctx => {
-                     if (ctx) {
-                        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-                        ctx.textAlign = 'center';
-                        ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--text-error').trim();
-                        ctx.fillText('Error loading chart data', ctx.canvas.width / 2, ctx.canvas.height / 2);
-                     }
-                 });
-             }
-        });
-    });
-
-    </script>
-</body>
+        <!-- End Authentication Modal -->
+        
+        <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        <script src="win-loss_dashboard.js"></script>
+    </body>
 </html>

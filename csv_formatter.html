@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSV Formatter for opps_monitoring</title>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f9fafb; color: #222; margin: 0; padding: 0; }
+    .container { max-width: 600px; margin: 40px auto; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); padding: 2rem; }
+    h1 { font-size: 1.5rem; margin-bottom: 1rem; }
+    .upload-section { margin-bottom: 2rem; }
+    .download-link { display: block; margin-top: 2rem; font-weight: bold; color: #2563eb; }
+    .error { color: #dc2626; margin-top: 1rem; }
+    .success { color: #16a34a; margin-top: 1rem; }
+    label { font-weight: 500; }
+    input[type="file"] { margin-top: 0.5rem; }
+    button { margin-top: 1rem; padding: 0.5rem 1.5rem; border-radius: 4px; border: none; background: #2563eb; color: #fff; font-weight: 600; cursor: pointer; }
+    button:disabled { background: #a0aec0; cursor: not-allowed; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <button onclick="window.location.href='index.html'" style="margin-bottom: 1rem; background: #e5e7eb; color: #222; border: 1px solid #d1d5db;">&larr; Back</button>
+    <h1>CSV Formatter for opps_monitoring</h1>
+    <div class="upload-section">
+      <label for="csvFile">Upload CSV file:</label><br>
+      <input type="file" id="csvFile" accept=".csv" />
+      <button id="processBtn" disabled>Process & Download</button>
+      <div id="message"></div>
+    </div>
+    <a id="downloadLink" class="download-link" style="display:none;">Download formatted CSV</a>
+  </div>
+  <script>
+    // Schema columns in order (from database-schema.txt)
+    const schema = [
+      'encoded_date','project_name','project_code','rev','client','solutions','sol_particulars','industries','ind_particulars','date_received','client_deadline','decision','account_mgr','pic','bom','status','submitted_date','margin','final_amt','opp_status','date_awarded_lost','lost_rca','l_particulars','a','c','r','u','d','remarks_comments','uid','forecast_date'
+    ];
+    // Helper: Generate UUID v4
+    function uuidv4() {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0, v = c === 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+      });
+    }
+    // Helper: Format date to YYYY-MM-DD
+    function formatDate(val) {
+      if (!val || typeof val.toString !== 'function') return '';
+      const dateStr = val.toString().trim();
+      if (!dateStr) return '';
+
+      const defaultYear = 2025;
+
+      let d = new Date(dateStr);
+
+      if (!isNaN(d.getTime())) { // Successfully parsed by Date constructor
+        let year = d.getFullYear();
+        const month = d.getMonth() + 1;
+        const day = d.getDate();
+
+        // Check if original string contained an explicit year
+        const has4DigitYear = /\b\d{4}\b/.test(dateStr);
+        // Matches YY in MM/DD/YY, DD/MM/YY, MM-DD-YY etc.
+        const has2DigitYear = /(?:\d{1,2}[\/\-.]){2}(\d{2})\b/.test(dateStr);
+
+        if (!has4DigitYear && !has2DigitYear) {
+          year = defaultYear; // Override with default if no explicit year found
+        } else if (has2DigitYear && !has4DigitYear) {
+          // If only a 2-digit year was found, ensure 'year' reflects 20YY.
+          const parts = dateStr.split(/[\/\-.]/);
+          if (parts.length === 3 && parts[2].length === 2) {
+            let yPart = parseInt(parts[2]);
+            if (!isNaN(yPart) && yPart >= 0 && yPart <= 99) {
+                 // Standard interpretation: 00-68 is 20xx, 69-99 is 19xx for some systems.
+                 // Forcing 20xx for all 2-digit years for consistency here.
+                 year = 2000 + yPart;
+            }
+          }
+        }
+        
+        // Re-validate date with potentially changed year
+        const finalCheck = new Date(year, month - 1, day);
+        if (finalCheck.getFullYear() === year && finalCheck.getMonth() === (month - 1) && finalCheck.getDate() === day) {
+          return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        } else {
+          // Validation failed (e.g. Feb 29 for non-leap defaultYear from an original leap year date)
+          // Try to parse M/D from original string with the determined year
+            const parts = dateStr.split(/[\/\-.]/);
+            if (parts.length >= 2) {
+                let mInput = parseInt(parts[0]);
+                let dInput = parseInt(parts[1]);
+                if (mInput > 12 && dInput <= 12) { // DD/MM
+                    [mInput, dInput] = [dInput, mInput];
+                }
+                const recheckDate = new Date(year, mInput - 1, dInput);
+                if (recheckDate.getFullYear() === year && recheckDate.getMonth() === mInput -1 && recheckDate.getDate() === dInput) {
+                    return `${year}-${String(mInput).padStart(2, '0')}-${String(dInput).padStart(2, '0')}`;
+                }
+            }
+          return dateStr; // Fallback if re-validation also fails
+        }
+
+      } else { // Date constructor failed, try manual parsing
+        const parts = dateStr.split(/[\/\-.]/);
+        if (parts.length === 3) {
+          let yStr, mStr, dStr;
+          if (parts[0].length === 4 && !isNaN(parseInt(parts[0]))) { // YYYY/MM/DD
+            yStr = parts[0]; mStr = parts[1]; dStr = parts[2];
+          } else if (parts[2].length === 4 && !isNaN(parseInt(parts[2]))) { // MM/DD/YYYY
+            yStr = parts[2]; mStr = parts[0]; dStr = parts[1];
+          } else if (parts[2].length === 2 && !isNaN(parseInt(parts[2]))) { // MM/DD/YY
+            yStr = (2000 + parseInt(parts[2])).toString(); mStr = parts[0]; dStr = parts[1];
+          } else { // No clear year pattern, assume M/D/other or D/M/other, use default year
+            yStr = defaultYear.toString(); mStr = parts[0]; dStr = parts[1];
+          }
+          
+          let year = parseInt(yStr);
+          let month = parseInt(mStr);
+          let day = parseInt(dStr);
+
+          if (month > 12 && day <= 12) { // Heuristic for D/M/Y if M > 12
+            [month, day] = [day, month];
+          }
+          
+          const finalCheck = new Date(year, month - 1, day);
+          if (finalCheck.getFullYear() === year && finalCheck.getMonth() === (month - 1) && finalCheck.getDate() === day) {
+            return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+          }
+        } else if (parts.length === 2) { // MM/DD or DD/MM, assume default year
+            let year = defaultYear;
+            let month = parseInt(parts[0]);
+            let day = parseInt(parts[1]);
+            if (month > 12 && day <= 12) { // DD/MM
+                [month, day] = [day, month];
+            }
+            const finalCheck = new Date(year, month - 1, day);
+            if (finalCheck.getFullYear() === year && finalCheck.getMonth() === (month-1) && finalCheck.getDate() === day) {
+                return `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            }
+        }
+      }
+      return dateStr; // Fallback if all parsing fails
+    }
+    // Helper: Clean margin (remove %)
+    function cleanMargin(val) {
+      if (!val) return '';
+      const cleaned = val.toString().replace(/%/g, '').trim();
+      // Check if cleaned value is a number, if not, return empty string
+      if (cleaned !== '' && isNaN(Number(cleaned))) {
+        return '';
+      }
+      return cleaned;
+    }
+    // Helper: Clean final_amt (remove commas)
+    function cleanFinalAmt(val) {
+      if (!val) return '';
+      // Remove any non-numeric, non-dot, non-minus characters (including currency symbols and encoding artifacts)
+      const cleaned = val.toString().replace(/[^0-9.\-]/g, '').trim();
+      // Check if cleaned value is a number, if not, return empty string
+      if (cleaned !== '' && isNaN(Number(cleaned))) {
+        return '';
+      }
+      return cleaned;
+    }
+    // Helper: Remove TBI from client_deadline
+    function cleanClientDeadline(val) {
+      if (!val) return '';
+      return val.toString().replace(/TBI/gi, '').trim();
+    }
+    // Main processing
+    let parsedData = null;
+    document.getElementById('csvFile').addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      document.getElementById('processBtn').disabled = false;
+      document.getElementById('message').textContent = '';
+      parsedData = null;
+      Papa.parse(file, {
+        header: false, // Changed from true to false
+        skipEmptyLines: true,
+        complete: function(results) {
+          parsedData = results.data;
+          // If the first row was a header and you want to skip it when header:false
+          // you might need to do: parsedData.shift(); if (parsedData.length > 0 && schema.length !== parsedData[0].length) { /* handle potential mismatch or inform user */ }
+          document.getElementById('message').textContent = `Loaded ${parsedData.length} rows.`;
+        },
+        error: function(err) {
+          document.getElementById('message').textContent = 'Error parsing CSV: ' + err.message;
+        }
+      });
+    });
+    document.getElementById('processBtn').addEventListener('click', function() {
+      if (!parsedData) return;
+      // Process each row to match schema
+      const processed = parsedData.map(rowArray => { // Renamed 'row' to 'rowArray' for clarity
+        let out = {};
+        schema.forEach((colName, index) => { // Added 'index' to iterate schema
+          const value = rowArray[index]; // Access data by index
+
+          if (colName === 'uid') {
+            out[colName] = uuidv4();
+          } else if (colName === 'forecast_date') {
+            out[colName] = ''; // Set to blank
+          } else if (colName === 'margin') {
+            out[colName] = cleanMargin(value || '');
+          } else if (colName === 'final_amt') {
+            out[colName] = cleanFinalAmt(value || '');
+          } else if (colName === 'client_deadline') {
+            out[colName] = formatDate(cleanClientDeadline(value || ''));
+          } else if (colName.includes('date')) { // Handles encoded_date, date_received, submitted_date, date_awarded_lost
+            out[colName] = formatDate(value || '');
+          } else {
+            out[colName] = (value || '').toString().trim();
+          }
+        });
+        return out;
+      });
+      // Convert to CSV
+      const csv = Papa.unparse(processed, {columns: schema, header: false}); // Added header: false
+      // Download
+      const blob = new Blob([csv], {type: 'text/csv'});
+      const url = URL.createObjectURL(blob);
+      const link = document.getElementById('downloadLink');
+      link.href = url;
+      link.download = 'formatted_opps_monitoring.csv';
+      link.style.display = 'block';
+      link.textContent = 'Download formatted CSV (' + processed.length + ' rows)';
+      document.getElementById('message').textContent = 'Processing complete!';
+    });
+  </script>
+</body>
+</html>

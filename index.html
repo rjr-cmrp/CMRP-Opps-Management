@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2025 Opportunities Viewer (Filters Added)</title>
+    <title>2025 Opportunities Management (Filters Added)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.sheetjs.com/xlsx-0.20.2/package/dist/xlsx.full.min.js"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* --- Theme Variables (Copied from dashboard.html for consistency) --- */
         :root {
@@ -16,6 +18,8 @@
         }
         .dark {
             /* Dark Theme Variables */
+            --bg-theme-button: #4b5563;
+            --bg-theme-button-hover: #6b7280;
              --bg-body: #1e1e1e; --text-body: #e0e0e0; --bg-container: #2d2d2d; --border-container: #404040; --text-title: #ffffff; --text-label: #c0c0c0; --border-table: #4a4a4a; --bg-header: #1a1a1a; --text-header: #a0a0a0; --bg-row: #2d2d2d; --text-row: #e0e0e0; --bg-row-hover: #3c3c3c; --bg-op100: #14532d; --text-op100: #dcfce7; --bg-op100-hover: #166534; --bg-lost: #7f1d1d; --text-lost: #fee2e2; --bg-lost-hover: #991b1b; --bg-declined: #4b5563; --text-declined: #bdc3c7; --bg-declined-hover: #525f70; --border-urgent-soon: #f97316; --border-urgent-past: #dc2626; --bg-control: #3c3c3c; --border-control: #5a5a5a; --text-control: #e0e0e0; --placeholder-control: #8e8e93; --bg-control-hover: #4a4a4a; --border-focus: #0a84ff; --shadow-focus: rgba(10, 132, 255, 0.3); --text-secondary: #a0a0a0; --text-error: #ff8080; --text-link: #8ab4f8; --text-link-hover: #a7c7fa;
              --select-arrow-url: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23a0a0a0' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
              --bg-modal: #2d2d2d; --border-modal: #404040; --text-modal-title: #ffffff; --bg-modal-close-hover: #6b6b6b; --bg-modal-save: #4f46e5; --text-modal-save: #ffffff; --bg-modal-save-hover: #4338ca; --bg-theme-button: #4b5563; --text-theme-button: #f9fafb; --border-theme-button: #6b7280; --bg-theme-button-hover: #6b7280; --bg-filter-button: #374151; --text-filter-button: #d1d5db; --border-filter-button: #4b5563; --bg-filter-button-hover: #4b5563; --bg-filter-button-active: #6366f1; --text-filter-button-active: #ffffff; --border-filter-button-active: #6366f1;
@@ -28,7 +32,7 @@
         label { color: var(--text-label); }
 
         /* Table Styles */
-        .table-container { max-height: 60vh; overflow: auto; border-radius: 0.5rem; margin-top: 1rem; transition: border-color 0.3s ease; border-width: 1px; border-color: var(--border-table); }
+        .table-container { /* overflow: auto; border-radius: 0.5rem; margin-top: 1rem; transition: border-color 0.3s ease; border-width: 1px; border-color: var(--border-table); */ overflow: auto; border-radius: 0.5rem; margin-top: 1rem; transition: border-color 0.3s ease; border-width: 1px; border-color: var(--border-table); /* max-height removed */ max-height: 100vh; }
         .table-container th, .table-container td { padding: 8px 10px; text-align: left; transition: border-color 0.3s ease, background-color 0.3s ease; border-bottom-width: 1px; vertical-align: middle; font-size: 0.75rem; line-height: 1rem; border-bottom-color: var(--border-table); }
         th.numeric-column, td.numeric-column { text-align: right; }
         th.center-align-cell, td.center-align-cell { text-align: center; }
@@ -54,11 +58,11 @@
         td.remarks-cell { cursor: pointer; color: var(--text-link); text-decoration: underline; text-decoration-thickness: 0.5px; text-underline-offset: 2px; transition: color 0.3s ease; }
         td.remarks-cell:hover { color: var(--text-link-hover); }
         tbody tr.bg-op100 td.remarks-cell, tbody tr.bg-lost td.remarks-cell, tbody tr.bg-declined td.remarks-cell { color: var(--text-link-hover); }
-        tbody tr.bg-op100 td.remarks-cell:hover, tbody tr.bg-lost td.remarks-cell:hover, tbody tr.bg-declined td.remarks-cell:hover { color: var(--text-link); }
+        tbody tr.bg-op100 td.remarks-cell:hover, tbody tr.bg-lost td.remarks-cell:hover, tbody tr.bg-declined td.remarks-cell:hover { color: var (--text-link); }
 
         /* Sticky Column Styles */
         .sticky-col { position: -webkit-sticky; position: sticky; left: 0; z-index: 2; background-color: inherit; border-right: 1px solid var(--border-table); }
-        th.sticky-col { z-index: 11; background-color: var(--bg-header); }
+        th.sticky-col { z-index: 11; /* Ensure header sticky is above cell sticky */ background-color: var(--bg-header); }
         tbody td.sticky-col { background-color: var(--bg-row); }
         tbody tr:hover td.sticky-col { background-color: var(--bg-row-hover); }
         tbody tr.bg-op100 td.sticky-col { background-color: var(--bg-op100); }
@@ -78,9 +82,9 @@
         textarea { min-height: 150px; width: 100%; white-space: pre-wrap; }
 
         /* Buttons */
-        .theme-button { background-color: var(--bg-theme-button); color: var(--text-theme-button); border: 1px solid var(--border-theme-button); transition: background-color 0.2s; }
-        .theme-button:hover { background-color: var(--bg-theme-button-hover); }
-        .link-button { background-color: var(--bg-modal-save); color: var(--text-modal-save); transition: filter 0.2s; }
+        .theme-button { background-color: var(--bg-theme-button); color: var(--text-theme-button); border: 1.5px solid var(--border-theme-button); transition: background 0.18s, color 0.18s, border-color 0.18s, box-shadow 0.18s; box-shadow: 0 2px 8px 0 rgba(59,130,246,0.06); }
+        .theme-button:hover, .theme-button:focus { background-color: var(--bg-theme-button-hover); box-shadow: 0 4px 16px 0 rgba(59,130,246,0.10); }
+        .link-button { background-color: var (--bg-modal-save); color: var(--text-modal-save); transition: filter 0.2s; }
         .link-button:hover { filter: brightness(90%); }
         .action-button { background-color: var(--bg-modal-save); color: var (--text-modal-save); transition: filter 0.2s; }
         .action-button:hover { filter: brightness(90%); }
@@ -93,7 +97,7 @@
 
         /* Modal Styles */
         .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px); z-index: 40; }
-        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); border-radius: 0.5rem; padding: 1.5rem; z-index: 50; width: 90%; max-width: 600px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5); transition: background-color 0.3s ease, border-color 0.3s ease; border-width: 1px; max-height: 80vh; overflow-y: auto; background-color: var(--bg-modal); border-color: var(--border-modal); }
+        .modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); border-radius: 0.5rem; padding: 1.5rem; z-index: 50; width: 98%; max-width: 900px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5); transition: background-color 0.3s ease, border-color 0.3s ease; border-width: 1px; max-height: 92vh; overflow-y: auto; background-color: var(--bg-modal); border-color: var(--border-modal); }
         .modal h2 { margin-top: 0; margin-bottom: 1rem; font-size: 1.25rem; font-weight: 600; transition: color 0.3s ease; color: var(--text-modal-title); }
         .modal-actions { margin-top: 1.5rem; display: flex; justify-content: flex-end; gap: 0.75rem; }
         .modal-actions button { padding: 8px 16px; }
@@ -112,124 +116,349 @@
         .dashboard-title { color: var(--text-secondary); font-size: 0.75rem; margin-bottom: 0.25rem; text-transform: uppercase; letter-spacing: 0.05em; }
         .dashboard-value { color: var(--text-title); font-size: 1.875rem; font-weight: 600; line-height: 1.3; }
 
+        /* --- Simple Header for unified look (like user-management) --- */
+        .simple-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            width: 100%;
+            z-index: 100;
+            box-shadow: 0 2px 8px 0 rgba(0,0,0,0.08);
+            background: var(--bg-header);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            min-height: 3.5rem;
+            gap: 1.5rem;
+        }
+        .main-content {
+            margin-top: 4.5rem; /* Height of nav bar + a bit of spacing */
+        }
+        /* Remove old header styles */
+        .top-nav, .content-header, .page-header-placeholder { display: none !important; }
+
+        .table-container {
+            /* ...existing code... */
+            max-height: 70vh;
+            overflow: auto;
+            overflow-x: scroll;
+            scrollbar-color: #424242 #232323; /* VS Code-like: thumb, track */
+            scrollbar-width: thin;
+            /* Force scrollbar always visible on Webkit browsers */
+        }
+        .table-container::-webkit-scrollbar {
+            height: 12px;
+            background: #232323; /* VS Code track color */
+            /* Always show scrollbar */
+            display: block !important;
+        }
+        .table-container::-webkit-scrollbar-thumb {
+            background: #424242;
+            border-radius: 6px;
+            border: 2px solid #232323;
+        }
+        .table-container::-webkit-scrollbar-track {
+            background: #232323;
+            border-radius: 6px;
+        }
+        .table-container {
+            /* For non-Webkit browsers, force scrollbar always visible */
+            overflow-x: scroll !important;
+        }
+        .table-container {
+            /* For macOS: force overlay scrollbars to be always visible */
+            -webkit-overflow-scrolling: auto !important;
+            scrollbar-gutter: stable both-edges;
+        }
+        .nav-link {
+            transition: background 0.15s, color 0.15s;
+            border: none;
+            outline: none;
+        }
+        .nav-link.bg-blue-600 {
+            background: #2563eb;
+            color: #fff !important;
+            cursor: default;
+            pointer-events: none;
+        }
+        .nav-link:hover:not(.bg-blue-600) {
+            background: #e0e7ff;
+            color: #1e40af !important;
+        }
+        .dark .nav-link.bg-blue-600 {
+            background: #6366f1;
+            color: #fff !important;
+        }
+        .dark .nav-link:hover:not(.bg-blue-600) {
+            background: #312e81;
+            color: #a5b4fc !important;
+        }
+        .nav-square-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 44px;
+            height: 44px;
+            border-radius: 0.75rem;
+            background: var(--bg-theme-button);
+            color: var(--text-theme-button);
+            border: 1.5px solid var(--border-theme-button);
+            font-size: 1.6rem;
+            transition: background 0.18s, color 0.18s, border-color 0.18s, box-shadow 0.18s;
+            box-shadow: 0 2px 8px 0 rgba(59,130,246,0.06);
+            margin: 0;
+            padding: 0;
+        }
+        .nav-square-btn:hover, .nav-square-btn:focus {
+            background: var(--bg-theme-button-hover);
+            color: var(--text-theme-button);
+            box-shadow: 0 4px 16px 0 rgba(59,130,246,0.10);
+            outline: none;
+        }
+        .nav-square-btn.active, .nav-square-btn.bg-blue-600 {
+            background: #6366f1;
+            color: #fff !important;
+            border-color: #6366f1;
+            cursor: default;
+            pointer-events: none;
+        }
+        .nav-square-btn .material-icons {
+            font-size: 1.7rem;
+        }
+        .dark .nav-square-btn.active {
+            background: #6366f1;
+            color: #fff !important;
+            border-color: #6366f1;
+        }
+        .dark .nav-square-btn:hover:not(.active) {
+            background: #6b7280;
+            color: #fff;
+        }
+        .auth-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; display: none; }
+        .auth-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--bg-modal); border: 1px solid var(--border-modal); border-radius: 0.5rem; padding: 2rem 2.5rem; z-index: 1010; min-width: 320px; max-width: 95vw; box-shadow: 0 8px 32px rgba(0,0,0,0.18); display: none; }
+        .auth-modal h2 { margin-top: 0; font-size: 1.3rem; font-weight: 600; color: var(--text-title); }
+        .auth-modal label { display: block; margin-bottom: 0.5rem; }
+        .auth-modal input[type="text"], .auth-modal input[type="email"], .auth-modal input[type="password"] { width: 100%; margin-bottom: 1rem; }
+        .auth-modal .roles-group { margin-bottom: 1rem; }
+        .auth-modal .roles-group label { display: inline-block; margin-right: 1.2em; font-weight: 400; }
+        .auth-modal .switch-link { color: var(--text-link); cursor: pointer; text-decoration: underline; font-size: 0.95em; }
+        .auth-modal .error-text { color: var(--text-error); margin-bottom: 0.5rem; }
+        .auth-modal .success-text { color: #16a34a; margin-bottom: 0.5rem; }
+        .logout-btn {
+            margin-left: 1rem;
+            background: var(--bg-theme-button);
+            color: var(--text-theme-button);
+            border: 1.5px solid var(--border-theme-button);
+            border-radius: 0.75rem;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            box-shadow: 0 2px 8px 0 rgba(59,130,246,0.06);
+            transition: background 0.18s, color 0.18s, border-color 0.18s, box-shadow 0.18s;
+            padding: 0;
+        }
+        .logout-btn:hover, .logout-btn:focus {
+            background: var(--bg-theme-button-hover);
+            color: var(--text-theme-button);
+            box-shadow: 0 4px 16px 0 rgba(59,130,246,0.10);
+            outline: none;
+        }
     </style>
-     </head>
-<body class="p-4 md:p-8">
-
-    <div class="container mx-auto p-6 rounded-lg shadow-md border">
-        <div class="flex flex-wrap justify-between items-center mb-4 gap-4">
-             <div class="flex items-center gap-3">
-                 <img id="logo" src="https://placehold.co/100x30/cccccc/1e1e1e?text=CMRP" alt="CMRP Logo" class="h-8">
-                 <h1 class="text-2xl font-semibold">2025 Opportunities Viewer</h1>
-             </div>
-             <div class="flex items-center gap-2 flex-wrap">
-                <button id="createOpportunityButton" class="action-button px-3 py-2 rounded text-sm font-semibold">+ Create New</button>
-                <a href="win-loss_dashboard.html" target="_blank" id="dashboardShortcutButton" class="link-button px-3 py-2 rounded text-sm font-semibold">Dashboard</a>
-                <button id="themeToggleButton" title="Toggle theme" class="theme-button px-3 py-2 rounded text-sm font-semibold">Theme</button>
-             </div>
-        </div>
-
-        <div class="mb-4">
-            <input id="searchInput" type="text" placeholder="Search all fields..." class="w-full p-2 border rounded" />
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-            <div class="dashboard-card">
-                <div class="dashboard-title">Total OP100 Value</div>
-                <div id="op100Value" class="dashboard-value">--</div>
+</head>
+<body>
+    <nav class="sidebar">
+        <!-- Sidebar content -->
+    </nav>
+    <div class="main-content">
+        <div class="simple-header">
+            <div class="title-group">
+                <img id="cmrpLogo" src="Logo/CMRP Logo Light.svg" alt="CMRP Logo" style="height:2.2rem;width:auto;display:inline-block;vertical-align:middle;transition:filter 0.2s;" />
+                <span class="subtitle">2025 Opportunities Management</span>
             </div>
-             <div class="dashboard-card">
-                <div class="dashboard-title">Total OP90 Value</div>
-                <div id="op90Value" class="dashboard-value">--</div>
+            <div class="flex items-center gap-2">
+                <nav class="flex gap-2" id="mainNav">
+                    <a href="index.html" class="nav-square-btn active" title="Opportunities"><span class="material-icons">dashboard</span></a>
+                    <a href="win-loss_dashboard.html" class="nav-square-btn" title="Win-Loss Dashboard"><span class="material-icons">line_axis</span></a>
+                    <a href="forecastr_dashboard.html" class="nav-square-btn" title="Forecast Dashboard"><span class="material-icons">insights</span></a>
+                    <a href="user_management.html" class="nav-square-btn" id="userMgmtNavBtn" title="User Management"><span class="material-icons">group</span></a>
+                </nav>
+                <button id="themeToggle" class="nav-square-btn" title="Toggle Theme"><span class="material-icons">light_mode</span></button>
+                <button id="logoutBtn" class="nav-square-btn" title="Logout"><span class="material-icons">logout</span></button>
             </div>
         </div>
+        <div class="container mx-auto p-6 rounded-lg shadow-md border">
+            <!-- Removed old header block: div.flex.justify-between.items-center.mb-6 -->
 
-        <div class="mb-4">
-            <div class="flex flex-wrap gap-2 items-center mb-2" id="statusFilterButtons">
-                <span class="text-sm font-medium mr-2">Filter by Status:</span>
-                <button data-filter-type="status" data-filter-value="all" class="filter-button active px-3 py-1 rounded text-xs">All</button>
-                <button data-filter-type="status" data-filter-value="OP100" class="filter-button px-3 py-1 rounded text-xs">OP100</button>
-                <button data-filter-type="status" data-filter-value="Submitted" class="filter-button px-3 py-1 rounded text-xs">Submitted</button>
-                <button data-filter-type="status" data-filter-value="No Decision Yet" class="filter-button px-3 py-1 rounded text-xs">No Decision Yet</button>
-                <button data-filter-type="status" data-filter-value="On-Going" class="filter-button px-3 py-1 rounded text-xs">On-Going</button>
-                <button data-filter-type="status" data-filter-value="Not Yet Started" class="filter-button px-3 py-1 rounded text-xs">Not Yet Started</button>
-                <button data-filter-type="status" data-filter-value="Pending" class="filter-button px-3 py-1 rounded text-xs">Pending</button>
-                 <button data-filter-type="status" data-filter-value="Lost" class="filter-button px-3 py-1 rounded text-xs">Lost</button>
-                 <button data-filter-type="status" data-filter-value="Declined" class="filter-button px-3 py-1 rounded text-xs">Declined</button>
+            <div class="mb-4">
+                <input id="searchInput" type="text" placeholder="Search all fields..." class="w-full p-2 border rounded" />
             </div>
-             <div class="flex flex-wrap gap-4 items-center">
-                 <div>
-                     <label for="accountMgrFilter" class="text-sm font-medium mr-1">Account Mgr:</label>
-                     <select id="accountMgrFilter" data-filter-type="accountMgr" class="filter-dropdown p-1 text-xs rounded border">
-                         <option value="all">All</option>
-                         </select>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+                <div id="totalOpportunitiesCard" class="dashboard-card cursor-pointer" title="Show monthly trend">
+                    <div class="dashboard-title">Total Opportunities</div>
+                    <div id="totalOpportunities" class="dashboard-value">--</div>
+                </div>
+                <div class="dashboard-card">
+                    <div class="dashboard-title">Total Submitted</div>
+                    <div id="totalSubmitted" class="dashboard-value">--</div>
+                </div>
+                <div class="dashboard-card">
+                    <div class="dashboard-title">OP100 (Count / Amount)</div>
+                    <div id="op100Summary" class="dashboard-value">--</div>
+                </div>
+                <div class="dashboard-card">
+                    <div class="dashboard-title">OP90 (Count / Amount)</div>
+                    <div id="op90Summary" class="dashboard-value">--</div>
+                </div>
+                <div class="dashboard-card">
+                    <div class="dashboard-title">Total Declined</div>
+                    <div id="totalDeclined" class="dashboard-value">--</div>
+                </div>
+                <div class="dashboard-card">
+                    <div class="dashboard-title">Total Inactive</div>
+                    <div id="totalInactive" class="dashboard-value">--</div>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <div class="flex flex-wrap gap-2 items-center mb-2" id="statusFilterButtons">
+                    <span class="text-sm font-medium mr-2">Filter by Status:</span>
+                    <button data-filter-type="status" data-filter-value="all" class="filter-button active px-3 py-1 rounded text-xs">All</button>
+                    <button data-filter-type="status" data-filter-value="OP100" class="filter-button px-3 py-1 rounded text-xs">OP100</button>
+                    <button data-filter-type="status" data-filter-value="OP90" class="filter-button px-3 py-1 rounded text-xs">OP90</button>
+                    <button data-filter-type="status" data-filter-value="OP60" class="filter-button px-3 py-1 rounded text-xs">OP60</button>
+                    <button data-filter-type="status" data-filter-value="OP30" class="filter-button px-3 py-1 rounded text-xs">OP30</button>
+                    <button data-filter-type="status" data-filter-value="Submitted" class="filter-button px-3 py-1 rounded text-xs">Submitted</button>
+                    <button data-filter-type="status" data-filter-value="No Decision Yet" class="filter-button px-3 py-1 rounded text-xs">No Decision Yet</button>
+                    <button data-filter-type="status" data-filter-value="On-Going" class="filter-button px-3 py-1 rounded text-xs">On-Going</button>
+                    <button data-filter-type="status" data-filter-value="Not Yet Started" class="filter-button px-3 py-1 rounded text-xs">Not Yet Started</button>
+                    <button data-filter-type="status" data-filter-value="Pending" class="filter-button px-3 py-1 rounded text-xs">Pending</button>
+                     <button data-filter-type="status" data-filter-value="Lost" class="filter-button px-3 py-1 rounded text-xs">Lost</button>
+                     <button data-filter-type="status" data-filter-value="Declined" class="filter-button px-3 py-1 rounded text-xs">Declined</button>
+                </div>
+                 <div class="flex flex-wrap gap-4 items-center">
+                     <div>
+                         <label for="accountMgrFilter" class="text-sm font-medium mr-1">Account Mgr:</label>
+                         <select id="accountMgrFilter" data-filter-type="accountMgr" class="filter-dropdown p-1 text-xs rounded border">
+                             <option value="all">All</option>
+                             </select>
+                     </div>
+                     <div>
+                         <label for="picFilter" class="text-sm font-medium mr-1">PIC:</label>
+                         <select id="picFilter" data-filter-type="pic" class="filter-dropdown p-1 text-xs rounded border">
+                             <option value="all">All</option>
+                             </select>
+                     </div>
                  </div>
-                 <div>
-                     <label for="picFilter" class="text-sm font-medium mr-1">PIC:</label>
-                     <select id="picFilter" data-filter-type="pic" class="filter-dropdown p-1 text-xs rounded border">
-                         <option value="all">All</option>
-                         </select>
+            </div>
+
+            <div class="flex flex-wrap gap-2 mb-4">
+                <button id="createOpportunityButton" class="action-button px-3 py-2 rounded flex items-center justify-center" title="Create New"><span class="material-icons">add</span></button>
+                <button id="toggleColumnsButton" class="theme-button px-3 py-1 rounded flex items-center justify-center" title="Toggle Columns"><span class="material-icons">view_column</span></button>
+                <button id="exportExcelButton" class="theme-button px-3 py-1 rounded flex items-center justify-center" title="Export Visible to Excel"><span class="material-icons">download</span></button>
+            </div>
+            <div id="columnToggleContainer" class="hidden grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-2 mb-4 p-4 border rounded">
                  </div>
-             </div>
-        </div>
-
-        <div class="flex flex-wrap gap-2 mb-4">
-             <button id="toggleColumnsButton" class="theme-button px-3 py-1 rounded text-xs">Toggle Columns</button>
-             <button id="exportExcelButton" class="theme-button px-3 py-1 rounded text-xs">Export Visible to Excel</button>
-        </div>
-        <div id="columnToggleContainer" class="hidden grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-x-4 gap-y-2 mb-4 p-4 border rounded">
-             </div>
 
 
-        <div class="table-container">
-            <table id="opportunitiesTable" class="min-w-full divide-y">
-                <thead class=""></thead>
-                <tbody class="">
-                    <tr><td colspan="100%" class="text-center p-4 loading-text">Loading data...</td></tr>
-                </tbody>
-            </table>
+            <div class="table-container">
+                <table id="opportunitiesTable" class="min-w-full divide-y">
+                    <thead class=""></thead>
+                    <tbody class="">
+                        <tr><td colspan="100%" class="text-center p-4 loading-text">Loading data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <div id="rowCount" class="mt-4 text-sm"></div>
         </div>
-        <div id="rowCount" class="mt-4 text-sm"></div>
+
+        <div id="remarksModalOverlay" class="modal-overlay hidden"></div>
+        <div id="remarksModal" class="modal hidden">
+            <button type="button" aria-label="Close" onclick="hideRemarksModal()" style="position:absolute;top:0.5rem;right:0.5rem;font-size:1.25rem;line-height:1;color:var(--text-secondary);background:transparent;border:none;cursor:pointer;z-index:10;">&times;</button>
+            <h2>Edit Remarks / Comments</h2>
+            <textarea id="remarksTextarea"></textarea>
+            <div class="modal-actions">
+                <button id="closeModalButton" class="modal-close-btn" type="button">Close</button>
+                <button id="saveRemarksButton" class="modal-save-btn" type="button">Save</button>
+            </div>
+        </div>
+
+        <div id="editRowModalOverlay" class="modal-overlay hidden"></div>
+        <div id="editRowModal" class="modal hidden">
+            <button id="editRowModalCloseX" type="button" aria-label="Close" style="position:absolute;top:0.5rem;right:0.5rem;font-size:1.25rem;line-height:1;color:var(--text-secondary);background:transparent;border:none;cursor:pointer;z-index:10;">&times;</button>
+            <h2>Edit Row</h2>
+            <form id="editRowForm"> </form>
+            <div class="modal-actions">
+                <button id="closeEditRowModalButton" class="modal-close-btn" type="button">Close</button>
+                <button id="saveEditRowButton" class="modal-save-btn" type="submit" form="editRowForm">Save</button>
+            </div>
+        </div>
+
+        <!-- Revision History Modal -->
+        <div id="revisionHistoryModalOverlay" class="modal-overlay hidden"></div>
+        <div id="revisionHistoryModal" class="modal hidden">
+            <button type="button" aria-label="Close" onclick="hideRevisionHistoryModal()" style="position:absolute;top:0.5rem;right:0.5rem;font-size:1.25rem;line-height:1;color:var(--text-secondary);background:transparent;border:none;z-index:10;">&times;</button>
+            <h2>Revision History</h2>
+            <div id="revisionHistoryContent" style="max-height:60vh;overflow:auto;"></div>
+            <div class="modal-actions">
+                <button id="closeRevisionHistoryButton" class="modal-close-btn" type="button">Close</button>
+            </div>
+        </div>
+
+        <!-- Modal for Opportunities Line Chart -->
+        <div id="oppsChartModalOverlay" class="modal-overlay hidden"></div>
+        <div id="oppsChartModal" class="modal hidden">
+            <button type="button" aria-label="Close" id="oppsChartModalClose" style="position:absolute;top:0.5rem;right:0.5rem;font-size:1.25rem;line-height:1;color:var(--text-secondary);background:transparent;border:none;cursor:pointer;z-index:10;">&times;</button>
+            <h2>Total Opportunities (Monthly Trend)</h2>
+            <div id="oppsChartCanvasContainer" style="height:60vh;min-height:320px;max-height:70vh;display:flex;align-items:center;">
+                <canvas id="oppsChartCanvas" style="width:100%;height:100%;"></canvas>
+            </div>
+            <div class="modal-actions">
+                <button id="oppsChartModalCloseBtn" class="modal-close-btn" type="button">Close</button>
+            </div>
+        </div>
     </div>
-
-    <div id="remarksModalOverlay" class="modal-overlay hidden"></div>
-    <div id="remarksModal" class="modal hidden">
-        <button type="button" aria-label="Close" onclick="hideRemarksModal()" style="position:absolute;top:0.5rem;right:0.5rem;font-size:1.25rem;line-height:1;color:var(--text-secondary);background:transparent;border:none;cursor:pointer;z-index:10;">&times;</button>
-        <h2>Edit Remarks / Comments</h2>
-        <textarea id="remarksTextarea"></textarea>
-        <div class="modal-actions">
-            <button id="closeModalButton" class="modal-close-btn" type="button">Close</button>
-            <button id="saveRemarksButton" class="modal-save-btn" type="button">Save</button>
+    <div id="authModalOverlay" class="auth-modal-overlay"></div>
+    <div id="authModal" class="auth-modal">
+        <h2 id="authModalTitle">Login</h2>
+        <form id="authForm">
+            <div class="error-text" id="authError" style="display:none;"></div>
+            <div class="success-text" id="authSuccess" style="display:none;"></div>
+            <label>Email
+                <input type="email" id="authEmail" required autocomplete="username" />
+            </label>
+            <label>Password
+                <input type="password" id="authPassword" required autocomplete="current-password" />
+            </label>
+            <div id="registerFields" style="display:none;">
+                <label>Name
+                    <input type="text" id="authName" autocomplete="name" />
+                </label>
+                <div class="roles-group">
+                    <span>Department/Role:</span><br>
+                    <label><input type="checkbox" name="role" value="technical"> Technical</label>
+                    <label><input type="checkbox" name="role" value="proposal"> Proposal</label>
+                    <label><input type="checkbox" name="role" value="sales"> Sales</label>
+                </div>
+            </div>
+            <button type="submit" id="authSubmitBtn" class="theme-button w-full">Login</button>
+        </form>
+        <div style="margin-top:1rem; text-align:center;">
+            <span id="switchAuthMode" class="switch-link">Don't have an account? Register</span>
         </div>
     </div>
-
-    <div id="editRowModalOverlay" class="modal-overlay hidden"></div>
-    <div id="editRowModal" class="modal hidden">
-        <button id="editRowModalCloseX" type="button" aria-label="Close" style="position:absolute;top:0.5rem;right:0.5rem;font-size:1.25rem;line-height:1;color:var(--text-secondary);background:transparent;border:none;cursor:pointer;z-index:10;">&times;</button>
-        <h2>Edit Row</h2>
-        <form id="editRowForm"> </form>
-        <div class="modal-actions">
-            <button id="closeEditRowModalButton" class="modal-close-btn" type="button">Close</button>
-            <button id="saveEditRowButton" class="modal-save-btn" type="submit" form="editRowForm">Save</button>
-        </div>
-    </div>
-
-    <!-- Revision History Modal -->
-    <div id="revisionHistoryModalOverlay" class="modal-overlay hidden"></div>
-    <div id="revisionHistoryModal" class="modal hidden">
-        <button type="button" aria-label="Close" onclick="hideRevisionHistoryModal()" style="position:absolute;top:0.5rem;right:0.5rem;font-size:1.25rem;line-height:1;color:var(--text-secondary);background:transparent;border:none;z-index:10;">&times;</button>
-        <h2>Revision History</h2>
-        <div id="revisionHistoryContent" style="max-height:60vh;overflow:auto;"></div>
-        <div class="modal-actions">
-            <button id="closeRevisionHistoryButton" class="modal-close-btn" type="button">Close</button>
-        </div>
-    </div>
-
+    <div id="authErrorBanner" style="display:none;color:#fff;background:#d32f2f;padding:1rem;text-align:center;font-weight:bold;"></div>
+    
     <script>
         console.log("Script execution started."); // Log start
         // --- DOM Elements ---
         const htmlElement = document.documentElement;
-        const themeToggleButton = document.getElementById('themeToggleButton');
+        const themeToggle = document.getElementById('themeToggle'); // Changed from themeToggleButton
         const table = document.getElementById('opportunitiesTable');
         const tableHead = table.querySelector('thead');
         const tableBody = table.querySelector('tbody');
@@ -241,7 +470,6 @@
         const remarksTextarea = document.getElementById('remarksTextarea');
         const closeModalButton = document.getElementById('closeModalButton');
         const saveRemarksButton = document.getElementById('saveRemarksButton');
-        const logoElement = document.getElementById('logo');
         const op100ValueElement = document.getElementById('op100Value');
         const op90ValueElement = document.getElementById('op90Value');
         const searchInput = document.getElementById('searchInput');
@@ -257,6 +485,14 @@
         const editRowModalCloseX = document.getElementById('editRowModalCloseX');
         // *** ADDED: Export Button Element ***
         const exportExcelButton = document.getElementById('exportExcelButton');
+        // *** ADDED: Modal elements for Opportunities Chart ***
+        const oppsChartModalOverlay = document.getElementById('oppsChartModalOverlay');
+        const oppsChartModal = document.getElementById('oppsChartModal');
+        const oppsChartModalClose = document.getElementById('oppsChartModalClose');
+        const oppsChartModalCloseBtn = document.getElementById('oppsChartModalCloseBtn');
+        const oppsChartCanvas = document.getElementById('oppsChartCanvas');
+        let oppsChartInstance = null;
+        const authErrorBanner = document.getElementById('authErrorBanner');
 
         // Store username in localStorage for session
         function getCurrentUserName() {
@@ -534,12 +770,6 @@
         function applyTheme(theme) {
             const isDark = theme === 'dark';
             htmlElement.classList.toggle('dark', isDark);
-            themeToggleButton.textContent = isDark ? '☀️ Light' : '🌙 Dark';
-            themeToggleButton.title = `Switch to ${isDark ? 'light' : 'dark'} theme`;
-            if (logoElement) {
-                logoElement.src = isDark ? 'Logo/CMRP Logo Light.svg' : 'Logo/CMRP Logo Dark.svg';
-                logoElement.onerror = () => { logoElement.src = `https://placehold.co/100x30/${isDark ? 'e0e0e0/1f2937' : '1f2937/e0e0e0'}?text=CMRP+Logo`; };
-            }
         }
         function toggleTheme() {
             const currentTheme = htmlElement.classList.contains('dark') ? 'dark' : 'light';
@@ -592,7 +822,7 @@
             const headerAliases = { 'Account Mgr': 'Mgr', 'Opp Status': 'Opp', 'Date Awarded/Lost': 'Award/Lost Date', 'Submitted Date': 'Submit Date', 'Client Deadline': 'Deadline', 'Date Received': 'Rcvd Date' };
             const shortColumns = ['accountmgr', 'pic', 'bom', 'oppstatus', 'rev#']; // Normalized
             const centerAlignColumns = ['rev#', 'decision', 'margin']; // Normalized
-            const rightAlignColumns = ['finalamt']; // Normalized
+            const rightAlignColumns = ['finalamt'];
 
             // Generate display headers based on the *current* headers array (which excludes UID)
             displayHeaders = headers.map((header, index) => {
@@ -641,17 +871,18 @@
             // Ensure first visible column is sticky
             const ths = headerRow.querySelectorAll('th');
             let firstVisibleFound = false;
-            for (let i = 0; i < ths.length -1; i++) { // Exclude actions column initially
+            for (let i = 0; i < ths.length - 1; i++) { // Exclude actions column initially
                 if (!ths[i].classList.contains('column-hidden')) {
-                    ths[i].classList.add('sticky-col'); // Apply base sticky class
+                    // FIX: Correct usage, do not use ths[i.classList.add...]
+                    if (ths[i]) ths[i].classList.add('sticky-col');
                     firstVisibleFound = true;
                     break;
                 }
             }
-             // If no data columns are visible, make the actions column sticky
-             if (!firstVisibleFound && ths.length > 0) {
-                 ths[ths.length - 1].classList.add('sticky-col');
-             }
+            // If no data columns are visible, make the actions column sticky
+            if (!firstVisibleFound && ths.length > 0) {
+                ths[ths.length - 1].classList.add('sticky-col');
+            }
 
 
             tableHead.appendChild(headerRow);
@@ -819,13 +1050,13 @@
                  btnContainer.className = 'flex justify-center items-center gap-2'; // Use flex for layout
 
                  const editBtn = document.createElement('button');
-                 editBtn.textContent = 'Edit';
+                 editBtn.innerHTML = '<span class="material-icons" style="font-size:1em;vertical-align:middle;">edit</span>';
                  editBtn.className = 'action-button px-2 py-1 rounded text-xs';
                  editBtn.onclick = () => showEditRowModal(originalIndex); // Use original index
                  btnContainer.appendChild(editBtn);
 
                  const deleteBtn = document.createElement('button');
-                 deleteBtn.textContent = 'Delete';
+                 deleteBtn.innerHTML = '<span class="material-icons" style="font-size:1em;vertical-align:middle;">delete</span>';
                  deleteBtn.className = 'delete-button px-2 py-1 rounded text-xs';
                  deleteBtn.onclick = async () => {
                      if (!confirm('Are you sure you want to delete this opportunity?')) return;
@@ -845,7 +1076,7 @@
 
                  // Add History button
                  const historyBtn = document.createElement('button');
-                 historyBtn.textContent = 'History';
+                 historyBtn.innerHTML = '<span class="material-icons" style="font-size:1em;vertical-align:middle;">history</span>';
                  historyBtn.className = 'theme-button px-2 py-1 rounded text-xs';
                  historyBtn.onclick = () => showRevisionHistoryModal(oppDataRowObject._uid); // Use UID
                  btnContainer.appendChild(historyBtn);
@@ -864,33 +1095,37 @@
             // Use headerIndices which are based on the 'headers' array (no UID)
             const oppStatusIdx = headerIndices['oppstatus'];
             const finalAmtIdx = headerIndices['finalamt'];
+            const statusIdx = headerIndices['status'];
+            const decisionIdx = headerIndices['decision'];
 
-            if (oppStatusIdx === undefined || finalAmtIdx === undefined) {
-                console.warn("Cannot update dashboard cards: 'Opp Status' or 'Final amt' column index not found in current headers.");
-                op100ValueElement.textContent = 'N/A';
-                op90ValueElement.textContent = 'N/A';
-                return;
-            }
+            let totalOpportunities = opportunities.length;
+            let totalSubmitted = 0;
+            let op100Count = 0, op100Amount = 0;
+            let op90Count = 0, op90Amount = 0;
+            let totalDeclined = 0;
+            let totalInactive = 0;
 
-            let totalOp100 = 0; let totalOp90 = 0;
-            // Iterate over the *original* full dataset (opportunities array of objects)
-            opportunities.forEach(originalFullRow => {
-                // Access properties using the actual header names from the 'headers' array
-                const oppStatusHeader = headers[oppStatusIdx];
-                const finalAmtHeader = headers[finalAmtIdx];
+            opportunities.forEach(row => {
+                const oppStatus = oppStatusIdx !== undefined ? String(row[headers[oppStatusIdx]] || '').trim().toUpperCase() : '';
+                const status = statusIdx !== undefined ? String(row[headers[statusIdx]] || '').trim().toLowerCase() : '';
+                const decision = decisionIdx !== undefined ? String(row[headers[decisionIdx]] || '').trim().toUpperCase() : '';
+                const amount = finalAmtIdx !== undefined ? parseCurrency(row[headers[finalAmtIdx]]) : 0;
 
-                const oppStatus = String(originalFullRow[oppStatusHeader] || '').trim().toUpperCase();
-                const amount = parseCurrency(originalFullRow[finalAmtHeader]);
-
-                if (!isNaN(amount)) {
-                    if (oppStatus === 'OP100') totalOp100 += amount;
-                    else if (oppStatus === 'OP90') totalOp90 += amount;
-                }
+                if (status === 'submitted') totalSubmitted++;
+                if (oppStatus === 'OP100') { op100Count++; if (!isNaN(amount)) op100Amount += amount; }
+                if (oppStatus === 'OP90') { op90Count++; if (!isNaN(amount)) op90Amount += amount; }
+                if (decision === 'DECLINE' || decision === 'DECLINED') totalDeclined++;
+                if (oppStatus === 'INACTIVE') totalInactive++;
             });
-            // *** CHANGE: Use formatShortCurrency instead of formatCurrency ***
-            op100ValueElement.textContent = formatShortCurrency(totalOp100);
-            op90ValueElement.textContent = formatShortCurrency(totalOp90);
+
+            document.getElementById('totalOpportunities').textContent = totalOpportunities;
+            document.getElementById('totalSubmitted').textContent = totalSubmitted;
+            document.getElementById('op100Summary').textContent = `${op100Count} / ${formatShortCurrency(op100Amount)}`;
+            document.getElementById('op90Summary').textContent = `${op90Count} / ${formatShortCurrency(op90Amount)}`;
+            document.getElementById('totalDeclined').textContent = totalDeclined;
+            document.getElementById('totalInactive').textContent = totalInactive;
         }
+
         function populateColumnToggles() {
             columnToggleContainer.innerHTML = ''; // Clear existing toggles
             const headerAliases = { 'Account Mgr': 'Mgr', 'Opp Status': 'Opp', 'Date Awarded/Lost': 'Award/Lost Date', 'Submitted Date': 'Submit Date', 'Client Deadline': 'Deadline', 'Date Received': 'Rcvd Date' };
@@ -1013,6 +1248,9 @@
                         const decision = String(originalFullRow[decisionHeader] || '').trim().toUpperCase();
 
                         if (statusFilterValue === 'OP100') return oppStatus === 'OP100';
+                        if (statusFilterValue === 'OP90') return oppStatus === 'OP90';
+                        if (statusFilterValue === 'OP60') return oppStatus === 'OP60';
+                        if (statusFilterValue === 'OP30') return oppStatus === 'OP30';
                         if (statusFilterValue === 'Submitted') return status === 'submitted';
                         if (statusFilterValue === 'Lost') return oppStatus === 'LOST';
                         if (statusFilterValue === 'Declined') return decision === 'DECLINE' || decision === 'DECLINED';
@@ -1711,7 +1949,9 @@
             const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
             const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
             applyTheme(initialTheme);
-            themeToggleButton.addEventListener('click', toggleTheme);
+            if (themeToggle) { // Check if the new themeToggle button exists
+                themeToggle.addEventListener('click', toggleTheme);
+            }
 
             // Column Toggle Listener
             toggleColumnsButton.addEventListener('click', () => { columnToggleContainer.classList.toggle('hidden'); });
@@ -1784,6 +2024,10 @@
             loadDataFromApi().catch(error => {
                  console.error("Failed to initialize page due to data loading error:", error);
             });
+
+            // Force-hide Opportunities Chart modal and overlay on load
+            if (oppsChartModal) oppsChartModal.classList.add('hidden');
+            if (oppsChartModalOverlay) oppsChartModalOverlay.classList.add('hidden');
         });
 
         // *** ADDED: Function to show revision history modal ***
@@ -1810,20 +2054,18 @@
                     const fieldsToShow = [
                         { label: 'Client Deadline', key: 'Client Deadline' },
                         { label: 'Submitted Date', key: 'Submitted Date' },
-                        { label: 'Final amt', key: 'Final amt' },
+                        { label: 'Count', key: 'Final amt' },
                         { label: 'Margin', key: 'Margin' }
                     ];
                     let fieldsHtml = fieldsToShow.map(f => {
                         let v = rev.changed_fields && (rev.changed_fields[f.key] ?? rev.changed_fields[f.key.toLowerCase()] ?? rev.changed_fields[f.key.replace(/ /g, '_')]);
                         // Format date fields
                         if (f.key === 'Client Deadline' || f.key === 'Submitted Date') {
-                            v = v ? formatDateForDisplay(v) : '';
+                            v = v !== undefined && v !== null && v !== '' ? formatDateForDisplay(v) : '';
                         }
-                        // Format currency
                         if (f.key === 'Final amt') {
                             v = v !== undefined && v !== null && v !== '' ? formatCurrency(v) : '';
                         }
-                        // Format margin
                         if (f.key === 'Margin') {
                             v = v !== undefined && v !== null && v !== '' ? formatMargin(v) : '';
                         }
@@ -1979,6 +2221,471 @@
             }
         }
 
+        // --- Modal for Opportunities Chart ---
+        function showOppsChartModal() {
+            oppsChartModalOverlay.classList.remove('hidden');
+            oppsChartModal.classList.remove('hidden');
+
+            // --- Fix: Remove and recreate canvas to avoid Chart.js resizing bug ---
+            const container = document.getElementById('oppsChartCanvasContainer');
+            if (container) {
+                // Remove old canvas if exists
+                const oldCanvas = document.getElementById('oppsChartCanvas');
+                if (oldCanvas) oldCanvas.remove();
+                // Create new canvas
+                const newCanvas = document.createElement('canvas');
+                newCanvas.id = 'oppsChartCanvas';
+                newCanvas.style.width = '100%';
+                newCanvas.style.height = '100%';
+                container.appendChild(newCanvas);
+                // Update reference for chart rendering
+                window.oppsChartCanvas = newCanvas;
+            }
+            renderOppsMonthlyChart();
+        }
+        function hideOppsChartModal() {
+            oppsChartModalOverlay.classList.add('hidden');
+            oppsChartModal.classList.add('hidden');
+            if (oppsChartInstance) { oppsChartInstance.destroy(); oppsChartInstance = null; }
+        }
+        if (oppsChartModalOverlay) oppsChartModalOverlay.onclick = hideOppsChartModal;
+        if (oppsChartModalClose) oppsChartModalClose.onclick = hideOppsChartModal;
+        if (oppsChartModalCloseBtn) oppsChartModalCloseBtn.onclick = hideOppsChartModal;
+
+        // Attach click to Total Opportunities card
+        const totalOpportunitiesCard = document.getElementById('totalOpportunitiesCard');
+        if (totalOpportunitiesCard) {
+            totalOpportunitiesCard.onclick = showOppsChartModal;
+        }
+
+        // --- Render Opportunities Monthly Line Chart (Count per month) ---
+        function renderOppsMonthlyChart() {
+            if (!opportunities || !Array.isArray(opportunities)) return;
+            // Use the latest canvas reference
+            const canvas = window.oppsChartCanvas || document.getElementById('oppsChartCanvas');
+            if (!canvas) return;
+            // Group by month, count opportunities per month
+            const monthCounts = {};
+            const encodedDateIdx = headerIndices['encodeddate'];
+            opportunities.forEach(row => {
+                const dateStr = encodedDateIdx !== undefined ? row[headers[encodedDateIdx]] : null;
+                if (!dateStr) return;
+                let d = parseDateString(dateStr);
+                if (!d || isNaN(d.getTime())) return;
+                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                monthCounts[key] = (monthCounts[key] || 0) + 1;
+            });
+            // Sort months
+            const sortedMonths = Object.keys(monthCounts).sort();
+            const labels = sortedMonths.map(m => {
+                const [y, mo] = m.split('-');
+                return `${new Date(y, mo - 1, 1).toLocaleString('en-US', { month: 'short' })} ${y}`;
+            });
+            const data = sortedMonths.map(m => monthCounts[m]);
+            // Draw chart
+            if (oppsChartInstance) oppsChartInstance.destroy();
+            oppsChartInstance = new Chart(canvas.getContext('2d'), {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Opportunity Count',
+                        data: data,
+                        borderColor: '#3b82f6',
+                        backgroundColor: 'rgba(59,130,246,0.15)',
+                        fill: true,
+                        tension: 0.2,
+                        pointRadius: 3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            callbacks: {
+                                label: ctx => 'Count: ' + (ctx.parsed.y || 0)
+                            }
+                        }
+                    },
+                    scales: {
+                        x: { title: { display: true, text: 'Month' } },
+                        y: { beginAtZero: true, title: { display: true, text: 'Count' }, ticks: { precision: 0 } }
+                    }
+                }
+            });
+        }
+
+        // --- Logo Theme Switcher ---
+        function updateLogoForTheme() {
+            const logo = document.getElementById('cmrpLogo');
+            const isDark = document.documentElement.classList.contains('dark');
+            logo.src = isDark ? 'Logo/CMRP Logo Light.svg' : 'Logo/CMRP Logo Dark.svg';
+        }
+        // Initial logo set
+        updateLogoForTheme();
+        // Update logo on theme toggle
+        themeToggle.addEventListener('click', function() {
+            setTimeout(updateLogoForTheme, 10);
+        });
+        // If theme can be toggled elsewhere, also listen for class changes
+        const observer = new MutationObserver(updateLogoForTheme);
+        observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
+    // --- Auth Modal Logic ---
+    const authModalOverlay = document.getElementById('authModalOverlay');
+    const authModal = document.getElementById('authModal');
+    const authForm = document.getElementById('authForm');
+    const authEmail = document.getElementById('authEmail');
+    const authPassword = document.getElementById('authPassword');
+    const authName = document.getElementById('authName');
+    const registerFields = document.getElementById('registerFields');
+    const authError = document.getElementById('authError');
+    const authSuccess = document.getElementById('authSuccess');
+    const authSubmitBtn = document.getElementById('authSubmitBtn');
+    const switchAuthMode = document.getElementById('switchAuthMode');
+    let isLoginMode = true;
+
+    function showAuthModal() {
+        authModalOverlay.style.display = 'block';
+        authModal.style.display = 'block';
+    }
+    function hideAuthModal() {
+        authModalOverlay.style.display = 'none';
+        authModal.style.display = 'none';
+        authError.style.display = 'none';
+        authSuccess.style.display = 'none';
+        authForm.reset();
+    }
+    function setAuthMode(login) {
+        isLoginMode = login;
+        document.getElementById('authModalTitle').textContent = login ? 'Login' : 'Register';
+        authSubmitBtn.textContent = login ? 'Login' : 'Register';
+        registerFields.style.display = login ? 'none' : 'block';
+        switchAuthMode.textContent = login ? "Don't have an account? Register" : "Already have an account? Login";
+        authError.style.display = 'none';
+        authSuccess.style.display = 'none';
+        authForm.reset();
+    }
+    switchAuthMode.onclick = () => setAuthMode(!isLoginMode);
+    authModalOverlay.onclick = hideAuthModal;
+    // Show modal if not authenticated
+    function isAuthenticated() {
+        return !!localStorage.getItem('authToken');
+    }
+    function showMainContent(show) {
+        document.querySelector('.main-content').style.display = show ? '' : 'none';
+    }
+    // --- On page load, check auth ---
+    document.addEventListener('DOMContentLoaded', () => {
+        if (!isAuthenticated()) {
+            showMainContent(false);
+            setAuthMode(true);
+            showAuthModal();
+        } else {
+            showMainContent(true);
+            hideAuthModal();
+            addLogoutButton();
+        }
+    });
+    // --- Auth Form Submission ---
+    authForm.onsubmit = async function(e) {
+        e.preventDefault();
+        authError.style.display = 'none';
+        authSuccess.style.display = 'none';
+        authSubmitBtn.disabled = true;
+        const email = authEmail.value.trim();
+        const password = authPassword.value;
+        if (isLoginMode) {
+            // --- LOGIN ---
+            if (!validateEmail(email)) { authError.textContent = 'Invalid email.'; authError.style.display = 'block'; authSubmitBtn.disabled = false; return; }
+            if (!validatePassword(password)) { authError.textContent = 'Password must be 8-100 characters.'; authError.style.display = 'block'; authSubmitBtn.disabled = false; return; }
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Login failed');
+                localStorage.setItem('authToken', data.token);
+                showMainContent(true);
+                hideAuthModal();
+                addLogoutButton && addLogoutButton();
+            } catch (err) {
+                authError.textContent = err.message;
+                authError.style.display = 'block';
+            } finally {
+                authSubmitBtn.disabled = false;
+            }
+        } else {
+            // --- REGISTER ---
+            const name = authName.value.trim();
+            const roles = Array.from(document.querySelectorAll('input[name=role]:checked')).map(cb => cb.value);
+            if (!validateEmail(email)) { authError.textContent = 'Invalid email.'; authError.style.display = 'block'; authSubmitBtn.disabled = false; return; }
+            if (!validatePassword(password)) { authError.textContent = 'Password must be 8-100 characters.'; authError.style.display = 'block'; authSubmitBtn.disabled = false; return; }
+            if (!validateName(name)) { authError.textContent = 'Name must be 2-100 characters.'; authError.style.display = 'block'; authSubmitBtn.disabled = false; return; }
+            if (!validateRoles(roles)) { authError.textContent = 'Select at least one role.'; authError.style.display = 'block'; authSubmitBtn.disabled = false; return; }
+            try {
+                const res = await fetch('/api/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, name, roles })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Registration failed');
+                authSuccess.textContent = 'Registration successful! You may now log in.';
+                authSuccess.style.display = 'block';
+                setTimeout(() => setAuthMode(true), 1200);
+            } catch (err) {
+                authError.textContent = err.message;
+                authError.style.display = 'block';
+            } finally {
+                authSubmitBtn.disabled = false;
+            }
+        }
+    };
+    // --- Logout Button ---
+    function addLogoutButton() {
+        if (document.getElementById('logoutBtn')) return;
+        const header = document.querySelector('.simple-header .flex.items-center');
+        if (!header) return;
+        const btn = document.createElement('button');
+        btn.id = 'logoutBtn';
+        btn.className = 'logout-btn';
+        btn.innerHTML = '<span class="material-icons">logout</span>';
+        btn.title = 'Logout';
+        btn.onclick = function() {
+            localStorage.removeItem('authToken');
+            showMainContent(false);
+            setAuthMode(true);
+            showAuthModal();
+            this.remove();
+        };
+        header.appendChild(btn);
+    }
+
+    // --- Logout Button ---
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function() {
+            localStorage.removeItem('authToken');
+            // Hide main content and show login modal if present
+            if (typeof showMainContent === 'function') showMainContent(false);
+            if (typeof setAuthMode === 'function') setAuthMode(true);
+            if (typeof showAuthModal === 'function') showAuthModal();
+            // If no modal logic, fallback to reload or redirect
+            else window.location.reload();
+        });
+    }
+
+    // Function to update User Management nav button visibility
+    function updateUserMgmtNavVisibility() {
+        const userMgmtBtn = document.getElementById('userMgmtNavBtn');
+        if (!userMgmtBtn) return;
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            userMgmtBtn.style.display = 'none';
+            return;
+        }
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const accountType = payload.accountType || payload.account_type || null;
+            userMgmtBtn.style.display = (accountType === 'Admin') ? '' : 'none';
+        } catch {
+            userMgmtBtn.style.display = 'none';
+        }
+    }
+    document.addEventListener('DOMContentLoaded', updateUserMgmtNavVisibility);
+    window.addEventListener('storage', updateUserMgmtNavVisibility);
+
+    // Helper: Show error banner
+    function showAuthErrorBanner(msg) {
+        if (authErrorBanner) {
+            authErrorBanner.textContent = msg;
+            authErrorBanner.style.display = 'block';
+        }
+    }
+    function hideAuthErrorBanner() {
+        if (authErrorBanner) authErrorBanner.style.display = 'none';
+    }
+
+    // Example: Wrap fetch for protected API calls
+    async function fetchWithAuth(url, options = {}) {
+        const token = localStorage.getItem('authToken');
+        options.headers = options.headers || {};
+        if (token) options.headers['Authorization'] = 'Bearer ' + token;
+        let res;
+        try {
+            res = await fetch(url, options);
+        } catch (e) {
+            showAuthErrorBanner('Network error.');
+            throw e;
+        }
+        if (res.status === 401) {
+            showAuthErrorBanner('You must be logged in to access this resource.');
+            showMainContent(false);
+            setAuthMode(true);
+            showAuthModal();
+            throw new Error('Unauthorized');
+        } else if (res.status === 403) {
+            showAuthErrorBanner('You do not have permission to access this page.');
+            showMainContent(false);
+            throw new Error('Forbidden');
+        } else {
+            hideAuthErrorBanner();
+        }
+        return res;
+    }
+
+    // Helper: Check if user is admin
+    function getAccountTypeFromToken() {
+        const token = localStorage.getItem('authToken');
+        if (!token) return null;
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            return payload.accountType || payload.account_type || null;
+        } catch (e) {
+            return null;
+        }
+    }
+
+    // Example: Show Access Denied if not admin and tries to access admin-only UI
+    function checkAdminAccessForUserMgmt() {
+        const userMgmtBtn = document.getElementById('userMgmtNavBtn');
+        if (!userMgmtBtn) return;
+        const accountType = getAccountTypeFromToken();
+        if (accountType !== 'Admin') {
+            userMgmtBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                showAuthErrorBanner('Access Denied: You do not have admin privileges.');
+            });
+        }
+    }
+
+    // Call this on DOMContentLoaded
+    checkAdminAccessForUserMgmt();
+
+    // --- Input Validation Helpers ---
+    function validateEmail(email) {
+      return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
+    }
+    function validatePassword(password) {
+      return typeof password === 'string' && password.length >= 8 && password.length <= 100;
+    }
+    function validateName(name) {
+      return typeof name === 'string' && name.trim().length >= 2 && name.trim().length <= 100;
+    }
+    function validateRoles(roles) {
+      return Array.isArray(roles) && roles.length > 0 && roles.every(r => typeof r === 'string' && r.length > 0);
+    }
+    function validateNotEmpty(val) {
+      return typeof val === 'string' && val.trim().length > 0;
+    }
+    function validateNumber(val) {
+      return !isNaN(val) && isFinite(val);
+    }
+    function validateDate(val) {
+      return !val || !isNaN(Date.parse(val));
+    }
+    // --- Output Sanitization Helper ---
+    function sanitizeHTML(str) {
+      const temp = document.createElement('div');
+      temp.textContent = str;
+      return temp.innerHTML;
+    }
+    // --- Patch Registration/Login Form Submission ---
+    if (typeof authForm !== 'undefined' && authForm) {
+      authForm.onsubmit = async function(e) {
+        e.preventDefault();
+        authError.style.display = 'none';
+        authSuccess.style.display = 'none';
+        authSubmitBtn.disabled = true;
+        const email = authEmail.value.trim();
+        const password = authPassword.value;
+        if (isLoginMode) {
+          // --- LOGIN ---
+          if (!validateEmail(email)) { authError.textContent = 'Invalid email.'; authError.style.display = 'block'; authSubmitBtn.disabled = false; return; }
+          if (!validatePassword(password)) { authError.textContent = 'Password must be 8-100 characters.'; authError.style.display = 'block'; authSubmitBtn.disabled = false; return; }
+          try {
+            const res = await fetch('/api/login', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email, password })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Login failed');
+            localStorage.setItem('authToken', data.token);
+            showMainContent(true);
+            hideAuthModal();
+            addLogoutButton && addLogoutButton();
+          } catch (err) {
+            authError.textContent = err.message;
+            authError.style.display = 'block';
+          } finally {
+            authSubmitBtn.disabled = false;
+          }
+        } else {
+          // --- REGISTER ---
+          const name = authName.value.trim();
+          const roles = Array.from(document.querySelectorAll('input[name=role]:checked')).map(cb => cb.value);
+          if (!validateEmail(email)) { authError.textContent = 'Invalid email.'; authError.style.display = 'block'; authSubmitBtn.disabled = false; return; }
+          if (!validatePassword(password)) { authError.textContent = 'Password must be 8-100 characters.'; authError.style.display = 'block'; authSubmitBtn.disabled = false; return; }
+          if (!validateName(name)) { authError.textContent = 'Name must be 2-100 characters.'; authError.style.display = 'block'; authSubmitBtn.disabled = false; return; }
+          if (!validateRoles(roles)) { authError.textContent = 'Select at least one role.'; authError.style.display = 'block'; authSubmitBtn.disabled = false; return; }
+          try {
+            const res = await fetch('/api/register', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email, password, name, roles })
+            });
+            const data = await res.json();
+            if (!res.ok) throw new Error(data.error || 'Registration failed');
+            authSuccess.textContent = 'Registration successful! You may now log in.';
+            authSuccess.style.display = 'block';
+            setTimeout(() => setAuthMode(true), 1200);
+          } catch (err) {
+            authError.textContent = err.message;
+            authError.style.display = 'block';
+          } finally {
+            authSubmitBtn.disabled = false;
+          }
+        }
+      };
+    }
+    // --- Patch Opportunity Modal Form Validation ---
+    if (typeof editRowForm !== 'undefined' && editRowForm) {
+      editRowForm.addEventListener('submit', function(e) {
+        let valid = true;
+        headers.forEach(h => {
+          const el = editRowForm.elements[h];
+          if (!el) return;
+          const value = el.value;
+          if (el.type === 'email' && !validateEmail(value)) valid = false;
+          if (el.type === 'number' && !validateNumber(value)) valid = false;
+          if (el.required && !validateNotEmpty(value)) valid = false;
+          // Add more field-specific validation as needed
+        });
+        if (!valid) {
+          e.preventDefault();
+          alert('Please correct invalid or missing fields.');
+        }
+      }, true);
+    }
+    // --- Patch Remarks Modal Save ---
+    if (typeof saveRemarksButton !== 'undefined' && saveRemarksButton) {
+      saveRemarksButton.onclick = function() {
+        const val = remarksTextarea.value;
+        if (val.length > 1000) { alert('Remarks too long (max 1000 chars).'); return; }
+        // ...existing save logic...
+      };
+    }
+    // --- Patch Table/Modal Rendering to Sanitize Output ---
+    function safeText(str) { return sanitizeHTML(str == null ? '' : String(str)); }
+    // Example: When rendering user-generated content in table cells or modals, use safeText(...)
     </script>
 
 </body>

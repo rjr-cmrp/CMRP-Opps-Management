@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        /* --- Theme Variables (Copied from index.html) --- */
+        :root {
+            /* Light Theme Variables */
+            --bg-body: #f9fafb; --text-body: #1f2937; --bg-container: #ffffff; --border-container: #e5e7eb; --text-title: #111827; --text-label: #4b5563; --border-table: #e5e7eb; --bg-header: #f3f4f6; --text-header: #6b7280; --bg-row: #ffffff; --text-row: #374151; --bg-row-hover: #f3f4f6; --bg-op100: #dcfce7; --text-op100: #166534; --bg-op100-hover: #bbf7d0; --bg-lost: #fee2e2; --text-lost: #991b1b; --bg-lost-hover: #fecaca; --bg-declined: #e5e7eb; --text-declined: #4b5563; --bg-declined-hover: #d1d5db; --border-urgent-soon: #f59e0b; --border-urgent-past: #ef4444; --bg-control: #ffffff; --border-control: #d1d5db; --text-control: #111827; --placeholder-control: #9ca3af; --bg-control-hover: #f9fafb; --border-focus: #3b82f6; --shadow-focus: rgba(59, 130, 246, 0.3); --text-secondary: #6b7280; --text-error: #dc2626; --text-link: #3b82f6; --text-link-hover: #2563eb;
+            --select-arrow-url: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            --bg-modal: #ffffff; --border-modal: #e5e7eb; --text-modal-title: #111827; --bg-modal-close-hover: #e5e7eb; --bg-modal-save: #3b82f6; --text-modal-save: #ffffff; --bg-modal-save-hover: #2563eb; --bg-theme-button: #e5e7eb; --text-theme-button: #1f2937; --border-theme-button: #d1d5db; --bg-theme-button-hover: #d1d5db; --bg-filter-button: #e5e7eb; --text-filter-button: #374151; --border-filter-button: #d1d5db; --bg-filter-button-hover: #d1d5db; --bg-filter-button-active: #4f46e5; --text-filter-button-active: #ffffff; --border-filter-button-active: #4f46e5;
+        }
+        .dark {
+            /* Dark Theme Variables */
+            --bg-body: #1e1e1e; --text-body: #e0e0e0; --bg-container: #2d2d2d; --border-container: #404040; --text-title: #ffffff; --text-label: #c0c0c0; --border-table: #4a4a4a; --bg-header: #1a1a1a; --text-header: #a0a0a0; --bg-row: #2d2d2d; --text-row: #e0e0e0; --bg-row-hover: #3c3c3c; --bg-op100: #14532d; --text-op100: #dcfce7; --bg-op100-hover: #166534; --bg-lost: #7f1d1d; --text-lost: #fee2e2; --bg-lost-hover: #991b1b; --bg-declined: #4b5563; --text-declined: #bdc3c7; --bg-declined-hover: #525f70; --border-urgent-soon: #f97316; --border-urgent-past: #dc2626; --bg-control: #3c3c3c; --border-control: #5a5a5a; --text-control: #e0e0e0; --placeholder-control: #8e8e93; --bg-control-hover: #4a4a4a; --border-focus: #0a84ff; --shadow-focus: rgba(10, 132, 255, 0.3); --text-secondary: #a0a0a0; --text-error: #ff8080; --text-link: #8ab4f8; --text-link-hover: #a7c7fa;
+             --select-arrow-url: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23a0a0a0' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+             --bg-modal: #2d2d2d; --border-modal: #404040; --text-modal-title: #ffffff; --bg-modal-close-hover: #6b6b6b; --bg-modal-save: #4f46e5; --text-modal-save: #ffffff; --bg-modal-save-hover: #4338ca; --bg-theme-button: #4b5563; --text-theme-button: #f9fafb; --border-theme-button: #6b7280; --bg-theme-button-hover: #6b7280; --bg-filter-button: #374151; --text-filter-button: #d1d5db; --border-filter-button: #4b5563; --bg-filter-button-hover: #4b5563; --bg-filter-button-active: #6366f1; --text-filter-button-active: #ffffff; --border-filter-button-active: #6366f1;
+        }
+        /* Base Styles from index.html */
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; background-color: var(--bg-body); color: var(--text-body); transition: background-color 0.3s ease, color 0.3s ease; margin: 0; }
+        .container { background-color: var(--bg-container); border-color: var(--border-container); }
+        h1, h2, h3 { color: var(--text-title); }
+        label { color: var(--text-label); }
+        /* Table Styles */
+        .table-container { overflow: auto; border-radius: 0.5rem; margin-top: 1rem; transition: border-color 0.3s ease; border-width: 1px; border-color: var(--border-table); max-height: 70vh;}
+        .table-container th, .table-container td { padding: 8px 10px; text-align: left; transition: border-color 0.3s ease, background-color 0.3s ease; border-bottom-width: 1px; vertical-align: middle; font-size: 0.75rem; line-height: 1rem; border-bottom-color: var(--border-table); }
+        th { font-weight: 600; position: sticky; top: 0; z-index: 10; background-color: var(--bg-header); color: var(--text-header); border-top-color: var(--border-table); }
+        tbody tr { transition: background-color 0.1s ease-in-out; background-color: var(--bg-row); color: var(--text-row); }
+        tbody tr:hover { background-color: var(--bg-row-hover); }
+        
+        /* Form Controls */
+        input[type="text"], input[type="email"], input[type="password"], select, button, textarea { padding: 8px 12px; border-radius: 0.375rem; transition: border-color 0.2s, background-color 0.2s, color 0.2s; border-width: 1px; background-color: var(--bg-control); border-color: var(--border-control); color: var(--text-control); }
+        input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus, select:focus, button:focus, textarea:focus { outline: none; border-color: var(--border-focus); box-shadow: 0 0 0 3px var(--shadow-focus); }
+        input::placeholder, textarea::placeholder { color: var(--placeholder-control); }
+        button { font-weight: 500; }
+        select { appearance: none; background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem; background-image: var(--select-arrow-url); }
+        select option { background-color: var(--bg-control); color: var (--text-control); }
+
+        /* Modal Styles */
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px); z-index: 40; display: flex; align-items: center; justify-content: center; }
+        .modal { background-color: var(--bg-modal); border-color: var(--border-modal); border-radius: 0.5rem; padding: 1.5rem; z-index: 50; width: 98%; max-width: 500px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5); transition: background-color 0.3s ease, border-color 0.3s ease; border-width: 1px; max-height: 92vh; overflow-y: auto; }
+        .modal h2 { margin-top: 0; margin-bottom: 1rem; font-size: 1.25rem; font-weight: 600; color: var(--text-modal-title); }
+        .modal label { display: block; margin-bottom: 0.25rem; font-size: 0.875rem; font-weight: 500; color: var(--text-label); }
+        .modal input[type="text"], .modal input[type="email"], .modal input[type="password"], .modal select { width: 100%; margin-bottom: 1rem; }
+        .modal .form-actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem; }
+        .modal .form-actions button { padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: 500; }
+        .modal .form-actions .cancel-button { background-color: var(--bg-control); color: var(--text-control); border: 1px solid var(--border-control); }
+        .modal .form-actions .cancel-button:hover { background-color: var(--bg-control-hover); }
+        .modal .form-actions .save-button { background-color: var(--bg-modal-save); color: var(--text-modal-save); border: 1px solid transparent; }
+        .modal .form-actions .save-button:hover { background-color: var(--bg-modal-save-hover); }
+
+        /* Button Styles */
+        .theme-button { background-color: var(--bg-theme-button); color: var(--text-theme-button); border: 1.5px solid var(--border-theme-button); transition: background 0.18s, color 0.18s, border-color 0.18s, box-shadow 0.18s; box-shadow: 0 2px 8px 0 rgba(59,130,246,0.06); }
+        .theme-button:hover, .theme-button:focus { background-color: var(--bg-theme-button-hover); box-shadow: 0 4px 16px 0 rgba(59,130,246,0.10); }
+        
+        .action-button { background-color: var(--bg-modal-save); color: var(--text-modal-save); transition: filter 0.2s; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: 500; border: 1px solid transparent; display: inline-flex; align-items: center; }
+        .action-button:hover { filter: brightness(90%); }
+        
+        .edit-button { color: var(--text-link); background:none; border:none; padding:0; cursor:pointer; display: inline-flex; align-items: center; }
+        .edit-button:hover { color: var(--text-link-hover); }
+        .delete-button { color: var(--text-error); background:none; border:none; padding:0; cursor:pointer; display: inline-flex; align-items: center; }
+        .delete-button:hover { filter: brightness(90%); }
+
+        .hidden { display: none; }
+
+        .auth-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; display: none; }
+        .auth-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--bg-modal); border: 1px solid var(--border-modal); border-radius: 0.5rem; padding: 2rem 2.5rem; z-index: 1010; min-width: 320px; max-width: 95vw; box-shadow: 0 8px 32px rgba(0,0,0,0.18); display: none; }
+        .auth-modal h2 { margin-top: 0; font-size: 1.3rem; font-weight: 600; color: var(--text-title); }
+        .auth-modal label { display: block; margin-bottom: 0.5rem; }
+        .auth-modal input[type="text"], .auth-modal input[type="email"], .auth-modal input[type="password"] { width: 100%; margin-bottom: 1rem; }
+        .auth-modal .roles-group { margin-bottom: 1rem; }
+        .auth-modal .roles-group label { display: inline-block; margin-right: 1.2em; font-weight: 400; }
+        .auth-modal .switch-link { color: var(--text-link); cursor: pointer; text-decoration: underline; font-size: 0.95em; }
+        .auth-modal .error-text { color: var(--text-error); margin-bottom: 0.5rem; }
+        .auth-modal .success-text { color: #16a34a; margin-bottom: 0.5rem; }
+        .logout-btn {
+            margin-left: 1rem;
+            background: var(--bg-theme-button);
+            color: var(--text-theme-button);
+            border: 1.5px solid var(--border-theme-button);
+            border-radius: 0.75rem;
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            box-shadow: 0 2px 8px 0 rgba(59,130,246,0.06);
+            transition: background 0.18s, color 0.18s, border-color 0.18s, box-shadow 0.18s;
+            padding: 0;
+        }
+        .logout-btn:hover, .logout-btn:focus {
+            background: var(--bg-theme-button-hover);
+            color: var(--text-theme-button);
+            box-shadow: 0 4px 16px 0 rgba(59,130,246,0.10);
+            outline: none;
+        }
+        .main-content {
+            margin-top: 4.5rem; /* Height of nav bar + spacing, matches index.html */
+        }
+        .simple-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        z-index: 100;
+        box-shadow: 0 2px 8px 0 rgba(0,0,0,0.08);
+        background: var(--bg-header);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 2rem;
+        min-height: 3.5rem;
+        gap: 1.5rem;
+    }
+    .title-group {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+    }
+    .subtitle {
+        font-size: 1.125rem;
+        font-weight: 400;
+        color: var(--text-title);
+        letter-spacing: 0.01em;
+        margin-left: 0.5rem;
+    }
+    nav.flex.gap-2 {
+        display: flex;
+        gap: 0.5rem;
+    }
+    .nav-square-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        border-radius: 0.75rem;
+        background: var(--bg-theme-button);
+        color: var(--text-theme-button);
+        border: 1.5px solid var(--border-theme-button);
+        font-size: 1.6rem;
+        transition: background 0.18s, color 0.18s, border-color 0.18s, box-shadow 0.18s;
+        box-shadow: 0 2px 8px 0 rgba(59,130,246,0.06);
+        margin: 0;
+        padding: 0;
+    }
+    .nav-square-btn:hover, .nav-square-btn:focus {
+        background: var(--bg-theme-button-hover);
+        color: var(--text-theme-button);
+        box-shadow: 0 4px 16px 0 rgba(59,130,246,0.10);
+        outline: none;
+    }
+    .nav-square-btn.active, .nav-square-btn.bg-blue-600 {
+        background: #6366f1;
+        color: #fff !important;
+        border-color: #6366f1;
+        cursor: default;
+        pointer-events: none;
+    }
+    .nav-square-btn .material-icons {
+        font-size: 1.7rem;
+    }
+    .dark .nav-square-btn.active {
+        background: #6366f1;
+        color: #fff !important;
+        border-color: #6366f1;
+    }
+    .dark .nav-square-btn:hover:not(.active) {
+        background: #6b7280;
+        color: #fff;
+    }
+    .logout-btn { margin-left: 1rem; background: #ef4444; color: #fff; border: none; border-radius: 0.5rem; padding: 0.5rem 1.2rem; font-weight: 500; cursor: pointer; }
+    .logout-btn:hover { background: #b91c1c; }
+    .main-content { margin-top: 4.5rem; }
+    </style>
+</head>
+<body class="min-h-screen">
+    <div class="simple-header">
+        <div class="title-group">
+            <img id="cmrpLogo" src="Logo/CMRP Logo Light.svg" alt="CMRP Logo" style="height:2.2rem;width:auto;display:inline-block;vertical-align:middle;transition:filter 0.2s;" />
+            <span class="subtitle">User Management</span>
+        </div>
+        <div class="flex items-center gap-2">
+            <nav class="flex gap-2" id="mainNav">
+                <a href="index.html" class="nav-square-btn" title="Opportunities"><span class="material-icons">dashboard</span></a>
+                <a href="win-loss_dashboard.html" class="nav-square-btn" title="Win-Loss Dashboard"><span class="material-icons">line_axis</span></a>
+                <a href="forecastr_dashboard.html" class="nav-square-btn" title="Forecast Dashboard"><span class="material-icons">insights</span></a>
+                <a href="user_management.html" class="nav-square-btn active" id="userMgmtNavBtn" title="User Management"><span class="material-icons">group</span></a>
+            </nav>
+            <button id="themeToggle" class="nav-square-btn" title="Toggle Theme"><span class="material-icons">light_mode</span></button>
+            <button id="logoutBtn" class="nav-square-btn" title="Logout"><span class="material-icons">logout</span></button>
+        </div>
+    </div>
+    <div style="height:3.5rem;"></div>
+    <!-- header spacer to match index.html -->
+    <!-- Access Denied Banner (hidden by default) -->
+    <div id="accessDeniedBanner" style="display:none;color:#fff;background:#d32f2f;padding:1rem;text-align:center;font-weight:bold;margin-top:4.5rem;z-index:200;">Access Denied: You do not have admin privileges.</div>
+    <!-- Main Content Wrapper Start -->
+    <div class="main-content">
+        <!-- Place all user management UI, modals, and tables here -->
+        
+        <!-- User Management Table and Controls (move all relevant HTML here) -->
+        <!-- ...existing user management UI code... -->
+        
+        <!-- User Table Example (if not already present) -->
+        <div class="container mx-auto px-4 py-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-semibold">Users</h2>
+                <button id="addUserButton" class="action-button">Add New User</button>
+            </div>
+            <div class="table-container">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Roles</th>
+                            <th>Account Type</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="userTableBody">
+                        <!-- Populated by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- User Modal Overlay (hidden by default) -->
+        <div id="userModalOverlay" class="modal-overlay hidden">
+            <div class="modal">
+                <h2 id="modalTitle">Add New User</h2>
+                <form id="userForm">
+                    <input type="hidden" id="userId" name="userId">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required>
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required>
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required>
+                    <div id="roleCheckboxes" class="mb-2">
+                        <label><input type="checkbox" name="role" value="Admin"> Admin</label>
+                        <label><input type="checkbox" name="role" value="User"> User</label>
+                    </div>
+                    <label for="accountType">Account Type</label>
+                    <select id="accountType" name="accountType" required>
+                        <option value="Admin">Admin</option>
+                        <option value="User">User</option>
+                    </select>
+                    <div class="form-actions">
+                        <button type="button" id="cancelButton" class="cancel-button">Cancel</button>
+                        <button type="submit" class="save-button">Save</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Auth Modal Overlay (already present in your code) -->
+        <!-- ...existing code... -->
+    </div>
+    <!-- Main Content Wrapper End -->
+
+    <!-- Auth Modal Overlay (ensure this is present and outside .main-content) -->
+    <div id="authModalOverlay" class="modal-overlay" style="display:none;">
+        <div id="authModal" class="modal" style="display:none;">
+            <h2 id="authModalTitle">Login</h2>
+            <form id="authForm">
+                <div id="registerFields" style="display:none;">
+                    <label for="authName">Name</label>
+                    <input type="text" id="authName" name="authName" autocomplete="name">
+                    <div>
+                        <label><input type="checkbox" name="role" value="Admin"> Admin</label>
+                        <label><input type="checkbox" name="role" value="User"> User</label>
+                    </div>
+                </div>
+                <label for="authEmail">Email</label>
+                <input type="email" id="authEmail" name="authEmail" required autocomplete="email">
+                <label for="authPassword">Password</label>
+                <input type="password" id="authPassword" name="authPassword" required autocomplete="current-password">
+                <div id="authError" class="text-red-600" style="display:none;"></div>
+                <div id="authSuccess" class="text-green-600" style="display:none;"></div>
+                <button type="submit" id="authSubmitBtn">Login</button>
+            </form>
+            <button id="switchAuthMode" type="button">Don't have an account? Register</button>
+        </div>
+    </div>
+
+    <!-- Move script to end of body -->
+    <script>
+    // --- Logo Theme Switcher & Theme Logic ---
+    function updateLogoForTheme() {
+        const logo = document.getElementById('cmrpLogo');
+        const isDark = document.documentElement.classList.contains('dark');
+        logo.src = isDark ? 'Logo/CMRP Logo Light.svg' : 'Logo/CMRP Logo Dark.svg';
+    }
+    function applyTheme(theme) {
+        const isDark = theme === 'dark';
+        document.documentElement.classList.toggle('dark', isDark);
+        // Invert logo for dark/light
+        const logo = document.getElementById('cmrpLogo');
+        if (logo) logo.src = isDark ? 'Logo/CMRP Logo Light.svg' : 'Logo/CMRP Logo Dark.svg';
+    }
+    function toggleTheme() {
+        const currentTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        applyTheme(newTheme);
+        localStorage.setItem('theme', newTheme);
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+        // ...existing code...
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
+        applyTheme(initialTheme);
+        const themeToggle = document.getElementById('themeToggle');
+        if (themeToggle) themeToggle.addEventListener('click', toggleTheme);
+        // ...existing code...
+    });
+
+    // --- Logout Button ---
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function() {
+            localStorage.removeItem('authToken');
+            showMainContent(false);
+            setAuthMode(true);
+            showAuthModal();
+        });
+    }
+
+    // --- Unified Auth & Admin Access Control ---
+    document.addEventListener('DOMContentLoaded', () => {
+        // Helper functions
+        function getAccountTypeFromToken() {
+            const token = localStorage.getItem('authToken');
+            if (!token) return null;
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                return payload.accountType || payload.account_type || null;
+            } catch (e) {
+                return null;
+            }
+        }
+        function isAuthenticated() {
+            return !!localStorage.getItem('authToken');
+        }
+        function showMainContent(show) {
+            document.querySelector('.main-content').style.display = show ? '' : 'none';
+        }
+        // Auth modal elements
+        const authModalOverlay = document.getElementById('authModalOverlay');
+        const authModal = document.getElementById('authModal');
+        const authForm = document.getElementById('authForm');
+        const authEmail = document.getElementById('authEmail');
+        const authPassword = document.getElementById('authPassword');
+        const authName = document.getElementById('authName');
+        const registerFields = document.getElementById('registerFields');
+        const authError = document.getElementById('authError');
+        const authSuccess = document.getElementById('authSuccess');
+        const authSubmitBtn = document.getElementById('authSubmitBtn');
+        const switchAuthMode = document.getElementById('switchAuthMode');
+        let isLoginMode = true;
+
+        // Only set up auth modal logic if all elements exist
+        if (authModalOverlay && authModal && authForm && authEmail && authPassword && authName && registerFields && authError && authSuccess && authSubmitBtn && switchAuthMode) {
+            function showAuthModal() {
+                authModalOverlay.style.display = 'block';
+                authModal.style.display = 'block';
+            }
+            function hideAuthModal() {
+                authModalOverlay.style.display = 'none';
+                authModal.style.display = 'none';
+                authError.style.display = 'none';
+                authSuccess.style.display = 'none';
+                authForm.reset();
+            }
+            function setAuthMode(login) {
+                isLoginMode = login;
+                document.getElementById('authModalTitle').textContent = login ? 'Login' : 'Register';
+                authSubmitBtn.textContent = login ? 'Login' : 'Register';
+                registerFields.style.display = login ? 'none' : 'block';
+                switchAuthMode.textContent = login ? "Don't have an account? Register" : "Already have an account? Login";
+                authError.style.display = 'none';
+                authSuccess.style.display = 'none';
+                authForm.reset();
+            }
+            switchAuthMode.onclick = () => setAuthMode(!isLoginMode);
+            authModalOverlay.onclick = hideAuthModal;
+
+            // --- Unified Auth/Admin Check on Load ---
+            function checkAuthAndAdmin() {
+                if (!isAuthenticated()) {
+                    showMainContent(false);
+                    setAuthMode(true);
+                    showAuthModal();
+                    updateUserMgmtNavVisibility();
+                    document.getElementById('accessDeniedBanner').style.display = 'none';
+                    return;
+                }
+                // Authenticated, check admin
+                const accountType = getAccountTypeFromToken();
+                if (accountType !== 'Admin') {
+                    updateUserMgmtNavVisibility();
+                    showMainContent(false);
+                    document.getElementById('accessDeniedBanner').style.display = 'block';
+                    if (typeof hideAuthModal === 'function') hideAuthModal();
+                    // --- AUDIT LOGGING FOR UNAUTHORIZED PAGE ACCESS ---
+                    try {
+                        const token = localStorage.getItem('authToken');
+                        let email = null;
+                        let userId = null;
+                        if (token) {
+                            try {
+                                const payload = JSON.parse(atob(token.split('.')[1]));
+                                email = payload.email || null;
+                                userId = payload.id || payload._id || null;
+                            } catch {}
+                        }
+                        fetch('/api/audit-log-page-access', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', ...(token ? { 'Authorization': `Bearer ${token}` } : {}) },
+                            body: JSON.stringify({
+                                email,
+                                userId,
+                                page: 'user_management.html',
+                                reason: 'Non-admin attempted to access User Management page.'
+                            })
+                        });
+                    } catch (err) {
+                        // Silently ignore audit log errors on frontend
+                    }
+                    return;
+                }
+                // Authenticated and admin
+                showMainContent(true);
+                document.getElementById('accessDeniedBanner').style.display = 'none';
+                if (typeof hideAuthModal === 'function') hideAuthModal();
+                updateUserMgmtNavVisibility();
+            }
+            checkAuthAndAdmin();
+
+            // --- Auth Form Submission ---
+            authForm.onsubmit = async function(e) {
+                e.preventDefault();
+                authError.style.display = 'none';
+                authSuccess.style.display = 'none';
+                authSubmitBtn.disabled = true;
+                const email = authEmail.value.trim();
+                const password = authPassword.value;
+                if (isLoginMode) {
+                    if (!validateEmail(email)) { authError.textContent = 'Invalid email.'; authError.style.display = 'block'; authSubmitBtn.disabled = false; return; }
+                    if (!validatePassword(password)) { authError.textContent = 'Password must be 8-100 characters.'; authError.style.display = 'block'; authSubmitBtn.disabled = false; return; }
+                    try {
+                        const res = await fetch('/api/login', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email, password })
+                        });
+                        const data = await res.json();
+                        if (!res.ok) throw new Error(data.error || 'Login failed');
+                        localStorage.setItem('authToken', data.token);
+                        checkAuthAndAdmin();
+                    } catch (err) {
+                        authError.textContent = err.message;
+                        authError.style.display = 'block';
+                    } finally {
+                        authSubmitBtn.disabled = false;
+                    }
+                } else {
+                    const name = authName.value.trim();
+                    const roles = Array.from(document.querySelectorAll('input[name=role]:checked')).map(cb => cb.value);
+                    if (!validateEmail(email)) { authError.textContent = 'Invalid email.'; authError.style.display = 'block'; authSubmitBtn.disabled = false; return; }
+                    if (!validatePassword(password)) { authError.textContent = 'Password must be 8-100 characters.'; authError.style.display = 'block'; authSubmitBtn.disabled = false; return; }
+                    if (!validateName(name)) { authError.textContent = 'Name must be 2-100 characters.'; authError.style.display = 'block'; authSubmitBtn.disabled = false; return; }
+                    if (!validateRoles(roles)) { authError.textContent = 'Select at least one role.'; authError.style.display = 'block'; authSubmitBtn.disabled = false; return; }
+                    try {
+                        const res = await fetch('/api/register', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ email, password, name, roles })
+                        });
+                        const data = await res.json();
+                        if (!res.ok) throw new Error(data.error || 'Registration failed');
+                        authSuccess.textContent = 'Registration successful! You may now log in.';
+                        authSuccess.style.display = 'block';
+                        setTimeout(() => setAuthMode(true), 1200);
+                    } catch (err) {
+                        authError.textContent = err.message;
+                        authError.style.display = 'block';
+                    } finally {
+                        authSubmitBtn.disabled = false;
+                    }
+                }
+            };
+        } else {
+            // If any auth modal element is missing, just check auth/admin and show/hide main content
+            function checkAuthAndAdmin() {
+                if (!isAuthenticated()) {
+                    showMainContent(false);
+                    return;
+                }
+                const accountType = getAccountTypeFromToken();
+                if (accountType !== 'Admin') {
+                    window.location.href = 'index.html';
+                    return;
+                }
+                showMainContent(true);
+            }
+            checkAuthAndAdmin();
+        }
+
+        // --- Unified Auth/Admin Check on Load ---
+        function checkAuthAndAdmin() {
+            if (!isAuthenticated()) {
+                showMainContent(false);
+                setAuthMode(true);
+                showAuthModal();
+                updateUserMgmtNavVisibility();
+                document.getElementById('accessDeniedBanner').style.display = 'none';
+                return;
+            }
+            // Authenticated, check admin
+            const accountType = getAccountTypeFromToken();
+            if (accountType !== 'Admin') {
+                updateUserMgmtNavVisibility();
+                showMainContent(false);
+                document.getElementById('accessDeniedBanner').style.display = 'block';
+                if (typeof hideAuthModal === 'function') hideAuthModal();
+                // --- AUDIT LOGGING FOR UNAUTHORIZED PAGE ACCESS ---
+                try {
+                    const token = localStorage.getItem('authToken');
+                    let email = null;
+                    let userId = null;
+                    if (token) {
+                        try {
+                            const payload = JSON.parse(atob(token.split('.')[1]));
+                            email = payload.email || null;
+                            userId = payload.id || payload._id || null;
+                        } catch {}
+                    }
+                    fetch('/api/audit-log-page-access', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', ...(token ? { 'Authorization': `Bearer ${token}` } : {}) },
+                        body: JSON.stringify({
+                            email,
+                            userId,
+                            page: 'user_management.html',
+                            reason: 'Non-admin attempted to access User Management page.'
+                        })
+                    });
+                } catch (err) {
+                    // Silently ignore audit log errors on frontend
+                }
+                return;
+            }
+            // Authenticated and admin
+            showMainContent(true);
+            document.getElementById('accessDeniedBanner').style.display = 'none';
+            if (typeof hideAuthModal === 'function') hideAuthModal();
+            updateUserMgmtNavVisibility();
+        }
+        checkAuthAndAdmin();
+
+        // --- Auth Form Submission ---
+        authForm.onsubmit = async function(e) {
+            e.preventDefault();
+            authError.style.display = 'none';
+            authSuccess.style.display = 'none';
+            authSubmitBtn.disabled = true;
+            const email = authEmail.value.trim();
+            const password = authPassword.value;
+            if (isLoginMode) {
+                if (!validateEmail(email)) { authError.textContent = 'Invalid email.'; authError.style.display = 'block'; authSubmitBtn.disabled = false; return; }
+                if (!validatePassword(password)) { authError.textContent = 'Password must be 8-100 characters.'; authError.style.display = 'block'; authSubmitBtn.disabled = false; return; }
+                try {
+                    const res = await fetch('/api/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Login failed');
+                    localStorage.setItem('authToken', data.token);
+                    checkAuthAndAdmin();
+                } catch (err) {
+                    authError.textContent = err.message;
+                    authError.style.display = 'block';
+                } finally {
+                    authSubmitBtn.disabled = false;
+                }
+            } else {
+                const name = authName.value.trim();
+                const roles = Array.from(document.querySelectorAll('input[name=role]:checked')).map(cb => cb.value);
+                if (!validateEmail(email)) { authError.textContent = 'Invalid email.'; authError.style.display = 'block'; authSubmitBtn.disabled = false; return; }
+                if (!validatePassword(password)) { authError.textContent = 'Password must be 8-100 characters.'; authError.style.display = 'block'; authSubmitBtn.disabled = false; return; }
+                if (!validateName(name)) { authError.textContent = 'Name must be 2-100 characters.'; authError.style.display = 'block'; authSubmitBtn.disabled = false; return; }
+                if (!validateRoles(roles)) { authError.textContent = 'Select at least one role.'; authError.style.display = 'block'; authSubmitBtn.disabled = false; return; }
+                try {
+                    const res = await fetch('/api/register', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password, name, roles })
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Registration failed');
+                    authSuccess.textContent = 'Registration successful! You may now log in.';
+                    authSuccess.style.display = 'block';
+                    setTimeout(() => setAuthMode(true), 1200);
+                } catch (err) {
+                    authError.textContent = err.message;
+                    authError.style.display = 'block';
+                } finally {
+                    authSubmitBtn.disabled = false;
+                }
+            }
+        };
+
+        // --- Theme and UI Setup ---
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const savedTheme = localStorage.getItem('theme');
+        applyTheme(savedTheme ? savedTheme === 'dark' : prefersDark);
+
+        // --- User Management UI Setup (only if admin) ---
+        const userTableBody = document.getElementById('userTableBody');
+        const addUserButton = document.getElementById('addUserButton');
+        const userModalOverlay = document.getElementById('userModalOverlay');
+        const userForm = document.getElementById('userForm');
+        const cancelButton = document.getElementById('cancelButton');
+        const modalTitle = document.getElementById('modalTitle');
+        const userIdField = document.getElementById('userId');
+        const passwordField = document.getElementById('password');
+        let currentEditUserId = null;
+        let users = [];
+        function showModal(isEditMode = false, userData = null) {
+            userForm.reset();
+            passwordField.setAttribute('placeholder', 'Enter new password');
+            passwordField.required = !isEditMode;
+            document.querySelectorAll('#roleCheckboxes input[type=checkbox]').forEach(cb => cb.checked = false);
+            if (isEditMode && userData) {
+                modalTitle.textContent = 'Edit User';
+                userIdField.value = userData._id;
+                document.getElementById('username').value = userData.username;
+                document.getElementById('email').value = userData.email;
+                if (Array.isArray(userData.role)) {
+                    userData.role.forEach(r => {
+                        const cb = document.querySelector(`#roleCheckboxes input[type=checkbox][value='${r}']`);
+                        if (cb) cb.checked = true;
+                    });
+                }
+                document.getElementById('accountType').value = userData.accountType;
+                passwordField.setAttribute('placeholder', 'Leave blank to keep current password');
+                currentEditUserId = userData._id;
+            } else {
+                modalTitle.textContent = 'Add New User';
+                currentEditUserId = null;
+            }
+            userModalOverlay.classList.remove('hidden');
+        }
+        function hideModal() {
+            userModalOverlay.classList.add('hidden');
+            userForm.reset();
+            currentEditUserId = null;
+        }
+        function renderUsersTable() {
+            userTableBody.innerHTML = '';
+            if (!users || users.length === 0) {
+                userTableBody.innerHTML = `<tr><td colspan="5" class="text-center p-4" style="color: var(--text-secondary);">No users found. Click "Add New User" to create one.</td></tr>`;
+                return;
+            }
+            users.forEach(user => {
+                const row = userTableBody.insertRow();
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">${safeText(user.username)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">${safeText(user.email)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">${safeText(Array.isArray(user.role) ? user.role.join(', ') : '')}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">${safeText(user.accountType)}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <button onclick="handleEditUser('${user._id}')" class="edit-button mr-2" title="Edit User"><span class="material-icons align-middle" style="font-size: 1.1rem;">edit</span></button>
+                        <button onclick="handleDeleteUser('${user._id}')" class="delete-button" title="Delete User"><span class="material-icons align-middle" style="font-size: 1.1rem;">delete</span></button>
+                    </td>
+                `;
+            });
+        }
+        async function fetchUsers() {
+            userTableBody.innerHTML = `<tr><td colspan="5" class="text-center p-4" style="color: var(--text-secondary);">Loading users...</td></tr>`;
+            try {
+                const token = localStorage.getItem('authToken');
+                const response = await fetch('/api/users', {
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                });
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status}, ${errorText}`);
+                }
+                users = await response.json();
+                renderUsersTable();
+            } catch (error) {
+                console.error("Failed to fetch users:", error);
+                userTableBody.innerHTML = `<tr><td colspan="5" class="text-center p-4" style="color:var(--text-error);">Error loading users: ${error.message}</td></tr>`;
+            }
+        }
+        window.handleEditUser = (userId) => {
+            const userToEdit = users.find(user => user._id === userId);
+            if (userToEdit) {
+                showModal(true, userToEdit);
+            }
+        };
+        window.handleDeleteUser = async (userId) => {
+            if (!confirm('Are you sure you want to delete this user?')) return;
+            try {
+                const response = await fetch(`/api/users/${userId}`, { method: 'DELETE' });
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ message: 'Failed to delete user and parse error response.' }));
+                    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                }
+                fetchUsers();
+            } catch (error) {
+                console.error('Error deleting user:', error);
+                alert(`Error deleting user: ${error.message}`);
+            }
+        };
+        userForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const formData = new FormData(userForm);
+            const roles = Array.from(document.querySelectorAll('#roleCheckboxes input[type=checkbox]:checked')).map(cb => cb.value);
+            const userData = Object.fromEntries(formData.entries());
+            userData.role = roles;
+            if (currentEditUserId && !userData.password) {
+                delete userData.password;
+            } else if (!currentEditUserId && !userData.password) {
+                alert("Password is required for new users.");
+                passwordField.focus();
+                return;
+            }
+            const url = currentEditUserId ? `/api/users/${currentEditUserId}` : '/api/users';
+            const method = currentEditUserId ? 'PUT' : 'POST';
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(userData)
+                });
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ message: `Failed to ${currentEditUserId ? 'update' : 'create'} user.` }));
+                    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                }
+                hideModal();
+                fetchUsers();
+            } catch (error) {
+                console.error(`Error ${currentEditUserId ? 'updating' : 'creating'} user:`, error);
+                alert(`Error: ${error.message}`);
+            }
+        }, true);
+        if (addUserButton) addUserButton.addEventListener('click', () => showModal());
+        if (cancelButton) cancelButton.addEventListener('click', hideModal);
+        if (userModalOverlay) userModalOverlay.addEventListener('click', (e) => {
+            if (e.target === userModalOverlay) {
+                hideModal();
+            }
+        });
+        // Only fetch users if authenticated and admin
+        if (isAuthenticated() && getAccountTypeFromToken() === 'Admin') {
+            fetchUsers();
+        }
+        // --- Logout Button Handler ---
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', function() {
+                localStorage.removeItem('authToken');
+                showMainContent(false);
+                setAuthMode(true);
+                showAuthModal();
+            });
+        }
+        updateUserMgmtNavVisibility(); // Ensure nav visibility is set after login/register
+    });
+
+    // Hide User Management nav button for non-admins
+    function updateUserMgmtNavVisibility() {
+        const userMgmtBtn = document.getElementById('userMgmtNavBtn');
+        if (!userMgmtBtn) return;
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            userMgmtBtn.style.display = 'none';
+            return;
+        }
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const accountType = payload.accountType || payload.account_type || null;
+            userMgmtBtn.style.display = (accountType === 'Admin') ? '' : 'none';
+        } catch {
+            userMgmtBtn.style.display = 'none';
+        }
+    }
+    document.addEventListener('DOMContentLoaded', updateUserMgmtNavVisibility);
+    window.addEventListener('storage', updateUserMgmtNavVisibility); // update if token changes in another tab
+
+    // --- Input Validation Helpers ---
+    function validateEmail(email) {
+      return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
+    }
+    function validatePassword(password) {
+      return typeof password === 'string' && password.length >= 8 && password.length <= 100;
+    }
+    function validateName(name) {
+      return typeof name === 'string' && name.trim().length >= 2 && name.trim().length <= 100;
+    }
+    function validateRoles(roles) {
+      return Array.isArray(roles) && roles.length > 0 && roles.every(r => typeof r === 'string' && r.length > 0);
+    }
+    function validateNotEmpty(val) {
+      return typeof val === 'string' && val.trim().length > 0;
+    }
+    // --- Output Sanitization Helper ---
+    function sanitizeHTML(str) {
+      const temp = document.createElement('div');
+      temp.textContent = str;
+      return temp.innerHTML;
+    }
+    // --- Patch Registration/Login Form Submission ---
+    if (typeof authForm !== 'undefined' && authForm) {
+      authForm.onsubmit = async function(e) {
+        e.preventDefault();
+        authError.style.display = 'none';
+        authSuccess.style.display = 'none';
+        authSubmitBtn.disabled = true;
+        const email = authEmail.value.trim();
+        const password = authPassword.value;
+        if (isLoginMode) {
+          if (!validateEmail(email)) { authError.textContent = 'Invalid email.'; authError.style.display = 'block'; authSubmitBtn.disabled = false; return; }
+          if (!validatePassword(password)) { authError.textContent = 'Password must be 8-100 characters.'; authError.style.display = 'block'; authSubmitBtn.disabled = false; return; }
+          // ...existing login fetch code...
+        } else {
+          const name = authName.value.trim();
+          const roles = Array.from(document.querySelectorAll('input[name=role]:checked')).map(cb => cb.value);
+          if (!validateEmail(email)) { authError.textContent = 'Invalid email.'; authError.style.display = 'block'; authSubmitBtn.disabled = false; return; }
+          if (!validatePassword(password)) { authError.textContent = 'Password must be 8-100 characters.'; authError.style.display = 'block'; authSubmitBtn.disabled = false; return; }
+          if (!validateName(name)) { authError.textContent = 'Name must be 2-100 characters.'; authError.style.display = 'block'; authSubmitBtn.disabled = false; return; }
+          if (!validateRoles(roles)) { authError.textContent = 'Select at least one role.'; authError.style.display = 'block'; authSubmitBtn.disabled = false; return; }
+          // ...existing registration fetch code...
+        }
+      };
+    }
+    // --- Patch User Modal Form Validation ---
+    if (typeof userForm !== 'undefined' && userForm) {
+      userForm.addEventListener('submit', function(e) {
+        let valid = true;
+        const username = userForm.elements['username']?.value;
+        const email = userForm.elements['email']?.value;
+        const password = userForm.elements['password']?.value;
+        const roles = Array.from(document.querySelectorAll('#roleCheckboxes input[type=checkbox]:checked')).map(cb => cb.value);
+        if (!validateName(username)) valid = false;
+        if (!validateEmail(email)) valid = false;
+        if (!userForm.elements['userId']?.value && !validatePassword(password)) valid = false; // Only require password for new users
+        if (!validateRoles(roles)) valid = false;
+        if (!valid) {
+          e.preventDefault();
+          alert('Please correct invalid or missing fields.');
+        }
+      }, true);
+    }
+    // --- Patch Table Rendering to Sanitize Output ---
+    function safeText(str) { return sanitizeHTML(str == null ? '' : String(str)); }
+    // Example: When rendering user-generated content in table cells, use safeText(...)
+    </script>
+</body>
+</html>
