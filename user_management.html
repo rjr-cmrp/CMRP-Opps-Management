@@ -335,7 +335,9 @@
     if (logoutBtn) {
         logoutBtn.addEventListener('click', function() {
             localStorage.removeItem('authToken');
-            window.location.href = 'index.html'; // Redirect to main login page
+            // Broadcast logout to all tabs
+            localStorage.setItem('authEvent', JSON.stringify({ type: 'logout', ts: Date.now() }));
+            window.location.href = 'index.html'; // Redirect to index login page
         });
     }
 
@@ -470,6 +472,8 @@
                         const data = await res.json();
                         if (!res.ok) throw new Error(data.error || 'Login failed');
                         localStorage.setItem('authToken', data.token);
+                        // Broadcast login event to all tabs
+                        localStorage.setItem('authEvent', JSON.stringify({ type: 'login', ts: Date.now() }));
                         checkAuthAndAdmin();
                     } catch (err) {
                         authError.textContent = err.message;
@@ -592,6 +596,8 @@
                     const data = await res.json();
                     if (!res.ok) throw new Error(data.error || 'Login failed');
                     localStorage.setItem('authToken', data.token);
+                    // Broadcast login event to all tabs
+                    localStorage.setItem('authEvent', JSON.stringify({ type: 'login', ts: Date.now() }));
                     checkAuthAndAdmin();
                 } catch (err) {
                     authError.textContent = err.message;
@@ -719,7 +725,11 @@
         window.handleDeleteUser = async (userId) => {
             if (!confirm('Are you sure you want to delete this user?')) return;
             try {
-                const response = await fetch(`/api/users/${userId}`, { method: 'DELETE' });
+                const token = localStorage.getItem('authToken');
+                const response = await fetch(`/api/users/${userId}`, {
+                    method: 'DELETE',
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                });
                 if (!response.ok) {
                     const errorData = await response.json().catch(() => ({ message: 'Failed to delete user and parse error response.' }));
                     throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
@@ -877,6 +887,12 @@
     // --- Patch Table Rendering to Sanitize Output ---
     function safeText(str) { return sanitizeHTML(str == null ? '' : String(str)); }
     // Example: When rendering user-generated content in table cells, use safeText(...)
+    // Listen for login/logout events to update nav visibility in all tabs
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'authEvent') {
+            updateUserMgmtNavVisibility();
+        }
+    });
     </script>
 </body>
 </html>

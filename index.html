@@ -2412,6 +2412,7 @@
                 const data = await res.json();
                 if (!res.ok) throw new Error(data.error || 'Login failed');
                 localStorage.setItem('authToken', data.token);
+                updateUserMgmtNavVisibility(); // Ensure nav updates immediately after login
                 showMainContent(true);
                 hideAuthModal();
                 addLogoutButton && addLogoutButton();
@@ -2619,6 +2620,7 @@
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Login failed');
             localStorage.setItem('authToken', data.token);
+            updateUserMgmtNavVisibility(); // Ensure nav updates immediately after login
             showMainContent(true);
             hideAuthModal();
             addLogoutButton && addLogoutButton();
