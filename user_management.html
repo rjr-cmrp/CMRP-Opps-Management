@@ -293,36 +293,42 @@
 
     <!-- Move script to end of body -->
     <script>
-    // --- Logo Theme Switcher & Theme Logic ---
-    function updateLogoForTheme() {
-        const logo = document.getElementById('cmrpLogo');
-        const isDark = document.documentElement.classList.contains('dark');
-        logo.src = isDark ? 'Logo/CMRP Logo Light.svg' : 'Logo/CMRP Logo Dark.svg';
-    }
-    function applyTheme(theme) {
-        const isDark = theme === 'dark';
-        document.documentElement.classList.toggle('dark', isDark);
-        // Invert logo for dark/light
-        const logo = document.getElementById('cmrpLogo');
-        if (logo) logo.src = isDark ? 'Logo/CMRP Logo Light.svg' : 'Logo/CMRP Logo Dark.svg';
-    }
-    function toggleTheme() {
-        const currentTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
-        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-        applyTheme(newTheme);
+    // --- Unified Theme Sync: Always use localStorage value, update <html>, <body>, and logo ---
+    (function() {
+      function applyThemeFromStorage() {
+        var theme = localStorage.getItem('theme');
+        if (!theme) {
+          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          theme = prefersDark ? 'dark' : 'light';
+          localStorage.setItem('theme', theme);
+        }
+        if (theme === 'dark') {
+          document.documentElement.classList.add('dark');
+          document.body.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+          document.body.classList.remove('dark');
+        }
+        var logo = document.getElementById('cmrpLogo');
+        if (logo) logo.src = (theme === 'dark') ? 'Logo/CMRP Logo Light.svg' : 'Logo/CMRP Logo Dark.svg';
+      }
+      // Initial theme application
+      applyThemeFromStorage();
+      // Listen for theme changes in other tabs/pages
+      window.addEventListener('storage', function(e) {
+        if (e.key === 'theme') {
+          applyThemeFromStorage();
+        }
+      });
+      // Theme toggle button
+      var themeToggleBtn = document.getElementById('themeToggle');
+      if (themeToggleBtn) themeToggleBtn.addEventListener('click', function() {
+        var theme = localStorage.getItem('theme');
+        var newTheme = (theme === 'dark') ? 'light' : 'dark';
         localStorage.setItem('theme', newTheme);
-    }
-    document.addEventListener('DOMContentLoaded', function() {
-        // ...existing code...
-        const savedTheme = localStorage.getItem('theme');
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
-        applyTheme(initialTheme);
-        const themeToggle = document.getElementById('themeToggle');
-        if (themeToggle) themeToggle.addEventListener('click', toggleTheme);
-        // ...existing code...
-    });
-
+        applyThemeFromStorage();
+      });
+    })();
     // --- Logout Button ---
     const logoutBtn = document.getElementById('logoutBtn');
     if (logoutBtn) {
@@ -624,7 +630,7 @@
         // --- Theme and UI Setup ---
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         const savedTheme = localStorage.getItem('theme');
-        applyTheme(savedTheme ? savedTheme === 'dark' : prefersDark);
+        // applyTheme(savedTheme ? savedTheme === 'dark' : prefersDark); // <-- removed, handled by IIFE
 
         // --- User Management UI Setup (only if admin) ---
         const userTableBody = document.getElementById('userTableBody');
