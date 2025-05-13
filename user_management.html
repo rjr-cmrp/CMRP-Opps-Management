@@ -245,8 +245,9 @@
                     <label for="password">Password</label>
                     <input type="password" id="password" name="password" required>
                     <div id="roleCheckboxes" class="mb-2">
-                        <label><input type="checkbox" name="role" value="Admin"> Admin</label>
-                        <label><input type="checkbox" name="role" value="User"> User</label>
+                        <label><input type="checkbox" name="role" value="Technical"> Technical</label>
+                        <label><input type="checkbox" name="role" value="Proposal"> Proposal</label>
+                        <label><input type="checkbox" name="role" value="Sales"> Sales</label>
                     </div>
                     <label for="accountType">Account Type</label>
                     <select id="accountType" name="accountType" required>
@@ -334,9 +335,7 @@
     if (logoutBtn) {
         logoutBtn.addEventListener('click', function() {
             localStorage.removeItem('authToken');
-            showMainContent(false);
-            setAuthMode(true);
-            showAuthModal();
+            window.location.href = 'index.html'; // Redirect to main login page
         });
     }
 
@@ -746,10 +745,14 @@
             }
             const url = currentEditUserId ? `/api/users/${currentEditUserId}` : '/api/users';
             const method = currentEditUserId ? 'PUT' : 'POST';
+            const token = localStorage.getItem('authToken');
             try {
                 const response = await fetch(url, {
                     method: method,
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+                    },
                     body: JSON.stringify(userData)
                 });
                 if (!response.ok) {
