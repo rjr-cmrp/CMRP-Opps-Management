@@ -380,13 +380,71 @@ if (themeToggle) {
         const isDark = document.documentElement.classList.toggle('dark');
         const logo = document.getElementById('cmrpLogo');
         if (logo) {
-            logo.src = isDark ? 'Logo/CMRP Logo Dark.svg' : 'Logo/CMRP Logo Light.svg';
+            logo.src = isDark ? 'Logo/CMRP Logo Light.svg' : 'Logo/CMRP Logo Dark.svg';
         }
         fetchForecastData(currentOpStatusFilter).then(data => {
             if (data) renderForecastDashboard(data, currentOpStatusFilter);
         });
     });
 }
+
+// --- OP STATUS FILTER BUTTONS ---
+function setupOpStatusFilterButtons() {
+    const btns = document.querySelectorAll('.op-status-filter-btn');
+    btns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            btns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            const status = btn.dataset.status || 'all';
+            currentOpStatusFilter = status;
+            fetchForecastData(currentOpStatusFilter).then(data => {
+                if (data) renderForecastDashboard(data, currentOpStatusFilter);
+            });
+            fetchForecastWeekSummary().then(data => {
+                if (data && typeof renderForecastWeeklyChart === 'function') {
+                    renderForecastWeeklyChart(data.weekSummary);
+                }
+            });
+        });
+    });
+}
+
+// --- CHART/DETAILS TOGGLE BUTTONS ---
+function setupChartTableToggles() {
+    const weeklyChartBtn = document.getElementById('weeklyChartBtn');
+    const monthlyChartSection = document.getElementById('monthlyChartSection');
+    const weeklyChartSection = document.getElementById('weeklyChartSection');
+    if (weeklyChartBtn && monthlyChartSection && weeklyChartSection) {
+        weeklyChartBtn.addEventListener('click', function() {
+            if (weeklyChartSection.style.display === 'none' || getComputedStyle(weeklyChartSection).display === 'none') {
+                weeklyChartSection.style.display = '';
+                monthlyChartSection.style.display = 'none';
+                weeklyChartBtn.classList.add('active');
+            } else {
+                weeklyChartSection.style.display = 'none';
+                monthlyChartSection.style.display = '';
+                weeklyChartBtn.classList.remove('active');
+            }
+        });
+    }
+    const projectDetailsBtn = document.getElementById('projectDetailsBtn');
+    const monthlyTableSection = document.getElementById('monthlyTableSection');
+    const projectTableSection = document.getElementById('projectTableSection');
+    if (projectDetailsBtn && monthlyTableSection && projectTableSection) {
+        projectDetailsBtn.addEventListener('click', function() {
+            if (projectTableSection.style.display === 'none' || getComputedStyle(projectTableSection).display === 'none') {
+                projectTableSection.style.display = '';
+                monthlyTableSection.style.display = 'none';
+                projectDetailsBtn.classList.add('active');
+            } else {
+                projectTableSection.style.display = 'none';
+                monthlyTableSection.style.display = '';
+                projectDetailsBtn.classList.remove('active');
+            }
+        });
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const savedTheme = localStorage.getItem('theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -399,6 +457,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     addQuarterFilterButtons();
     setupProjectTableSorters();
+    setupOpStatusFilterButtons();
+    setupChartTableToggles();
     fetchForecastData(currentOpStatusFilter).then(data => {
         if (data) renderForecastDashboard(data, currentOpStatusFilter);
     });
