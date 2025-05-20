@@ -807,6 +807,17 @@
                     window._pendingForecastRevisionSummary = summary;
                     tryAddForecastRevisionSummaryToChart();
                  });
+                 // If you have raw forecast data for weekly, use it here:
+                 if (data.forecastRawWeekly) {
+                     renderForecastWeeklyChartCMRP(data.forecastRawWeekly);
+                 } else {
+                     // fallback: fetch from API if needed
+                     fetchForecastWeekSummary().then(weekData => {
+                         if (weekData && weekData.weekSummary) {
+                             renderForecastWeeklyChart(weekData.weekSummary);
+                         }
+                     });
+                 }
              } else {
                  console.error("Initial forecast data fetch failed.");
                  // Display error message on page?
@@ -1402,6 +1413,17 @@
                     window._pendingForecastRevisionSummary = summary;
                     tryAddForecastRevisionSummaryToChart();
                  });
+                 // If you have raw forecast data for weekly, use it here:
+                 if (data.forecastRawWeekly) {
+                     renderForecastWeeklyChartCMRP(data.forecastRawWeekly);
+                 } else {
+                     // fallback: fetch from API if needed
+                     fetchForecastWeekSummary().then(weekData => {
+                         if (weekData && weekData.weekSummary) {
+                             renderForecastWeeklyChart(weekData.weekSummary);
+                         }
+                     });
+                 }
              } else {
                  console.error("Initial forecast data fetch failed.");
                  // Display error message on page?
@@ -1499,6 +1521,104 @@
     }
     const observer = new MutationObserver(updateLogoForTheme);
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+
+    // --- CMRP Week Calculation Utilities ---
+    function getFirstSundayOrMonday(year, month) {
+        // month: 0-based (0=Jan)
+        const firstDay = new Date(year, month, 1);
+        const dayOfWeek = firstDay.getDay(); // 0=Sun, 1=Mon, ...
+        let offset = 0;
+        if (dayOfWeek === 0) offset = 0; // Sunday
+        else if (dayOfWeek === 1) offset = 0; // Monday
+        else if (dayOfWeek > 1) offset = (7 - dayOfWeek + 1); // Next Monday
+        // But if Sunday comes before Monday, use Sunday
+        if (dayOfWeek > 0) {
+            const sundayOffset = 7 - dayOfWeek;
+            const mondayOffset = (8 - dayOfWeek) % 7;
+            offset = Math.min(sundayOffset, mondayOffset);
+        }
+        return new Date(year, month, 1 + offset);
+    }
+
+    function getCMRPWeeks(year, month) {
+        // Returns array of {start: Date, end: Date, weekNum: number}
+        // month: 0-based
+        const firstCMRPDay = getFirstSundayOrMonday(year, month);
+        const lastDayOfMonth = new Date(year, month + 1, 0);
+        let weeks = [];
+        let weekStart = new Date(firstCMRPDay);
+        let weekNum = 1;
+        while (weekStart <= lastDayOfMonth) {
+            let weekEnd = new Date(weekStart);
+            weekEnd.setDate(weekEnd.getDate() + 6);
+            // If this is the last week, force weekEnd to last day of month
+            if (weekEnd >= lastDayOfMonth) {
+                weekEnd = new Date(lastDayOfMonth);
+            }
+            weeks.push({
+                start: new Date(weekStart),
+                end: new Date(weekEnd),
+                weekNum
+            });
+            weekNum++;
+            weekStart.setDate(weekStart.getDate() + 7);
+        }
+        return weeks;
+    }
+
+    function getCMRPWeekForDate(date) {
+        // Returns {weekNum, start, end} for the CMRP week this date falls in
+        const year = date.getFullYear();
+        const month = date.getMonth();
+        const weeks = getCMRPWeeks(year, month);
+        if (!Array.isArray(weeks) || weeks.length === 0) return null;
+        for (let w of weeks) {
+            if (date >= w.start && date <= w.end) return w;
+        }
+        // If not found, check if it's in the last week (spillover into next month)
+        if (weeks.length > 0 && date > weeks[weeks.length - 1].end) {
+            return weeks[weeks.length - 1];
+        }
+        return null;
+    }
+
+    // --- Patch Weekly Chart/Table Rendering to Use CMRP Weeks ---
+    function groupForecastByCMRPWeek(forecastData) {
+        // forecastData: array of {date: 'YYYY-MM-DD', ...}
+        const grouped = {};
+        forecastData.forEach(item => {
+            const d = new Date(item.date);
+            const cmrpWeek = getCMRPWeekForDate(d);
+            if (!cmrpWeek) return;
+            const key = `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-W${cmrpWeek.weekNum}`;
+            if (!grouped[key]) {
+                grouped[key] = {
+                    weekLabel: `${d.toLocaleString('default', { month: 'short' })} W${cmrpWeek.weekNum}`,
+                    weekNum: cmrpWeek.weekNum,
+                    start: cmrpWeek.start,
+                    end: cmrpWeek.end,
+                    items: []
+                };
+            }
+            grouped[key].items.push(item);
+        });
+        // Sort by week start
+        return Object.values(grouped).sort((a, b) => a.start - b.start);
+    }
+
+    // --- Integrate with Weekly Chart Rendering ---
+    function renderForecastWeeklyChartCMRP(rawData) {
+        // rawData: array of {date, count, totalAmount, ...}
+        const groupedWeeks = groupForecastByCMRPWeek(rawData);
+        // Convert groupedWeeks to week summary array format expected by renderForecastWeeklyChart
+        const weekSummaryArr = groupedWeeks.map(w => ({
+            monthWeek: w.weekLabel,
+            count: w.items.length,
+            totalAmount: w.items.reduce((sum, i) => sum + (i.totalAmount || 0), 0)
+        }));
+        renderForecastWeeklyChart(weekSummaryArr);
+    }
+
     </script>
 <!-- Unified Auth Modal HTML (copied/adapted from win-loss_dashboard.html) -->
     <div id="authModalOverlay" class="auth-modal-overlay" style="display:none;"></div>

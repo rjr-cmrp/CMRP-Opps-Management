@@ -1,3 +1,4 @@
+require('dotenv').config(); // Load environment variables from .env
 console.log("=== SERVER.JS STARTED ===");
 const express = require('express');
 const path = require('path'); // Import the path module
@@ -8,17 +9,18 @@ const jwt = require('jsonwebtoken');
 const fs = require('fs');
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey'; // Use env var in production
 const { body, validationResult } = require('express-validator');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
 const port = 3000; // You can change the port if needed
 
 // PostgreSQL connection pool
 const pool = new Pool({
-  user: 'reuelrivera', // Replace with your actual username if different
-  host: 'localhost',
-  database: 'opps_management', // Replace with your actual database name if different
-  password: '', // Replace with your actual password if you have one
-  port: 5432, // Default PostgreSQL port
+  user: process.env.PGUSER || 'reuelrivera',
+  host: process.env.PGHOST || 'localhost',
+  database: process.env.PGDATABASE || 'opps_management',
+  password: process.env.PGPASSWORD || '',
+  port: process.env.PGPORT ? parseInt(process.env.PGPORT) : 5432,
 });
 
 // --- Helper Functions ---
@@ -242,6 +244,17 @@ function calculateForecastDashboardData(opportunities) {
 // --- Express Setup ---
 app.use(express.json());
 
+// --- HTTPS Enforcement in Production ---
+if (process.env.NODE_ENV === 'production') {
+  app.use((req, res, next) => {
+    if (req.headers['x-forwarded-proto'] && req.headers['x-forwarded-proto'] !== 'https') {
+      // Redirect to HTTPS
+      return res.redirect(301, 'https://' + req.headers.host + req.url);
+    }
+    next();
+  });
+}
+
 // Serve static files except for /api/*
 app.use((req, res, next) => {
   if (req.path.startsWith('/api/')) return next();
@@ -277,6 +290,15 @@ function requireAdmin(req, res, next) {
   }
   next();
 }
+
+// --- Rate Limiting for Auth Endpoints ---
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 10, // limit each IP to 10 requests per windowMs
+  message: { error: 'Too many attempts, please try again later.' },
+  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+});
 
 // --- API Endpoints ---
 app.get('/api/opportunities', async (req, res) => {
@@ -329,7 +351,7 @@ app.get('/api/dashboard', async (req, res) => {
     });
   } catch (error) {
     console.error('[API /api/dashboard] Error generating win/loss dashboard data:', error);
-    res.status(500).json({ error: 'Failed to generate win/loss dashboard data', details: error.message });
+    res.status(500).json({ error: 'Failed to generate win/loss dashboard data' });
   }
 });
 
@@ -456,7 +478,7 @@ app.get('/api/forecast-dashboard', async (req, res) => {
     });
   } catch (error) {
     console.error('[API /api/forecast-dashboard] Error generating forecast dashboard data:', error);
-    res.status(500).json({ error: 'Failed to generate forecast dashboard data', details: error.message });
+    res.status(500).json({ error: 'Failed to generate forecast dashboard data' });
   }
 });
 
@@ -567,7 +589,7 @@ app.get('/api/forecast-dashboard-weeks', async (req, res) => {
         res.json({ weekSummary: weekSummaryArr });
     } catch (error) {
         console.error('[API /api/forecast-dashboard-weeks] Error:', error);
-        res.status(500).json({ error: 'Failed to generate weekly forecast dashboard data', details: error.message });
+        res.status(500).json({ error: 'Failed to generate weekly forecast dashboard data' });
     }
 });
 
@@ -633,7 +655,7 @@ app.post('/api/opportunities', authenticateToken,
       res.status(201).json(createdOpp);
     } catch (error) {
       console.error('Error inserting new opportunity or revision:', error);
-      res.status(500).json({ error: 'Failed to create opportunity.', details: error.message });
+      res.status(500).json({ error: 'Failed to create opportunity.' });
     }
   }
 );
@@ -787,7 +809,7 @@ app.put('/api/opportunities/:uid', authenticateToken,
     } catch (error) {
       await client.query('ROLLBACK');
       console.error(`[PUT /api/opportunities/${uid}] Error during update/revision:`, error);
-      res.status(500).json({ error: 'Failed to update opportunity.', details: error.message });
+      res.status(500).json({ error: 'Failed to update opportunity.' });
     } finally {
       client.release();
     }
@@ -817,7 +839,7 @@ app.delete('/api/opportunities/:uid', authenticateToken, async (req, res) => {
   } catch (error) {
       await client.query('ROLLBACK');
       console.error(`[DELETE /api/opportunities/${uid}] Error during delete:`, error);
-      res.status(500).json({ error: 'Failed to delete opportunity.', details: error.message });
+      res.status(500).json({ error: 'Failed to delete opportunity.' });
   } finally {
       client.release();
   }
@@ -837,7 +859,7 @@ app.get('/api/opportunities/:uid/revisions', async (req, res) => {
     res.json(result.rows);
   } catch (error) {
     console.error('Error fetching revision history:', error);
-    res.status(500).json({ error: 'Failed to fetch revision history.', details: error.message });
+    res.status(500).json({ error: 'Failed to fetch revision history.' });
   }
 });
 
@@ -856,12 +878,12 @@ app.get('/api/opportunities/:uid/forecast-revisions', async (req, res) => {
     res.json(result.rows);
   } catch (error) {
     console.error('Error fetching forecast revision history:', error);
-    res.status(500).json({ error: 'Failed to fetch forecast revision history.', details: error.message });
+    res.status(500).json({ error: 'Failed to fetch forecast revision history.' });
   }
 });
 
 // --- AUTH: Register ---
-app.post('/api/register',
+app.post('/api/register', authLimiter,
   [
     body('email').isEmail().normalizeEmail(),
     body('password').isLength({ min: 8, max: 100 }).withMessage('Password must be 8-100 chars.'),
@@ -904,7 +926,7 @@ app.post('/api/register',
 });
 
 // --- AUTH: Login ---
-app.post('/api/login',
+app.post('/api/login', authLimiter,
   [
     body('email').isEmail().normalizeEmail(),
     body('password').isLength({ min: 8, max: 100 })
@@ -918,9 +940,24 @@ app.post('/api/login',
         const { email, password } = req.body;
         if (!email || !password) return res.status(400).json({ error: 'Email and password required.' });
         const userRes = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
-        if (userRes.rows.length === 0) return res.status(401).json({ error: 'Invalid credentials.' });
+        if (userRes.rows.length === 0) {
+          console.error(`[LOGIN] No user found for email: ${email}`);
+          return res.status(401).json({ error: 'Invalid credentials.' });
+        }
         const user = userRes.rows[0];
-        const valid = await bcrypt.compare(password, user.password_hash);
+        console.log('[LOGIN] User record:', user);
+        if (!user.password_hash) {
+          console.error(`[LOGIN] No password_hash for user: ${email}`);
+          return res.status(500).json({ error: 'User record missing password hash.' });
+        }
+        let valid = false;
+        try {
+          valid = await bcrypt.compare(password, user.password_hash);
+        } catch (bcryptErr) {
+          console.error('[LOGIN] bcrypt.compare error:', bcryptErr);
+          return res.status(500).json({ error: 'Password hash comparison failed.' });
+        }
+        console.log(`[LOGIN] Password valid: ${valid}`);
         if (!valid) return res.status(401).json({ error: 'Invalid credentials.' });
         // Get roles
         const rolesRes = await pool.query('SELECT r.name FROM roles r JOIN user_roles ur ON r.id = ur.role_id WHERE ur.user_id = $1', [user.id]);
@@ -931,9 +968,11 @@ app.post('/api/login',
         return res.json({ token });
     } catch (err) {
         console.error('/api/login error:', err);
+        if (err && err.stack) console.error(err.stack);
         return res.status(500).json({ error: 'Login failed.' });
     }
-});
+  }
+);
 
 // --- One-time endpoint to fix test user password hash ---
 app.get('/api/fix-test-user-password', async (req, res) => {
@@ -1096,6 +1135,95 @@ app.post('/api/audit-log-page-access', express.json(), (req, res) => {
     console.error('Failed to write to audit.log:', err);
   }
   res.json({ success: true });
+});
+
+// --- Opps Monitoring Import/Export API ---
+const multer = require('multer');
+const upload = multer({ dest: 'uploads/' });
+const fs = require('fs');
+const csv = require('fast-csv');
+
+// Export opps_monitoring as CSV (import-template ready)
+app.get('/api/opps-monitoring/export', async (req, res) => {
+  try {
+    // Get all columns in correct order for import template
+    const columns = [
+      'encoded_date','project_name','project_code','rev','client','solutions','sol_particulars','industries','ind_particulars','date_received','client_deadline','decision','account_mgr','pic','bom','status','submitted_date','margin','final_amt','opp_status','date_awarded_lost','lost_rca','l_particulars','a','c','r','u','d','remarks_comments','uid','forecast_date'
+    ];
+    const result = await pool.query('SELECT ' + columns.map(c => `"${c}"`).join(', ') + ' FROM opps_monitoring ORDER BY encoded_date DESC');
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="opps_monitoring_import_template.csv"');
+    csv.write([columns, ...result.rows.map(row => columns.map(c => row[c]))], { headers: false }).pipe(res);
+  } catch (err) {
+    console.error('Export error:', err);
+    res.status(500).send('Failed to export opps_monitoring');
+  }
+});
+
+// Import opps_monitoring from CSV (upsert/merge, preserve forecast values)
+app.post('/api/opps-monitoring/import', upload.single('csvFile'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ success: false, error: 'No file uploaded' });
+  const fileRows = [];
+  const columns = [
+    'encoded_date','project_name','project_code','rev','client','solutions','sol_particulars','industries','ind_particulars','date_received','client_deadline','decision','account_mgr','pic','bom','status','submitted_date','margin','final_amt','opp_status','date_awarded_lost','lost_rca','l_particulars','a','c','r','u','d','remarks_comments','uid','forecast_date'
+  ];
+  fs.createReadStream(req.file.path)
+    .pipe(csv.parse({ headers: columns, ignoreEmpty: true, trim: true }))
+    .on('error', error => {
+      console.error('CSV parse error:', error);
+      res.status(400).json({ success: false, error: 'CSV parse error' });
+    })
+    .on('data', row => fileRows.push(row))
+    .on('end', async () => {
+      try {
+        const client = await pool.connect();
+        try {
+          await client.query('BEGIN');
+          for (const row of fileRows) {
+            // Upsert: update all fields except forecast_date if uid exists, else insert
+            const uid = row.uid;
+            if (!uid) continue;
+            // Remove empty strings/nulls for optional fields
+            Object.keys(row).forEach(k => { if (row[k] === '') row[k] = null; });
+            // Do not overwrite forecast_date if already present in DB
+            const existing = await client.query('SELECT forecast_date FROM opps_monitoring WHERE uid = $1', [uid]);
+            if (existing.rows.length > 0 && existing.rows[0].forecast_date) {
+              row.forecast_date = existing.rows[0].forecast_date;
+            }
+            // Upsert
+            const updateCols = columns.filter(c => c !== 'uid');
+            const setClause = updateCols.map((c, i) => `"${c}" = $${i+2}`).join(', ');
+            const values = updateCols.map(c => row[c]);
+            values.unshift(uid); // $1 = uid
+            const updateRes = await client.query(`UPDATE opps_monitoring SET ${setClause} WHERE uid = $1`, values);
+            if (updateRes.rowCount === 0) {
+              // Insert if not exists
+              const insertCols = columns;
+              const insertVals = insertCols.map((c, i) => `$${i+1}`);
+              await client.query(`INSERT INTO opps_monitoring (${insertCols.map(c => `"${c}"`).join(', ')}) VALUES (${insertVals.join(', ')})`, insertCols.map(c => row[c]));
+            }
+          }
+          await client.query('COMMIT');
+          res.json({ success: true });
+        } catch (err) {
+          await client.query('ROLLBACK');
+          console.error('Import error:', err);
+          res.status(500).json({ success: false, error: 'DB import error' });
+        } finally {
+          client.release();
+          fs.unlink(req.file.path, () => {}); // Clean up temp file
+        }
+      } catch (err) {
+        console.error('DB connect error:', err);
+        res.status(500).json({ success: false, error: 'DB connect error' });
+      }
+    });
+});
+
+// --- GLOBAL ERROR HANDLER ---
+app.use((err, req, res, next) => {
+  console.error('Unhandled error:', err);
+  res.status(500).json({ error: 'An unexpected error occurred.' });
 });
 
 app.listen(port, () => {

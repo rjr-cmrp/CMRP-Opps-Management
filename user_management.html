@@ -192,6 +192,8 @@
                 <a href="win-loss_dashboard.html" class="nav-square-btn" title="Win-Loss Dashboard"><span class="material-icons">line_axis</span></a>
                 <a href="forecastr_dashboard.html" class="nav-square-btn" title="Forecast Dashboard"><span class="material-icons">insights</span></a>
                 <a href="user_management.html" class="nav-square-btn active" id="userMgmtNavBtn" title="User Management"><span class="material-icons">group</span></a>
+                <a href="csv_formatter.html" class="nav-square-btn" id="csvFormatterNavBtn" title="CSV Formatter" style="display:none;"><span class="material-icons">table_view</span></a>
+                <a href="opps_monitoring_import_export.html" class="nav-square-btn" id="oppsImportExportNavBtn" title="Opps Monitoring Import/Export" style="display:none;"><span class="material-icons">sync_alt</span></a>
             </nav>
             <button id="themeToggle" class="nav-square-btn" title="Toggle Theme"><span class="material-icons">light_mode</span></button>
             <button id="logoutBtn" class="nav-square-btn" title="Logout"><span class="material-icons">logout</span></button>
@@ -803,18 +805,26 @@
     // Hide User Management nav button for non-admins
     function updateUserMgmtNavVisibility() {
         const userMgmtBtn = document.getElementById('userMgmtNavBtn');
+        const csvFormatterBtn = document.getElementById('csvFormatterNavBtn');
+        const oppsImportExportBtn = document.getElementById('oppsImportExportNavBtn');
         if (!userMgmtBtn) return;
         const token = localStorage.getItem('authToken');
         if (!token) {
             userMgmtBtn.style.display = 'none';
+            if (csvFormatterBtn) csvFormatterBtn.style.display = 'none';
+            if (oppsImportExportBtn) oppsImportExportBtn.style.display = 'none';
             return;
         }
         try {
             const payload = JSON.parse(atob(token.split('.')[1]));
             const accountType = payload.accountType || payload.account_type || null;
             userMgmtBtn.style.display = (accountType === 'Admin') ? '' : 'none';
+            if (csvFormatterBtn) csvFormatterBtn.style.display = (accountType === 'Admin') ? '' : 'none';
+            if (oppsImportExportBtn) csvFormatterBtn.style.display = (accountType === 'Admin') ? '' : 'none';
         } catch {
             userMgmtBtn.style.display = 'none';
+            if (csvFormatterBtn) csvFormatterBtn.style.display = 'none';
+            if (oppsImportExportBtn) csvFormatterBtn.style.display = 'none';
         }
     }
     document.addEventListener('DOMContentLoaded', updateUserMgmtNavVisibility);
