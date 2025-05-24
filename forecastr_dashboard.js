@@ -236,14 +236,20 @@ function renderForecastDashboard(data, statusFilter = 'all') {
                     },
                     legend: { display: false }
                 },
-                layout: { padding: { left: 0, right: 0, top: 0, bottom: 0 } },
+                layout: { padding: { left: 0, right: 0, top: 0, bottom: 0 } }, // Keep padding as 0 if no custom axis needed here
                 scales: {
                     x: { ticks: { color: tickColor }, grid: { color: gridColor, drawOnChartArea: false }, title: { display: false, color: titleColor }, offset: true },
                     yAmount: {
+                        display: true, // Ensure this is true to show the Chart.js axis
                         beginAtZero: true,
-                        title: { display: false },
                         position: 'left',
-                        ticks: { max: yAxisMax },
+                        ticks: {
+                            color: tickColor, // Use theme color for ticks
+                            callback: function(value, index, ticks) {
+                                return abbreviateNumber(value);
+                            },
+                            stepSize: Math.max(1, yAxisMax / 5) // Aim for around 5 ticks
+                        },
                         grid: { color: gridColor },
                         offset: true,
                         max: yAxisMax
@@ -254,6 +260,30 @@ function renderForecastDashboard(data, statusFilter = 'all') {
         };
         if (forecastChartInstance) forecastChartInstance.destroy();
         forecastChartInstance = new Chart(forecastChartCanvas.getContext('2d'), chartConfig);
+
+        // Store yCount scale config from monthly chart for weekly chart to use
+        if (forecastChartInstance && forecastChartInstance.scales && forecastChartInstance.scales.yCount) {
+            const yCountScale = forecastChartInstance.scales.yCount;
+            window.monthlyYCountConfig = {
+                ticks: yCountScale.ticks.map(tick => tick.value),
+                min: yCountScale.min,
+                max: yCountScale.max,
+                titleText: 'Count',
+                titleColor: getComputedStyle(document.documentElement).getPropertyValue('--chart-title-color').trim(),
+                titleFont: '12px sans-serif'
+            };
+            if (yCountScale.options.title && yCountScale.options.title.display) {
+                window.monthlyYCountConfig.titleText = yCountScale.options.title.text || 'Count';
+                window.monthlyYCountConfig.titleColor = yCountScale.options.title.color || getComputedStyle(document.documentElement).getPropertyValue('--chart-title-color').trim();
+                if (yCountScale.options.title.font) {
+                    window.monthlyYCountConfig.titleFont = `${yCountScale.options.title.font.size || 12}px ${yCountScale.options.title.font.family || 'sans-serif'}`;
+                }
+            }
+            // If weekly chart data is already loaded, re-render it with new Y-axis config
+            if (window.lastWeekSummaryArr && typeof renderForecastWeeklyChart === 'function') {
+                renderForecastWeeklyChart(window.lastWeekSummaryArr);
+            }
+        }
     }
     const tableBody = document.getElementById('forecastBreakdownTableBody');
     if(tableBody) {
@@ -391,11 +421,18 @@ if (themeToggle) {
 // --- OP STATUS FILTER BUTTONS ---
 function setupOpStatusFilterButtons() {
     const btns = document.querySelectorAll('.op-status-filter-btn');
+    // Remove all event listeners by replacing each button with a clone
     btns.forEach(btn => {
+        const newBtn = btn.cloneNode(true);
+        btn.parentNode.replaceChild(newBtn, btn);
+    });
+    // Query again after replacement
+    const updatedBtns = document.querySelectorAll('.op-status-filter-btn');
+    updatedBtns.forEach(btn => {
         btn.addEventListener('click', function() {
-            btns.forEach(b => b.classList.remove('active'));
+            updatedBtns.forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
-            const status = btn.dataset.status || 'all';
+            const status = btn.dataset.filterValue || 'all'; // Changed from btn.dataset.status
             currentOpStatusFilter = status;
             fetchForecastData(currentOpStatusFilter).then(data => {
                 if (data) renderForecastDashboard(data, currentOpStatusFilter);
@@ -407,40 +444,71 @@ function setupOpStatusFilterButtons() {
             });
         });
     });
+    // Set the correct button as active on load
+    let foundActive = false;
+    updatedBtns.forEach(btn => {
+        if ((btn.dataset.filterValue || 'all') === currentOpStatusFilter) { // Changed from btn.dataset.status
+            btn.classList.add('active');
+            foundActive = true;
+        } else {
+            btn.classList.remove('active');
+        }
+    });
+    if (!foundActive && updatedBtns.length > 0) {
+        updatedBtns[0].classList.add('active'); // Default to 'All' if no specific filter is active
+        currentOpStatusFilter = updatedBtns[0].dataset.filterValue || 'all'; // Ensure currentOpStatusFilter is also updated
+    }
 }
 
 // --- CHART/DETAILS TOGGLE BUTTONS ---
 function setupChartTableToggles() {
-    const weeklyChartBtn = document.getElementById('weeklyChartBtn');
+    // Chart Toggles
+    const showMonthlyBtn = document.getElementById('showMonthlyBtn');
+    const showWeeklyBtn = document.getElementById('showWeeklyBtn');
     const monthlyChartSection = document.getElementById('monthlyChartSection');
     const weeklyChartSection = document.getElementById('weeklyChartSection');
-    if (weeklyChartBtn && monthlyChartSection && weeklyChartSection) {
-        weeklyChartBtn.addEventListener('click', function() {
-            if (weeklyChartSection.style.display === 'none' || getComputedStyle(weeklyChartSection).display === 'none') {
-                weeklyChartSection.style.display = '';
-                monthlyChartSection.style.display = 'none';
-                weeklyChartBtn.classList.add('active');
-            } else {
-                weeklyChartSection.style.display = 'none';
-                monthlyChartSection.style.display = '';
-                weeklyChartBtn.classList.remove('active');
+
+    if (showMonthlyBtn && showWeeklyBtn && monthlyChartSection && weeklyChartSection) {
+        showWeeklyBtn.addEventListener('click', function() {
+            weeklyChartSection.style.display = '';
+            monthlyChartSection.style.display = 'none';
+            showWeeklyBtn.classList.add('active');
+            showMonthlyBtn.classList.remove('active');
+            // Ensure correct chart is rendered if it was not already loaded
+            if (typeof renderForecastWeeklyChart === 'function' && (!window.lastWeekSummaryArr || window.lastWeekSummaryArr.length === 0)) {
+                 fetchForecastWeekSummary().then(data => {
+                    if (data && data.weekSummary) renderForecastWeeklyChart(data.weekSummary);
+                });
             }
         });
+
+        showMonthlyBtn.addEventListener('click', function() {
+            monthlyChartSection.style.display = '';
+            weeklyChartSection.style.display = 'none';
+            showMonthlyBtn.classList.add('active');
+            showWeeklyBtn.classList.remove('active');
+        });
     }
-    const projectDetailsBtn = document.getElementById('projectDetailsBtn');
-    const monthlyTableSection = document.getElementById('monthlyTableSection');
-    const projectTableSection = document.getElementById('projectTableSection');
-    if (projectDetailsBtn && monthlyTableSection && projectTableSection) {
-        projectDetailsBtn.addEventListener('click', function() {
-            if (projectTableSection.style.display === 'none' || getComputedStyle(projectTableSection).display === 'none') {
-                projectTableSection.style.display = '';
-                monthlyTableSection.style.display = 'none';
-                projectDetailsBtn.classList.add('active');
-            } else {
-                projectTableSection.style.display = 'none';
-                monthlyTableSection.style.display = '';
-                projectDetailsBtn.classList.remove('active');
-            }
+
+    // Table Toggles
+    const showMonthlyBreakdownBtn = document.getElementById('showMonthlyBreakdownBtn');
+    const showProjectDetailsBtn = document.getElementById('showProjectDetailsBtn');
+    const monthlyBreakdownTableContainer = document.getElementById('monthlyBreakdownTableContainer');
+    const projectDetailsTableContainer = document.getElementById('projectDetailsTableContainer');
+
+    if (showMonthlyBreakdownBtn && showProjectDetailsBtn && monthlyBreakdownTableContainer && projectDetailsTableContainer) {
+        showProjectDetailsBtn.addEventListener('click', function() {
+            projectDetailsTableContainer.style.display = '';
+            monthlyBreakdownTableContainer.style.display = 'none';
+            showProjectDetailsBtn.classList.add('active');
+            showMonthlyBreakdownBtn.classList.remove('active');
+        });
+
+        showMonthlyBreakdownBtn.addEventListener('click', function() {
+            monthlyBreakdownTableContainer.style.display = '';
+            projectDetailsTableContainer.style.display = 'none';
+            showMonthlyBreakdownBtn.classList.add('active');
+            showProjectDetailsBtn.classList.remove('active');
         });
     }
 }
@@ -457,19 +525,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     addQuarterFilterButtons();
     setupProjectTableSorters();
-    setupOpStatusFilterButtons();
+    setupOpStatusFilterButtons(); // Ensure this is called after DOM is ready and after any dynamic rendering
     setupChartTableToggles();
     fetchForecastData(currentOpStatusFilter).then(data => {
         if (data) renderForecastDashboard(data, currentOpStatusFilter);
-    });
-    fetchForecastWeekSummary().then(data => {
-        if (data && typeof renderForecastWeeklyChart === 'function') {
-            renderForecastWeeklyChart(data.weekSummary);
-        }
+        // Fetch weekly summary after monthly dashboard is processed
+        fetchForecastWeekSummary().then(weekData => {
+            if (weekData && weekData.weekSummary && typeof renderForecastWeeklyChart === 'function') {
+                renderForecastWeeklyChart(weekData.weekSummary);
+            }
+        });
     });
 });
 // --- Weekly Chart Logic ---
 function renderForecastWeeklyChart(weekSummaryArr) {
+  if (!window.monthlyYCountConfig) {
+    window.lastWeekSummaryArr = weekSummaryArr; // Store data for later if config not ready
+    return;
+  }
   window.lastWeekSummaryArr = weekSummaryArr;
   const yAxisLeftCanvas = document.getElementById('forecastWeeklyYAxisLeft');
   const yAxisLeftCtx = yAxisLeftCanvas.getContext('2d');
@@ -518,16 +591,41 @@ function renderForecastWeeklyChart(weekSummaryArr) {
     chartWrapper.style.maxHeight = '400px';
   }
   // --- Chart.js chart (hide y-axes) ---
-  let yAmountMax = window.yAxisMax || Math.ceil(Math.max(...amounts) / 1_000_000) * 1_000_000;
-  let yAmountStep = window.yAxisStep || 1_000_000;
-  let yCountMax = undefined;
+  let yAmountMax = Math.ceil(Math.max(...amounts, 0) / 1_000_000) * 1_000_000;
+  if (yAmountMax === 0 && amounts.some(a => a > 0)) yAmountMax = 1_000_000;
+  else if (yAmountMax === 0) yAmountMax = 1_000_000;
+
+  let yAmountStep = 1_000_000; // Default step for amount
+  // Adjust yAmountStep based on yAmountMax if needed, e.g., yAmountStep = yAmountMax / 5;
+
+  let yCountMax = window.monthlyYCountConfig.max;
   let yCountStep = 1;
-  if (window.forecastChartInstance && window.forecastChartInstance.scales && window.forecastChartInstance.scales['yCount']) {
-    yCountMax = window.forecastChartInstance.scales['yCount'].max;
-    yCountStep = window.forecastChartInstance.scales['yCount'].options.ticks && window.forecastChartInstance.scales['yCount'].options.ticks.stepSize ? window.forecastChartInstance.scales['yCount'].options.ticks.stepSize : 1;
+  const monthlyTicks = window.monthlyYCountConfig.ticks;
+  if (monthlyTicks && monthlyTicks.length > 1) {
+    yCountStep = monthlyTicks[1] - monthlyTicks[0]; 
+  } else if (monthlyTicks && monthlyTicks.length === 1 && monthlyTicks[0] > 0) {
+    yCountStep = monthlyTicks[0];
   } else {
-    yCountMax = Math.ceil(Math.max(...counts));
+    yCountStep = 1;
   }
+  yCountStep = Math.max(1, yCountStep); // Ensure step is at least 1
+
+  const maxWeeklyCount = Math.max(...counts, 0);
+  if (maxWeeklyCount > yCountMax) {
+      yCountMax = Math.ceil(maxWeeklyCount / yCountStep) * yCountStep;
+  }
+  if (yCountMax === 0 && maxWeeklyCount > 0) {
+      yCountMax = Math.ceil(maxWeeklyCount / yCountStep) * yCountStep;
+      if (yCountMax === 0) yCountMax = yCountStep; // Ensure max is at least one step if there are counts
+  }
+  if (yCountMax === 0 && counts.every(c => c === 0) && window.monthlyYCountConfig.max > 0){
+      // If all weekly counts are 0, but monthly chart had a scale, respect it.
+      yCountMax = window.monthlyYCountConfig.max;
+  } else if (yCountMax === 0 && maxWeeklyCount === 0) {
+      yCountMax = yCountStep; // Default to one step if all counts are zero
+  }
+
+
   if (window.forecastWeeklyChartInstance) window.forecastWeeklyChartInstance.destroy();
   window.forecastWeeklyChartInstance = new Chart(ctx, {
     type: 'bar',
@@ -626,15 +724,15 @@ function renderForecastWeeklyChart(weekSummaryArr) {
           }
         },
         yCount: {
-          display: false,
+          display: false, 
           beginAtZero: true,
-          suggestedMax: yCountMax,
-          max: yCountMax,
-          offset: true,
+          min: window.monthlyYCountConfig.min,
+          max: yCountMax, 
           ticks: {
             stepSize: yCountStep,
-            max: yCountMax
-          }
+            precision: 0
+          },
+          offset: true 
         }
       }
     }
@@ -665,51 +763,47 @@ function renderForecastWeeklyChart(weekSummaryArr) {
   }
   yAxisLeftCtx.restore();
   // --- Draw y-axis ticks and title on right canvas (Count) ---
-  const yCount = chart.scales['yCount'];
+  const weeklyYCountScale = window.forecastWeeklyChartInstance.scales['yCount'];
   yAxisRightCtx.clearRect(0, 0, yAxisRightCanvas.width, yAxisRightCanvas.height);
   yAxisRightCtx.save();
-  yAxisRightCtx.font = '12px sans-serif';
-  yAxisRightCtx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--chart-tick-color').trim();
-  yAxisRightCtx.textAlign = 'left';
+
+  const countTickColor = (window.monthlyYCountConfig && window.monthlyYCountConfig.titleColor) || getComputedStyle(document.documentElement).getPropertyValue('--chart-tick-color').trim();
+  yAxisRightCtx.fillStyle = countTickColor;
+  yAxisRightCtx.font = '12px sans-serif'; // Keep font simple for ticks
+  yAxisRightCtx.textAlign = 'left'; 
   yAxisRightCtx.textBaseline = 'middle';
-  if (yCount && chart.chartArea) {
-    let monthlyTickValues = window.monthlyYCountTicks;
-    let yCountMin = typeof window.monthlyYCountMin === 'number' ? window.monthlyYCountMin : yCount.min;
-    let yCountMax = typeof window.monthlyYCountMax === 'number' ? window.monthlyYCountMax : yCount.max;
-    const chartArea = {
-      top: chart.chartArea.top + 10,
-      bottom: chart.chartArea.bottom - 10
-    };
-    const labelX = 65;
-    if (monthlyTickValues && monthlyTickValues.length > 0) {
-      monthlyTickValues.forEach(v => {
-        let y = yCount.getPixelForValue(v);
-        yAxisRightCtx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--chart-tick-color').trim();
-        yAxisRightCtx.font = '12px sans-serif';
-        yAxisRightCtx.fillText(v, 55, y);
-      });
+
+  if (weeklyYCountScale && window.forecastWeeklyChartInstance.chartArea && window.monthlyYCountConfig && window.monthlyYCountConfig.ticks) {
+    const tickValuesToDraw = window.monthlyYCountConfig.ticks;
+    const chartArea = window.forecastWeeklyChartInstance.chartArea;
+
+    if (tickValuesToDraw.length > 0) {
+        tickValuesToDraw.forEach(value => {
+            const y = weeklyYCountScale.getPixelForValue(value);
+            if (y >= chartArea.top && y <= chartArea.bottom + 5) { 
+                 yAxisRightCtx.fillText(value, 10, y); 
+            }
+        });
     }
-    if (monthlyTickValues && monthlyTickValues.length > 1) {
-      const firstY = yCount.getPixelForValue(monthlyTickValues[0]);
-      const lastY = yCount.getPixelForValue(monthlyTickValues[monthlyTickValues.length - 1]);
-      const centerY = (firstY + lastY) / 2;
-      yAxisRightCtx.save();
-      let chartjsTitleColor = getComputedStyle(document.documentElement).getPropertyValue('--chart-title-color').trim();
-      let chartjsTitleFont = '12px sans-serif';
-      if (window.forecastChartInstance && window.forecastChartInstance.options && window.forecastChartInstance.options.scales && window.forecastChartInstance.options.scales.yCount && window.forecastChartInstance.options.scales.yCount.title && window.forecastChartInstance.options.scales.yCount.title.color) {
-        chartjsTitleColor = window.forecastChartInstance.options.scales.yCount.title.color;
-      }
-      if (window.forecastChartInstance && window.forecastChartInstance.options && window.forecastChartInstance.options.scales && window.forecastChartInstance.options.scales.yCount && window.forecastChartInstance.options.scales.yCount.title && window.forecastChartInstance.options.scales.yCount.title.font && window.forecastChartInstance.options.scales.yCount.title.font.size) {
-        chartjsTitleFont = `${window.forecastChartInstance.options.scales.yCount.title.font.size}px sans-serif`;
-      }
-      yAxisRightCtx.font = chartjsTitleFont;
-      yAxisRightCtx.textAlign = 'center';
-      yAxisRightCtx.textBaseline = 'middle';
-      yAxisRightCtx.fillStyle = chartjsTitleColor;
-      yAxisRightCtx.translate(yAxisRightCanvas.width - 10, centerY);
-      yAxisRightCtx.rotate(Math.PI/2);
-      yAxisRightCtx.fillText('Count', 0, 0);
-      yAxisRightCtx.restore();
+
+    if (tickValuesToDraw.length > 0 || window.monthlyYCountConfig.max > 0) { // Show title if there are ticks or if monthly chart had a count scale
+        const titleText = window.monthlyYCountConfig.titleText || 'Count';
+        const titleColor = window.monthlyYCountConfig.titleColor || getComputedStyle(document.documentElement).getPropertyValue('--chart-title-color').trim();
+        const titleFont = window.monthlyYCountConfig.titleFont || '12px sans-serif';
+
+        const topPixel = weeklyYCountScale.getPixelForValue(weeklyYCountScale.max);
+        const bottomPixel = weeklyYCountScale.getPixelForValue(weeklyYCountScale.min);
+        const centerY = (topPixel + bottomPixel) / 2;
+
+        yAxisRightCtx.save();
+        yAxisRightCtx.font = titleFont;
+        yAxisRightCtx.textAlign = 'center';
+        yAxisRightCtx.textBaseline = 'bottom'; 
+        yAxisRightCtx.fillStyle = titleColor;
+        yAxisRightCtx.translate(yAxisRightCanvas.width - 15, centerY);
+        yAxisRightCtx.rotate(Math.PI / 2); 
+        yAxisRightCtx.fillText(titleText, 0, 0);
+        yAxisRightCtx.restore();
     }
   }
   yAxisRightCtx.restore();

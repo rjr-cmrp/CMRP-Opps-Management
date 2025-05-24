@@ -62,7 +62,7 @@
         /* Ensure buttons use theme colors */
         .theme-button { background-color: var(--bg-theme-button); color: var(--text-theme-button); border: 1px solid var(--border-theme-button); transition: background-color 0.2s; }
         .theme-button:hover { background-color: var(--bg-theme-button-hover); }
-        .link-button { background-color: var(--bg-modal-save); color: var(--text-modal-save); transition: filter 0.2s; }
+        .link-button { background-color: var(--bg-modal-save); color: var (--text-modal-save); transition: filter 0.2s; }
         /* Filter button styles */
         .filter-button { background-color: var(--bg-filter-button); color: var (--text-filter-button); border: 1px solid var(--border-filter-button); transition: background-color 0.2s, color 0.2s, border-color 0.2s; }
         .filter-button:hover { background-color: var(--bg-filter-button-hover); }
@@ -161,6 +161,142 @@
             background: #6b7280;
             color: #fff;
         }
+        .dashboard-table th.sortable-header {
+            cursor: pointer;
+            position: relative;
+        }
+        .dashboard-table th.sortable-header .sort-indicator {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.8em;
+            color: var(--text-header);
+        }
+        .dark .dashboard-table th.sortable-header .sort-indicator {
+            color: var(--text-header);
+        }
+        /* Ensure the chart container has enough space for labels */
+        #weeklyForecastChartContainer {
+            /* Increased bottom margin and padding significantly */
+            margin-bottom: 100px !important; 
+            padding-bottom: 70px !important;
+            overflow-x: auto; /* Keep horizontal scroll if needed */
+            position: relative; /* Needed for potential absolute positioning of labels if library does that */
+        }
+
+        /* Assuming the chart is a canvas element directly inside the container or one level down */
+        #weeklyForecastChartContainer canvas,
+        #weeklyForecastChartContainer > div > canvas {
+            display: block;
+            /* Add some margin to the canvas itself to push scrollbar down */
+            margin-bottom: 50px !important; 
+            box-sizing: border-box; /* Ensure padding/border don't add to width/height issues */
+        }
+
+        /* If the chart library creates a specific div for the chart rendering area */
+        .chartjs-render-monitor,
+        .apexcharts-canvas { /* Common classes for Chart.js and ApexCharts */
+            margin-bottom: 50px !important;
+        }
+
+        /* Remove the spacer div if it was added, as we're trying a pure CSS approach now */
+        .chart-x-label-spacer {
+            display: none; 
+        }
+        .modal.hidden { display: none !important; }
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.5); /* Darker overlay for better contrast */
+            z-index: 1040; /* Ensure it's above other content but below modal */
+        }
+        .modal {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            z-index: 1050; /* Higher than overlay */
+            background-color: var(--bg-modal, #fff); /* Theme variable for background */
+            color: var(--text-body, #000); /* Theme variable for text */
+            border: 1px solid var(--border-modal, #ccc); /* Theme variable for border */
+            border-radius: 0.5rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            min-width: 320px; max-width: 500px; /* Adjusted max-width */
+            width: 90%;
+        }
+        .modal-content { padding: 1.5rem; }
+        .modal-header {
+            display: flex; justify-content: space-between; align-items: center;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-modal, #ccc);
+            color: var(--text-modal-title, #000);
+        }
+        .modal-header .modal-title { margin: 0; font-size: 1.25rem; }
+        .modal-body { padding-top: 1rem; padding-bottom: 1rem; }
+        .modal-footer {
+            display: flex; justify-content: flex-end; gap: 0.75rem; /* Increased gap */
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-modal, #ccc);
+        }
+        .modal .close {
+            background: transparent; border: none; font-size: 1.75rem; /* Larger close button */
+            color: var(--text-body, #000); opacity: 0.7;
+            cursor: pointer; padding: 0.5rem; line-height: 1;
+        }
+        .modal .close:hover { opacity: 1; }
+
+        /* Form elements within modal */
+        .modal .form-group { margin-bottom: 1rem; }
+        .modal .form-control {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            color: var(--text-body);
+            background-color: var(--bg-container); /* Use a theme-aware background for input */
+            background-clip: padding-box;
+            border: 1px solid var(--border-modal);
+            border-radius: 0.25rem;
+            transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+        }
+        .modal .form-control:focus {
+            border-color: var(--bg-modal-save); /* Highlight with save button color */
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(var(--bg-modal-save-rgb), 0.25); /* Use RGB for box-shadow */
+        }
+        .modal .invalid-feedback, .modal .text-danger {
+            color: var(--text-error, #dc3545);
+            font-size: 0.875em;
+            margin-top: 0.25rem;
+        }
+
+        /* Modal Buttons using theme variables */
+        .modal .btn {
+            display: inline-block; font-weight: 400; text-align: center;
+            vertical-align: middle; user-select: none; border: 1px solid transparent;
+            padding: 0.375rem 0.75rem; font-size: 1rem; line-height: 1.5; border-radius: 0.25rem;
+            transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+        }
+        .modal .btn-secondary {
+            color: var(--text-theme-button, #fff);
+            background-color: var(--bg-theme-button, #6c757d);
+            border-color: var(--border-theme-button, #6c757d);
+        }
+        .modal .btn-secondary:hover {
+            background-color: var(--bg-theme-button-hover, #5a6268);
+            border-color: var(--bg-theme-button-hover, #545b62);
+        }
+        .modal .btn-primary {
+            color: var(--text-modal-save, #fff);
+            background-color: var(--bg-modal-save, #007bff);
+            border-color: var(--bg-modal-save, #007bff);
+        }
+        .modal .btn-primary:hover {
+            background-color: var(--bg-modal-save-hover, #0069d9);
+            border-color: var(--bg-modal-save-hover, #0062cc);
+        }
+        .modal .btn-primary:disabled {
+            background-color: var(--bg-modal-save, #007bff);
+            border-color: var(--bg-modal-save, #007bff);
+            opacity: 0.65;
+        }
     </style>
 </head>
 <body class="min-h-screen">
@@ -184,16 +320,6 @@
     <div class="main-container container mx-auto p-6 rounded-lg shadow-md">
         <!-- ...existing code... -->
 
-        <div class="mb-4">
-            <div class="flex flex-wrap gap-2 items-center mb-2" id="opStatusFilterButtons">
-                <span class="text-sm font-medium mr-2">Filter by OP Status:</span>
-                <button data-filter-value="all" class="filter-button active px-3 py-1 rounded text-xs">All</button>
-                <button data-filter-value="OP90" class="filter-button px-3 py-1 rounded text-xs">OP90</button>
-                <button data-filter-value="OP60" class="filter-button px-3 py-1 rounded text-xs">OP60</button>
-                <button data-filter-value="OP30" class="filter-button px-3 py-1 rounded text-xs">OP30</button>
-                </div>
-        </div>
-
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div class="dashboard-card">
                 <div id="forecast-total-count-title" class="dashboard-title">Total Forecast Count</div>
@@ -210,6 +336,17 @@
             <div class="dashboard-card">
                  <div id="forecast-next-month-amount-title" class="dashboard-title">Forecast Amount (Next Month)</div>
                 <div id="forecast-next-month-amount" class="dashboard-value">--</div>
+            </div>
+        </div>
+
+        <!-- Move OP Status Filter here -->
+        <div class="mb-4">
+            <div class="flex flex-wrap gap-2 items-center mb-2" id="opStatusFilterButtons">
+                <span class="text-sm font-medium mr-2">Filter by OP Status:</span>
+                <button data-filter-value="all" class="filter-button op-status-filter-btn active px-3 py-1 rounded text-xs">All</button>
+                <button data-filter-value="OP90" class="filter-button op-status-filter-btn px-3 py-1 rounded text-xs">OP90</button>
+                <button data-filter-value="OP60" class="filter-button op-status-filter-btn px-3 py-1 rounded text-xs">OP60</button>
+                <button data-filter-value="OP30" class="filter-button op-status-filter-btn px-3 py-1 rounded text-xs">OP30</button>
             </div>
         </div>
 
@@ -238,7 +375,12 @@
             </div>
         </div>
 
-        <div class="table-section-container p-6">
+        <div id="tableToggleGroup" class="flex gap-2 mb-4 mt-8">
+            <button id="showMonthlyBreakdownBtn" class="filter-button px-3 py-1 rounded text-xs active">Monthly Breakdown</button>
+            <button id="showProjectDetailsBtn" class="filter-button px-3 py-1 rounded text-xs">Project Details</button>
+        </div>
+
+        <div id="monthlyBreakdownTableContainer" class="table-section-container p-6">
             <h3 id="table-title" class="text-lg font-semibold mb-4">Monthly Forecast Breakdown - All</h3>
             <div class="overflow-x-auto">
                 <table class="dashboard-table">
@@ -255,16 +397,17 @@
         </div>
 
         <!-- New: Project-level Forecast Table -->
-        <div class="table-section-container p-6 mt-8">
+        <div id="projectDetailsTableContainer" class="table-section-container p-6 mt-8" style="display:none;">
             <h3 class="text-lg font-semibold mb-4">Project Forecast Details</h3>
             <div class="overflow-x-auto">
-                <table class="dashboard-table">
+                <table class="dashboard-table" id="projectForecastTable">
                     <thead>
                         <tr>
-                            <th>Project Name</th>
-                            <th class="text-right">Final Amount</th>
-                            <th class="text-right">Forecast Month</th>
-                            <th class="text-center">Forecast Week</th>
+                            <th class="sortable-header" data-sort-key="name">Project Name <span class="sort-indicator"></span></th>
+                            <th class="text-right sortable-header" data-sort-key="amount">Final Amount <span class="sort-indicator"></span></th>
+                            <th class="text-right sortable-header" data-sort-key="forecastMonth">Forecast Month <span class="sort-indicator"></span></th>
+                            <th class="text-center sortable-header" data-sort-key="forecastWeek">Forecast Week <span class="sort-indicator"></span></th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="projectForecastTableBody"></tbody>
@@ -272,1532 +415,42 @@
             </div>
         </div>
 
+        <!-- Edit Forecast Date Modal (custom, not Bootstrap) -->
+        <div id="editForecastDateModalOverlay" class="modal-overlay hidden"></div>
+        <div id="editForecastDateModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="editForecastDateModalLabel">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="editForecastDateModalLabel">Edit Forecast Date</h5>
+              <button type="button" class="close" id="closeEditForecastDateModalBtn" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+              <form id="edit-forecast-date-form" onsubmit="return false;">
+                <div class="form-group">
+                  <label for="forecast-date-input">Forecast Date</label>
+                  <input type="date" class="form-control" id="forecast-date-input" required />
+                  <div class="invalid-feedback" id="forecast-date-error" style="display:none;"></div>
+                </div>
+              </form>
+              <div id="edit-forecast-date-feedback" class="text-danger" style="display:none;"></div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" id="cancelEditForecastDateModalBtn">Cancel</button>
+              <button type="button" class="btn btn-primary" id="save-forecast-date-btn">Save</button>
+            </div>
+          </div>
+        </div>
+
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
-    <script>
-    // --- Global Variables ---
-    let forecastDataCache = null; // Cache fetched forecast data (might need adjustment based on filtering)
-    let forecastChartInstance = null; // To store the forecast chart instance
-    let currentOpStatusFilter = 'all'; // Default filter
-    // Add filter state
-    // Removed duplicate declaration of showQuarters
+    <script src="forecastr_dashboard.js" defer></script>
 
-    // --- Quarter Filter State ---
-    let showQuarters = { Q1: true, Q2: true, Q3: true, Q4: true };
-
-    function isQuarterLabel(label) {
-      // Match Q1, Q2, Q3, Q4 (case-insensitive, at end or surrounded by non-word chars)
-      if (!label) return null;
-      const match = String(label).toUpperCase().match(/(?:^|\W)(Q[1-4])(?:$|\W)/);
-      return match ? match[1] : null;
-    }
-
-    function getQuarterFromMonthLabel(label) {
-      // Handles both 'January 2025' and 'Jan W1' style labels
-      if (!label) return null;
-      let month = label.split(' ')[0].toLowerCase();
-      // Map short month names to full
-      const monthMap = {
-        jan: 'january', feb: 'february', mar: 'march',
-        apr: 'april', may: 'may', jun: 'june',
-        jul: 'july', aug: 'august', sep: 'september',
-        oct: 'october', nov: 'november', dec: 'december'
-      };
-      if (month.length === 3 && monthMap[month]) month = monthMap[month];
-      if (["january","february","march"].includes(month)) return "Q1";
-      if (["april","may","june"].includes(month)) return "Q2";
-      if (["july","august","september"].includes(month)) return "Q3";
-      if (["october","november","december"].includes(month)) return "Q4";
-      return null;
-    }
-
-    function filterOutQuarters(labels, counts, amounts) {
-      // Hide months based on their quarter
-      const filtered = labels.map((label, i) => {
-        const q = getQuarterFromMonthLabel(label);
-        return { label, count: counts[i], amount: amounts[i], q };
-      }).filter(item => !item.q || showQuarters[item.q]);
-      return {
-        labels: filtered.map(f => f.label),
-        counts: filtered.map(f => f.count),
-        amounts: filtered.map(f => f.amount)
-      };
-    }
-
-    function updateQuarterButtonStates() {
-      ['Q1','Q2','Q3','Q4'].forEach(q => {
-        const btn = document.getElementById(`toggle${q}Btn`);
-        if (btn) btn.style.opacity = showQuarters[q] ? '1' : '0.5';
-      });
-    }
-
-    function addQuarterFilterButtons() {
-      const container = document.querySelector('.main-container');
-      if (!container) return;
-      let btnGroup = document.getElementById('quarterBtnGroup');
-      if (!btnGroup) {
-        btnGroup = document.createElement('div');
-        btnGroup.id = 'quarterBtnGroup';
-        btnGroup.style.display = 'flex';
-        btnGroup.style.gap = '8px';
-        btnGroup.style.marginBottom = '12px';
-        ['Q1','Q2','Q3','Q4'].forEach(q => {
-          const btn = document.createElement('button');
-          btn.id = `toggle${q}Btn`;
-          btn.className = 'filter-button px-3 py-1 rounded text-xs';
-          btn.textContent = q;
-          btn.style.fontWeight = 'bold';
-          btn.style.opacity = showQuarters[q] ? '1' : '0.5';
-          btn.onclick = function() {
-            showQuarters[q] = !showQuarters[q];
-            updateQuarterButtonStates();
-            // Re-render both charts immediately
-            fetchForecastData(currentOpStatusFilter).then(data => {
-              if (data) renderForecastDashboard(data, currentOpStatusFilter);
-            });
-            fetchForecastWeekSummary().then(data => {
-              renderForecastWeeklyChart(data.weekSummary);
-            });
-          };
-          btnGroup.appendChild(btn);
-        });
-        const firstChart = document.querySelector('.chart-section-container');
-        if (firstChart) firstChart.parentNode.insertBefore(btnGroup, firstChart);
-        else container.prepend(btnGroup);
-      } else {
-        updateQuarterButtonStates();
-      }
-    }
-
-    // --- Helper Functions ---
-    async function fetchForecastData(statusFilter = 'all') {
-        // ** TODO: Decide if caching is appropriate when filtering **
-        // Simple approach: Always fetch fresh data when filter changes
-        // if (statusFilter === currentOpStatusFilter && forecastDataCache) {
-        //     return forecastDataCache;
-        // }
-
-        let apiUrl = '/api/forecast-dashboard';
-        if (statusFilter !== 'all') {
-            apiUrl += `?status=${encodeURIComponent(statusFilter)}`; // Add status query parameter
-        }
-        console.log(`Fetching forecast data from: ${apiUrl}`);
-
-        try {
-            const res = await fetch(apiUrl);
-            if (!res.ok) {
-                throw new Error(`HTTP error! status: ${res.status}`);
-            }
-            const data = await res.json(); // Don't cache globally if filtering frequently
-            console.log(`Fetched Forecast Data for ${statusFilter}:`, data);
-             // Add default empty arrays if summaries are missing
-            if (!data.forecastMonthlySummary) data.forecastMonthlySummary = [];
-            // forecastDataCache = data; // Update cache only if needed
-            return data;
-        } catch (error) {
-            console.error(`Failed to fetch forecast data for ${statusFilter}:`, error);
-            // Display error to user?
-            return null; // Indicate failure
-        }
-    }
-
-    function formatCurrency(num) {
-        const number = Number(num);
-        if (isNaN(number)) return '₱0.00';
-        return '₱' + number.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
-
-     // Function to format date as 'Month - Week #'
-     function formatMonthWeek(dateString) {
-        if (!dateString) return '';
-        // Simple robust date parsing (adjust if needed based on actual data format)
-        const date = new Date(dateString);
-        if (isNaN(date.getTime())) {
-            return dateString; // Return original if invalid
-        }
-        try {
-            const monthName = date.toLocaleDateString('en-US', { month: 'long', timeZone: 'UTC' }); // Use UTC
-            const weekNumber = getWeekOfMonth(date); // Use UTC date
-            return `${monthName} - Week ${weekNumber}`;
-        } catch (e) {
-            console.error("Error formatting month/week:", dateString, e);
-            return dateString; // Fallback
-        }
-    }
-
-    // Helper function to get the week number of a date within its month (UTC)
-    function getWeekOfMonth(date) {
-        const year = date.getUTCFullYear();
-        const month = date.getUTCMonth();
-        const firstDayOfMonth = new Date(Date.UTC(year, month, 1));
-        const firstDayWeekday = firstDayOfMonth.getUTCDay(); // 0=Sun, 1=Mon, ...
-        const dayOfMonth = date.getUTCDate();
-        const daysOffset = dayOfMonth + firstDayWeekday; // Adjusted for Sunday start
-        return Math.ceil(daysOffset / 7);
-    }
-
-    // --- Helper for compact label ---
-    function shortMonthWeekLabel(mw) {
-      // 'February - Week 1' => 'Feb W1'
-      const match = mw.match(/^([A-Za-z]+)[^A-Za-z0-9]*(\d*)[^\d]*Week (\d+)$/);
-      if (match) {
-        const month = match[1].slice(0,3);
-        const week = match[3];
-        return `${month} W${week}`;
-      }
-      // fallback: just take first 3 letters and last digit
-      const parts = mw.split(' - Week ');
-      if (parts.length === 2) return parts[0].slice(0,3) + ' W' + parts[1];
-      return mw;
-    }
-
-    function abbreviateMonthLabel(label) {
-      // Converts 'January 2025' to 'Jan', etc.
-      if (!label) return label;
-      const monthMap = {
-        'January': 'Jan', 'February': 'Feb', 'March': 'Mar',
-        'April': 'Apr', 'May': 'May', 'June': 'Jun',
-        'July': 'Jul', 'August': 'Aug', 'September': 'Sep',
-        'October': 'Oct', 'November': 'Nov', 'December': 'Dec'
-      };
-      const parts = label.split(' ');
-      return monthMap[parts[0]] || parts[0];
-    }
-
-    // --- Chart and Table Rendering ---
-    function renderForecastDashboard(data, statusFilter = 'all') {
-        if (!data) {
-             console.error("No data provided to renderForecastDashboard");
-             // Display a user-friendly message on the page
-             const tableBody = document.getElementById('forecastBreakdownTableBody');
-             if(tableBody) { tableBody.innerHTML = '<tr><td colspan="3" class="text-center py-4">Could not load forecast data.</td></tr>'; }
-             // Clear cards
-             const cards = ['forecast-total-count', 'forecast-total-amount', 'forecast-next-month-count', 'forecast-next-month-amount'];
-             cards.forEach(id => { const el = document.getElementById(id); if(el) el.textContent = 'Error'; });
-             return;
-        }
-
-        // --- Update Titles based on Filter ---
-        const filterText = statusFilter === 'all' ? 'All' : statusFilter;
-        const chartTitleEl = document.getElementById('chart-title');
-        const tableTitleEl = document.getElementById('table-title');
-        if(chartTitleEl) chartTitleEl.textContent = `Monthly Forecast (Amount vs Count) - ${filterText}`;
-        if(tableTitleEl) tableTitleEl.textContent = `Monthly Forecast Breakdown - ${filterText}`;
-
-
-        // --- Update Summary Cards ---
-        const totalCountEl = document.getElementById('forecast-total-count');
-        const totalAmountEl = document.getElementById('forecast-total-amount');
-        const nextMonthCountEl = document.getElementById('forecast-next-month-count');
-        const nextMonthAmountEl = document.getElementById('forecast-next-month-amount');
-
-        // Use data directly from API response (backend should calculate these based on filter)
-        const totalForecastCount = data?.totalForecastCount ?? 0;
-        const totalForecastAmount = data?.totalForecastAmount ?? 0;
-        const nextMonthForecastCount = data?.nextMonthForecastCount ?? 0;
-        const nextMonthForecastAmount = data?.nextMonthForecastAmount ?? 0;
-
-        if(totalCountEl) totalCountEl.textContent = totalForecastCount;
-        if(totalAmountEl) totalAmountEl.textContent = formatCurrency(totalForecastAmount);
-        if(nextMonthCountEl) nextMonthCountEl.textContent = nextMonthForecastCount;
-        if(nextMonthAmountEl) nextMonthAmountEl.textContent = formatCurrency(nextMonthForecastAmount);
-
-
-        // --- Prepare Chart Data ---
-        let monthlySummary = data.forecastMonthlySummary || [];
-        let labels = monthlySummary.map(m => abbreviateMonthLabel(m.monthYear || 'Unknown'));
-        let counts = monthlySummary.map(m => m.count || 0);
-        let amounts = monthlySummary.map(m => m.totalAmount || 0);
-        // Filter out quarters if needed
-        const filtered = filterOutQuarters(labels, counts, amounts);
-        labels = filtered.labels;
-        counts = filtered.counts;
-        amounts = filtered.amounts;
-
-        // --- Calculate consistent y-axis max and step size ---
-        const maxAmount = Math.max(...amounts);
-        // Round up to nearest 1M for max
-        const yAxisMax = Math.ceil(maxAmount / 1_000_000) * 1_000_000;
-        const yAxisStep = 1_000_000;
-
-        // --- Render Chart ---
-        const forecastChartCanvas = document.getElementById('forecastMonthlyChart');
-        const forecastMonthlyLegend = document.getElementById('forecastMonthlyLegend');
-        if (forecastMonthlyLegend) {
-            forecastMonthlyLegend.innerHTML = `
-              <span style="display:inline-block;margin:0 16px;"><span style="display:inline-block;width:18px;height:12px;background:rgba(139,92,246,0.7);border:1px solid #8b5cf6;margin-right:6px;vertical-align:middle;"></span>Forecast Amount</span>
-              <span style="display:inline-block;margin:0 16px;"><span style="display:inline-block;width:18px;height:3px;background:#6b7280;margin-right:6px;vertical-align:middle;"></span>Forecast Count</span>
-            `;
-        }
-        if (forecastChartCanvas) {
-            // Determine theme colors
-            const isDarkMode = document.documentElement.classList.contains('dark');
-            const gridColor = getComputedStyle(document.documentElement).getPropertyValue('--chart-grid-color').trim();
-            const tickColor = getComputedStyle(document.documentElement).getPropertyValue('--chart-tick-color').trim();
-            const titleColor = getComputedStyle(document.documentElement).getPropertyValue('--chart-title-color').trim();
-            const legendColor = getComputedStyle(document.documentElement).getPropertyValue('--chart-legend-color').trim();
-            const tooltipBgColor = getComputedStyle(document.documentElement).getPropertyValue('--chart-tooltip-bg').trim();
-            const tooltipTextColor = getComputedStyle(document.documentElement).getPropertyValue('--chart-tooltip-text').trim();
-            const forecastColor = getComputedStyle(document.documentElement).getPropertyValue('--color-forecast').trim();
-            const forecastBgColor = getComputedStyle(document.documentElement).getPropertyValue('--color-forecast-bg').trim();
-            const countLineColor = '#6b7280'; // Uniform with weekly
-
-            const chartConfig = {
-                type: 'bar',
-                data: {
-                    labels: labels, // Use the formatted labels
-                    datasets: [
-                        {
-                            label: 'Forecast Amount',
-                            data: amounts,
-                            backgroundColor: forecastBgColor,
-                            borderColor: forecastColor,
-                            borderWidth: 1,
-                            yAxisID: 'yAmount',
-                            type: 'bar',
-                            order: 2,
-                            barPercentage: 0.7,
-                            categoryPercentage: 0.8
-                        },
-                        {
-                            label: 'Forecast Count',
-                            data: counts,
-                            borderColor: countLineColor,
-                            backgroundColor: 'rgba(59,130,246,0.15)', // Use a subtle blue fill for visibility
-                            borderWidth: 2,
-                            fill: true,
-                            tension: 0.1,
-                            yAxisID: 'yCount',
-                            type: 'line',
-                            order: 1,
-                            pointRadius: 4,
-                            pointHoverRadius: 6
-                        }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    interaction: { mode: 'index', intersect: false },
-                    plugins: {
-                        tooltip: {
-                            backgroundColor: tooltipBgColor,
-                            titleColor: tooltipTextColor,
-                            bodyColor: tooltipTextColor,
-                            callbacks: {
-                                label: function(ctx) {
-                                    let label = ctx.dataset.label || '';
-                                    if (label) label += ': ';
-                                    if (ctx.dataset.label === 'Forecast Amount') {
-                                        label += formatCurrency(ctx.parsed.y);
-                                    } else {
-                                         label += ctx.parsed.y;
-                                    }
-                                    return label;
-                                }
-                            }
-                        },
-                        legend: { display: false } // Hide built-in legend
-                    },
-                    layout: {
-                        padding: { left: 0, right: 0, top: 0, bottom: 0 }
-                    },
-                    scales: {
-                        x: { ticks: { color: tickColor }, grid: { color: gridColor, drawOnChartArea: false }, title: { display: false, color: titleColor }, offset: true },
-                        yAmount: {
-                            beginAtZero: true,
-                            title: { display: false },
-                            position: 'left',
-                            ticks: {
-                                color: forecastColor, // Use violet for y-axis ticks
-                                callback: value => abbreviateNumber(value),
-                                stepSize: yAxisStep,
-                                max: yAxisMax
-                            },
-                            grid: { color: gridColor },
-                            offset: true,
-                            max: yAxisMax
-                        },
-                        yCount: { beginAtZero: true, title: { display: true, text: 'Count', color: titleColor }, position: 'right', ticks: { color: tickColor, stepSize: 1, precision: 0, callback: function(value) {if (Number.isInteger(value)) {return value;}} }, grid: { drawOnChartArea: false }, offset: true }
-                    }
-                }
-            };
-
-            if (forecastChartInstance) forecastChartInstance.destroy();
-            forecastChartInstance = new Chart(forecastChartCanvas.getContext('2d'), chartConfig);
-            // Wait for chart to finish rendering, then extract yCount ticks
-            setTimeout(() => {
-                if (forecastChartInstance.scales && forecastChartInstance.scales['yCount']) {
-                    const yCountScale = forecastChartInstance.scales['yCount'];
-                    window.monthlyYCountTicks = yCountScale.ticks.map(t => t.value);
-                    window.monthlyYCountMin = yCountScale.min;
-                    window.monthlyYCountMax = yCountScale.max;
-                }
-                // If weekly chart is already rendered, re-render it with new ticks
-                if (window.lastWeekSummaryArr) {
-                    renderForecastWeeklyChart(window.lastWeekSummaryArr);
-                }
-            }, 0);
-        } else {
-            console.error("Canvas element #forecastMonthlyChart not found!");
-        }
-
-        // --- Render Breakdown Table ---
-        const tableBody = document.getElementById('forecastBreakdownTableBody');
-        if(tableBody) {
-            tableBody.innerHTML = ''; // Clear previous
-            if (monthlySummary.length > 0) {
-                monthlySummary.forEach(item => {
-                    const row = document.createElement('tr');
-                    // Use the pre-formatted monthYear label from the backend
-                    row.innerHTML = `
-                        <td>${item.monthYear || 'Unknown'}</td>
-                        <td class="text-right">${item.count || 0}</td>
-                        <td class="text-right">${formatCurrency(item.totalAmount || 0)}</td>
-                    `;
-                    tableBody.appendChild(row);
-                });
-            } else {
-                const row = document.createElement('tr');
-                const cell = document.createElement('td');
-                cell.colSpan = 3; // Adjust colspan if table structure changes
-                cell.textContent = `No monthly forecast data available for ${filterText}.`; // Indicate filter
-                cell.className = 'text-center py-4';
-                row.appendChild(cell);
-                tableBody.appendChild(row);
-            }
-        } else {
-             console.error("Table body element #forecastBreakdownTableBody not found!");
-        }
-
-        // --- Render Project Forecast Table ---
-        const projectTableBody = document.getElementById('projectForecastTableBody');
-        if (projectTableBody) {
-            projectTableBody.innerHTML = '';
-            let hasProjects = false;
-            (data.projectDetails || []).forEach(project => {
-                hasProjects = true;
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td>${project.name || ''}</td>
-                    <td class="text-right">${formatCurrency(project.amount || 0)}</td>
-                    <td class="text-right">${project.forecastMonth || ''}</td>
-                    <td class="text-center">${project.forecastWeek ? `W${project.forecastWeek}` : ''}</td>
-                `;
-                projectTableBody.appendChild(row);
-            });
-            if (!hasProjects) {
-                const row = document.createElement('tr');
-                const cell = document.createElement('td');
-                cell.colSpan = 4;
-                cell.textContent = 'No project forecast details available.';
-                cell.className = 'text-center py-4';
-                row.appendChild(cell);
-                projectTableBody.appendChild(row);
-            }
-        }
-    }
-
-    // --- Theme Toggle ---
-    const themeToggle = document.getElementById('themeToggle');
-    if (themeToggle) {
-        themeToggle.addEventListener('click', function() {
-            const isDark = document.documentElement.classList.toggle('dark');
-            // Update logo for theme
-            const logo = document.getElementById('cmrpLogo');
-            if (logo) {
-                logo.src = isDark ? 'Logo/CMRP Logo Dark.svg' : 'Logo/CMRP Logo Light.svg';
-            }
-            // Re-render dashboard with current filters on theme change
-            if (typeof fetchForecastData === 'function' && typeof renderForecastDashboard === 'function') {
-                fetchForecastData(currentOpStatusFilter).then(data => {
-                    if (data) renderForecastDashboard(data, currentOpStatusFilter);
-                });
-            }
-        });
-    }
-
-    // --- Initialization ---
-    document.addEventListener('DOMContentLoaded', () => {
-        // Set initial theme
-        const savedTheme = localStorage.getItem('theme');
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
-        applyTheme(initialTheme);
-
-        // Set correct logo for initial theme
-        const logo = document.getElementById('cmrpLogo');
-        if (logo) {
-            logo.src = (initialTheme === 'dark') ? 'Logo/CMRP Logo Light.svg' : 'Logo/CMRP Logo Dark.svg';
-        }
-
-        // Add theme toggle listener
-        const themeToggleButton = document.getElementById('themeToggle');
-        if(themeToggleButton) {
-           themeToggleButton.addEventListener('click', function() {
-                const isDark = document.documentElement.classList.toggle('dark');
-                // Update logo for theme
-                const logo = document.getElementById('cmrpLogo');
-                if (logo) {
-                    logo.src = isDark ? 'Logo/CMRP Logo Dark.svg' : 'Logo/CMRP Logo Light.svg';
-                }
-                // Save theme
-                localStorage.setItem('theme', isDark ? 'dark' : 'light');
-                // Re-render dashboard with current filters on theme change
-                if (typeof fetchForecastData === 'function' && typeof renderForecastDashboard === 'function') {
-                    fetchForecastData(currentOpStatusFilter).then(data => {
-                        if (data) renderForecastDashboard(data, currentOpStatusFilter);
-                    });
-                }
-            });
-        }
-
-        // *** ADDED: OP Status Filter Button Listeners ***
-        const opStatusButtonsContainer = document.getElementById('opStatusFilterButtons');
-        if (opStatusButtonsContainer) {
-            opStatusButtonsContainer.addEventListener('click', (e) => {
-                if (e.target.tagName === 'BUTTON' && e.target.dataset.filterValue) {
-                    const selectedStatus = e.target.dataset.filterValue;
-                    if (selectedStatus === currentOpStatusFilter) return; // No change
-
-                    currentOpStatusFilter = selectedStatus;
-
-                    // Update active button style
-                    opStatusButtonsContainer.querySelectorAll('.filter-button').forEach(btn => {
-                        btn.classList.toggle('active', btn.dataset.filterValue === selectedStatus);
-                    });
-
-                    // Fetch and render data for the selected status
-                    fetchForecastData(currentOpStatusFilter).then(data => {
-                        if (data) {
-                            renderForecastDashboard(data, currentOpStatusFilter);
-                        } else {
-                            // Handle error (e.g., clear chart/table, show message)
-                            console.error(`Failed to load data for filter: ${currentOpStatusFilter}`);
-                             const tableBody = document.getElementById('forecastBreakdownTableBody');
-                             if(tableBody) { tableBody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-red-500">Error loading data for ${currentOpStatusFilter}.</td></tr>`; }
-                             if(forecastChartInstance) forecastChartInstance.destroy();
-                              // Clear cards
-                             const cards = ['forecast-total-count', 'forecast-total-amount', 'forecast-next-month-count', 'forecast-next-month-amount'];
-                             cards.forEach(id => { const el = document.getElementById(id); if(el) el.textContent = 'Error'; });
-                        }
-                    });
-                }
-            });
-        } else {
-            console.error("OP Status filter button container not found!");
-        }
-
-        addQuarterFilterButtons();
-
-        // Fetch and render initial data (defaulting to 'all')
-        fetchForecastData(currentOpStatusFilter).then(data => {
-             if (data) {
-                 renderForecastDashboard(data, currentOpStatusFilter); // Initial render
-                 // Fetch and overlay forecast revision summary
-                 console.log('[DEBUG] Fetching /api/forecast-revision-summary...');
-                 fetch('/api/forecast-revision-summary').then(r => {
-                    console.log('[DEBUG] /api/forecast-revision-summary fetch response:', r);
-                    return r.json();
-                 }).then(summary => {
-                    console.log('[DEBUG] /api/forecast-revision-summary response:', summary);
-                    // Store summary for later if chart is not ready
-                    window._pendingForecastRevisionSummary = summary;
-                    tryAddForecastRevisionSummaryToChart();
-                 });
-                 // If you have raw forecast data for weekly, use it here:
-                 if (data.forecastRawWeekly) {
-                     renderForecastWeeklyChartCMRP(data.forecastRawWeekly);
-                 } else {
-                     // fallback: fetch from API if needed
-                     fetchForecastWeekSummary().then(weekData => {
-                         if (weekData && weekData.weekSummary) {
-                             renderForecastWeeklyChart(weekData.weekSummary);
-                         }
-                     });
-                 }
-             } else {
-                 console.error("Initial forecast data fetch failed.");
-                 // Display error message on page?
-                 const tableBody = document.getElementById('forecastBreakdownTableBody');
-                 if(tableBody) {
-                     const row = document.createElement('tr');
-                     const cell = document.createElement('td');
-                     cell.colSpan = 3; // Match table columns
-                     cell.textContent = 'Error loading forecast data.';
-                     cell.className = 'text-center py-4 text-red-500'; // Style as error
-                     row.appendChild(cell);
-                     tableBody.appendChild(row);
-                 }
-                 // Clear cards
-                 const cards = ['forecast-total-count', 'forecast-total-amount', 'forecast-next-month-count', 'forecast-next-month-amount'];
-                 cards.forEach(id => {
-                     const el = document.getElementById(id);
-                     if(el) el.textContent = 'Error';
-                 });
-             }
-        });
-
-        fetchForecastWeekSummary().then(data => {
-            renderForecastWeeklyChart(data.weekSummary);
-        }).catch(err => {
-            // Show error message in the weekly chart area
-            const chartCanvas = document.getElementById('forecastWeeklyChart');
-            if (chartCanvas) {
-                const ctx = chartCanvas.getContext('2d');
-                ctx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
-                ctx.save();
-                ctx.font = '18px sans-serif';
-                ctx.fillStyle = '#dc2626';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText('Error loading weekly forecast data.', chartCanvas.width / 2, chartCanvas.height / 2);
-                ctx.restore();
-            }
-        });
-
-        // Add chart toggle logic
-        const showMonthlyBtn = document.getElementById('showMonthlyBtn');
-        const showWeeklyBtn = document.getElementById('showWeeklyBtn');
-        const monthlySection = document.getElementById('monthlyChartSection');
-        const weeklySection = document.getElementById('weeklyChartSection');
-        showMonthlyBtn.addEventListener('click', () => {
-            showMonthlyBtn.classList.add('active');
-            showWeeklyBtn.classList.remove('active');
-            monthlySection.style.display = '';
-            weeklySection.style.display = 'none';
-        });
-        showWeeklyBtn.addEventListener('click', () => {
-            showWeeklyBtn.classList.add('active');
-            showMonthlyBtn.classList.remove('active');
-            weeklySection.style.display = '';
-            monthlySection.style.display = 'none';
-        });
-
-        updateUserMgmtNavVisibility();
-        // Logout button logic (moved here for consistency)
-        const logoutBtn = document.getElementById('logoutBtn');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', function() {
-                localStorage.removeItem('authToken');
-                window.location.href = 'index.html';
-            });
-        }
-    });
-
-    function tryAddForecastRevisionSummaryToChart() {
-      if (!window._pendingForecastRevisionSummary) return;
-      if (!window.forecastChartInstance) {
-        // Chart not ready yet, try again shortly
-        setTimeout(tryAddForecastRevisionSummaryToChart, 100);
-        return;
-      }
-      addForecastRevisionSummaryToChart(window._pendingForecastRevisionSummary);
-      window._pendingForecastRevisionSummary = null;
-    }
-
-    async function fetchOpportunitiesList() {
-        try {
-            const res = await fetch('/api/opportunities');
-            if (!res.ok) throw new Error('Failed to fetch opportunities');
-            return await res.json();
-        } catch (e) {
-            console.error('Error fetching opportunities:', e);
-            return [];
-        }
-    }
-
-    async function fetchForecastRevisions(uid) {
-        if (!uid) return [];
-        try {
-            const res = await fetch(`/api/opportunities/${uid}/forecast-revisions`);
-            if (!res.ok) throw new Error('Failed to fetch forecast revisions');
-            return await res.json();
-        } catch (e) {
-            console.error('Error fetching forecast revisions:', e);
-            return [];
-        }
-    }
-
-    function renderForecastHistoryChart(revisions) {
-        const chartTitle = document.getElementById('forecastHistoryChartTitle');
-        const ctx = document.getElementById('forecastHistoryChart').getContext('2d');
-        if (!revisions || revisions.length === 0) {
-            chartTitle.classList.add('hidden');
-            ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-            return;
-        }
-        chartTitle.classList.remove('hidden');
-        chartTitle.textContent = 'Forecast Change History';
-        // Prepare data: x = changed_at, y = new_forecast_date
-        const labels = revisions.map(r => r.changed_at ? new Date(r.changed_at).toLocaleString() : '');
-        const yDates = revisions.map(r => r.new_forecast_date ? new Date(r.new_forecast_date) : null);
-        // Convert dates to timestamps for plotting
-        const dataPoints = yDates.map(d => d ? d.getTime() : null);
-        // Remove previous chart if exists
-        if (window.forecastHistoryChartInstance) window.forecastHistoryChartInstance.destroy();
-        window.forecastHistoryChartInstance = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Forecast Date',
-                    data: dataPoints,
-                    borderColor: '#8b5cf6',
-                    backgroundColor: 'rgba(139,92,246,0.2)',
-                    fill: false,
-                    tension: 0.1,
-                    pointRadius: 5,
-                    pointHoverRadius: 7,
-                    parsing: false,
-                }]
-            },
-            options: {
-                scales: {
-                    y: {
-                        type: 'time',
-                        time: { unit: 'day', tooltipFormat: 'MMM dd, yyyy' },
-                        title: { display: true, text: 'Forecast Date' },
-                    },
-                    x: {
-                        title: { display: true, text: 'Change Timestamp' },
-                    }
-                },
-                plugins: {
-                    tooltip: {
-                        callbacks: {
-                            label: function(ctx) {
-                                const d = ctx.parsed.y ? new Date(ctx.parsed.y) : null;
-                                return d ? 'Forecast: ' + d.toLocaleDateString() : 'No date';
-                            }
-                        }
-                    }
-                }
-            }
-        });
-    }
-
-    function addForecastRevisionSummaryToChart(summary) {
-      if (!window.forecastChartInstance) return;
-      const chart = window.forecastChartInstance;
-      console.log('[DEBUG] addForecastRevisionSummaryToChart summary:', summary);
-      const labels = chart.data.labels;
-      console.log('[DEBUG] Chart labels:', labels);
-      // Map summary data to chart labels (convert 'YYYY-MM' to 'Month YYYY')
-      function mapCountsToLabels(rows) {
-        const map = {};
-        rows.forEach(r => { map[formatMonthLabel(r.month)] = Number(r.count); });
-        console.log('[DEBUG] Mapping dictionary:', map);
-        return labels.map(lab => map[lab] || 0);
-      }
-      const byRevisionDate = mapCountsToLabels(summary.byRevisionDate || []);
-      const byForecastDate = mapCountsToLabels(summary.byForecastDate || []);
-      console.log('[DEBUG] byRevisionDate mapped:', byRevisionDate);
-      console.log('[DEBUG] byForecastDate mapped:', byForecastDate);
-      // Highlight overlay lines for visibility
-      chart.data.datasets = chart.data.datasets.filter(ds => !ds._isRevisionOverlay);
-      chart.data.datasets.push({
-        label: 'Forecast Slides (by Change Date)',
-        data: byRevisionDate,
-        borderColor: '#f59e0b',
-        backgroundColor: 'rgba(245,158,11,0.2)',
-        type: 'line',
-        yAxisID: 'yCount',
-        order: 3,
-        fill: false,
-        tension: 0.1,
-        pointRadius: 8,
-        pointHoverRadius: 12,
-        borderWidth: 4,
-        _isRevisionOverlay: true
-      });
-      chart.data.datasets.push({
-        label: 'Forecast Slides (by New Forecast Date)',
-        data: byForecastDate,
-        borderColor: '#10b981',
-        backgroundColor: 'rgba(16,185,129,0.2)',
-        type: 'line',
-        yAxisID: 'yCount',
-        order: 4,
-        fill: false,
-        tension: 0.1,
-        pointRadius: 8,
-        pointHoverRadius: 12,
-        borderWidth: 4,
-        _isRevisionOverlay: true
-      });
-      chart.update();
-    }
-
-    function formatMonthLabel(ym) {
-      // ym: '2025-02' => 'February 2025'
-      if (!ym || !/^\d{4}-\d{2}$/.test(ym)) return ym;
-      const [year, month] = ym.split('-');
-      const date = new Date(Date.UTC(Number(year), Number(month) - 1, 1));
-      return date.toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
-    }
-
-    async function fetchForecastWeekSummary() {
-      try {
-        const res = await fetch('/api/forecast-dashboard-weeks');
-        if (!res.ok) throw new Error('Failed to fetch weekly forecast summary');
-        const data = await res.json();
-        console.log('[DEBUG] /api/forecast-dashboard-weeks response:', data);
-        return data;
-      } catch (e) {
-        console.error('Error fetching weekly forecast summary:', e);
-        return { weekSummary: [] };
-      }
-    }
-
-    function renderForecastWeeklyChart(weekSummaryArr) {
-      console.log('[DEBUG] renderForecastWeeklyChart weekSummaryArr:', weekSummaryArr);
-      window.lastWeekSummaryArr = weekSummaryArr;
-      const yAxisLeftCanvas = document.getElementById('forecastWeeklyYAxisLeft');
-      const yAxisLeftCtx = yAxisLeftCanvas.getContext('2d');
-      const yAxisRightCanvas = document.getElementById('forecastWeeklyYAxisRight');
-      const yAxisRightCtx = yAxisRightCanvas.getContext('2d');
-      const chartCanvas = document.getElementById('forecastWeeklyChart');
-      const ctx = chartCanvas.getContext('2d');
-      if (!weekSummaryArr || weekSummaryArr.length === 0) {
-        yAxisLeftCtx.clearRect(0, 0, yAxisLeftCanvas.width, yAxisLeftCanvas.height);
-        yAxisRightCtx.clearRect(0, 0, yAxisRightCanvas.width, yAxisRightCanvas.height);
-        ctx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
-        // Show error message in the chart area
-        ctx.save();
-        ctx.font = '18px sans-serif';
-        ctx.fillStyle = '#dc2626';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText('No weekly forecast data available.', chartCanvas.width / 2, chartCanvas.height / 2);
-        ctx.restore();
-        return;
-      }
-      let labels = weekSummaryArr.map(w => shortMonthWeekLabel(w.monthWeek));
-      let counts = weekSummaryArr.map(w => w.count);
-      let amounts = weekSummaryArr.map(w => w.totalAmount);
-      // Filter out quarters if needed
-      const filtered = filterOutQuarters(labels, counts, amounts);
-      labels = filtered.labels;
-      counts = filtered.counts;
-      amounts = filtered.amounts;
-      const weekCount = labels.length;
-      const pxPerWeek = 80;
-      const visibleWeeks = 12;
-      chartCanvas.width = weekCount * pxPerWeek;
-      chartCanvas.height = 400;
-      yAxisLeftCanvas.height = 400;
-      yAxisLeftCanvas.width = 80;
-      yAxisRightCanvas.height = 400;
-      yAxisRightCanvas.width = 80;
-      const chartWrapper = chartCanvas.parentElement;
-      if (chartWrapper) {
-        chartWrapper.style.width = (weekCount * pxPerWeek) + 'px';
-        chartWrapper.style.maxWidth = '100%';
-        chartWrapper.style.overflowX = 'auto';
-        chartWrapper.style.overflowY = 'hidden';
-        chartWrapper.style.minWidth = (visibleWeeks * pxPerWeek) + 'px';
-        chartWrapper.style.height = '400px';
-        chartWrapper.style.maxHeight = '400px';
-      }
-      // --- Chart.js chart (hide y-axes) ---
-      // Use the same y-axis max and step as the monthly chart
-      let yAmountMax = window.yAxisMax || Math.ceil(Math.max(...amounts) / 1_000_000) * 1_000_000;
-      let yAmountStep = window.yAxisStep || 1_000_000;
-      // --- Sync yCount max/step with monthly chart ---
-      let yCountMax = undefined;
-      let yCountStep = 1;
-      if (window.forecastChartInstance && window.forecastChartInstance.scales && window.forecastChartInstance.scales['yCount']) {
-        yCountMax = window.forecastChartInstance.scales['yCount'].max;
-        yCountStep = window.forecastChartInstance.scales['yCount'].options.ticks && window.forecastChartInstance.scales['yCount'].options.ticks.stepSize ? window.forecastChartInstance.scales['yCount'].options.ticks.stepSize : 1;
-      } else {
-        yCountMax = Math.ceil(Math.max(...counts));
-      }
-      if (window.forecastWeeklyChartInstance) window.forecastWeeklyChartInstance.destroy();
-      window.forecastWeeklyChartInstance = new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: labels,
-          datasets: [
-            {
-              label: 'Forecast Amount',
-              data: amounts,
-              backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--color-forecast-bg').trim(),
-              borderColor: getComputedStyle(document.documentElement).getPropertyValue('--color-forecast').trim(),
-              borderWidth: 1,
-              yAxisID: 'yAmount',
-              type: 'bar',
-              order: 2,
-              barPercentage: 0.7,
-              categoryPercentage: 0.8
-            },
-            {
-              label: 'Forecast Count',
-              data: counts,
-              borderColor: '#6b7280',
-              backgroundColor: 'rgba(59,130,246,0.15)', // Use a subtle blue fill for visibility
-              borderWidth: 2,
-              fill: true,
-              tension: 0.1,
-              yAxisID: 'yCount',
-              type: 'line',
-              order: 1,
-              pointRadius: 4,
-              pointHoverRadius: 6
-            }
-          ]
-        },
-        options: {
-          responsive: false,
-          maintainAspectRatio: false,
-          animation: false,
-          layout: { padding: { bottom: 32 } }, // Add bottom padding for x-axis labels
-          interaction: { mode: 'index', intersect: false, axis: 'x' },
-          hover: { mode: 'index', intersect: false, animationDuration: 400 },
-          animation: { duration: 400, easing: 'easeOutQuart' },
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              enabled: true,
-              animation: { duration: 400 },
-              backgroundColor: getComputedStyle(document.documentElement).getPropertyValue('--chart-tooltip-bg').trim(),
-              titleColor: getComputedStyle(document.documentElement).getPropertyValue('--chart-tooltip-text').trim(),
-              bodyColor: getComputedStyle(document.documentElement).getPropertyValue('--chart-tooltip-text').trim(),
-              borderColor: '#8b5cf6',
-              borderWidth: 1,
-              displayColors: false,
-              callbacks: {
-                label: function(ctx) {
-                  let label = ctx.dataset.label || '';
-                  if (label) label += ': ';
-                  if (ctx.dataset.label === 'Forecast Amount') {
-                    label += formatCurrency(ctx.parsed.y);
-                  } else {
-                    label += ctx.parsed.y;
-                  }
-                  return label;
-                }
-              }
-            }
-          },
-          scales: {
-            x: {
-              title: { display: false },
-              ticks: {
-                maxRotation: 0, minRotation: 0, autoSkip: false,
-                color: getComputedStyle(document.documentElement).getPropertyValue('--chart-tick-color').trim()
-              },
-              grid: {
-                color: function(context) {
-                  // Subtle grid line for first week of each month
-                  const label = context.tick && context.tick.label ? context.tick.label : '';
-                  return /W1$/.test(label) ? 'rgba(139,92,246,0.15)' : 'rgba(0,0,0,0.07)';
-                },
-                lineWidth: function(context) {
-                  const label = context.tick && context.tick.label ? context.tick.label : '';
-                  return /W1$/.test(label) ? 1.5 : 1;
-                }
-              },
-              offset: true
-            },
-            yAmount: {
-              display: false, // Hide y-axis in chart area
-              beginAtZero: true,
-              suggestedMax: yAmountMax,
-              max: yAmountMax,
-              offset: true,
-              ticks: {
-                stepSize: yAmountStep,
-                max: yAmountMax
-              }
-            },
-            yCount: {
-              display: false, // Hide y-axis in chart area
-              beginAtZero: true,
-              suggestedMax: yCountMax,
-              max: yCountMax,
-              offset: true,
-              ticks: {
-                stepSize: yCountStep,
-                max: yCountMax
-              }
-            }
-          }
-        }
-      });
-      // --- Draw y-axis ticks and title on left canvas (Amount) ---
-      const chart = window.forecastWeeklyChartInstance;
-      const yAmount = chart.scales['yAmount'];
-      yAxisLeftCtx.clearRect(0, 0, yAxisLeftCanvas.width, yAxisLeftCanvas.height);
-      yAxisLeftCtx.save();
-      yAxisLeftCtx.font = '12px sans-serif';
-      yAxisLeftCtx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--color-forecast').trim();
-      yAxisLeftCtx.textAlign = 'right';
-      yAxisLeftCtx.textBaseline = 'middle';
-      if (yAmount && chart.chartArea) {
-        const ticks = yAmount.ticks;
-        const chartArea = chart.chartArea;
-        const yMin = yAmount.min;
-        const yMax = yAmount.max;
-        // Map tick values to chartArea pixel range
-        function getAlignedY(value) {
-          // Linear interpolation between chartArea.bottom (min) and chartArea.top (max)
-          const frac = (value - yMin) / (yMax - yMin);
-          return chartArea.bottom - frac * (chartArea.bottom - chartArea.top);
-        }
-        // Move labels left to match monthly chart
-        const labelX = 45;
-        ticks.forEach(tick => {
-          const y = getAlignedY(tick.value);
-          yAxisLeftCtx.fillText(abbreviateNumber(tick.value), labelX, y);
-        });
-      }
-      yAxisLeftCtx.restore();
-      // --- Draw y-axis ticks and title on right canvas (Count) ---
-      const yCount = chart.scales['yCount'];
-      yAxisRightCtx.clearRect(0, 0, yAxisRightCanvas.width, yAxisRightCanvas.height);
-      yAxisRightCtx.save();
-      yAxisRightCtx.font = '12px sans-serif';
-      yAxisRightCtx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--chart-tick-color').trim();
-      yAxisRightCtx.textAlign = 'left';
-      yAxisRightCtx.textBaseline = 'middle';
-      if (yCount && chart.chartArea) {
-        // Use the exact tick values from the monthly chart for Count
-        let monthlyTickValues = window.monthlyYCountTicks;
-        // Force min/max to match monthly chart for perfect alignment and padding
-        let yCountMin = typeof window.monthlyYCountMin === 'number' ? window.monthlyYCountMin : yCount.min;
-        let yCountMax = typeof window.monthlyYCountMax === 'number' ? window.monthlyYCountMax : yCount.max;
-        // Add a small padding to chart area to ensure all ticks are visible
-        const chartArea = {
-          top: chart.chartArea.top + 10,
-          bottom: chart.chartArea.bottom - 10
-        };
-        const labelX = 65;
-        if (monthlyTickValues && monthlyTickValues.length > 0) {
-          monthlyTickValues.forEach(v => {
-            // Use Chart.js scale's getPixelForValue for perfect alignment
-            let y = yCount.getPixelForValue(v);
-            // Remove TEMP: background
-            // Draw the label slightly inward
-            yAxisRightCtx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--chart-tick-color').trim();
-            yAxisRightCtx.font = '12px sans-serif';
-            yAxisRightCtx.fillText(v, 55, y);
-          });
-        }
-        // Draw Count axis title, vertically centered between first and last tick label
-        if (monthlyTickValues && monthlyTickValues.length > 1) {
-          const firstY = yCount.getPixelForValue(monthlyTickValues[0]);
-          const lastY = yCount.getPixelForValue(monthlyTickValues[monthlyTickValues.length - 1]);
-          const centerY = (firstY + lastY) / 2;
-          yAxisRightCtx.save();
-          let chartjsTitleColor = getComputedStyle(document.documentElement).getPropertyValue('--chart-title-color').trim();
-          let chartjsTitleFont = '12px sans-serif';
-          if (window.forecastChartInstance && window.forecastChartInstance.options && window.forecastChartInstance.options.scales && window.forecastChartInstance.options.scales.yCount && window.forecastChartInstance.options.scales.yCount.title && window.forecastChartInstance.options.scales.yCount.title.color) {
-            chartjsTitleColor = window.forecastChartInstance.options.scales.yCount.title.color;
-          }
-          if (window.forecastChartInstance && window.forecastChartInstance.options && window.forecastChartInstance.options.scales && window.forecastChartInstance.options.scales.yCount && window.forecastChartInstance.options.scales.yCount.title && window.forecastChartInstance.options.scales.yCount.title.font && window.forecastChartInstance.options.scales.yCount.title.font.size) {
-            chartjsTitleFont = `${window.forecastChartInstance.options.scales.yCount.title.font.size}px sans-serif`;
-          }
-          yAxisRightCtx.font = chartjsTitleFont;
-          yAxisRightCtx.textAlign = 'center';
-          yAxisRightCtx.textBaseline = 'middle';
-          yAxisRightCtx.fillStyle = chartjsTitleColor;
-          yAxisRightCtx.translate(yAxisRightCanvas.width - 10, centerY);
-          yAxisRightCtx.rotate(Math.PI/2);
-          yAxisRightCtx.fillText('Count', 0, 0);
-          yAxisRightCtx.restore();
-        }
-      }
-      yAxisRightCtx.restore();
-      // --- Render fixed legend above chart ---
-      const legendDiv = document.getElementById('forecastWeeklyLegend');
-      if (legendDiv) {
-        legendDiv.innerHTML = `
-          <span style="display:inline-block;margin:0 16px;"><span style="display:inline-block;width:18px;height:12px;background:rgba(139,92,246,0.7);border:1px solid #8b5cf6;margin-right:6px;vertical-align:middle;"></span>Forecast Amount</span>
-          <span style="display:inline-block;margin:0 16px;"><span style="display:inline-block;width:18px;height:3px;background:#6b7280;margin-right:6px;vertical-align:middle;"></span>Forecast Count</span>
-        `;
-      }
-    }
-
-    // --- Helper for abbreviated numbers ---
-    function abbreviateNumber(value) {
-      value = Number(value);
-      if (value >= 1e6) return '₱' + (value / 1e6).toFixed(value % 1e6 === 0 ? 0 : 1) + 'M';
-      if (value >= 1e3) return '₱' + (value / 1e3).toFixed(value % 1e3 === 0 ? 0 : 1) + 'k';
-      return '₱' + value;
-    }
-
-    // --- Theme Management ---
-    function applyTheme(theme) {
-        const isDark = theme === 'dark';
-        document.documentElement.classList.toggle('dark', isDark);
-        // Invert logo for dark/light
-        const logo = document.getElementById('cmrpLogo');
-        if (logo) logo.src = isDark ? 'Logo/CMRP Logo Light.svg' : 'Logo/CMRP Logo Dark.svg';
-    }
-    function toggleTheme() {
-        const currentTheme = document.documentElement.classList.contains('dark') ? 'dark' : 'light';
-        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-        applyTheme(newTheme);
-        localStorage.setItem('theme', newTheme);
-    }
-    document.addEventListener('DOMContentLoaded', () => {
-        // Set initial theme
-        const savedTheme = localStorage.getItem('theme');
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
-        applyTheme(initialTheme);
-
-        // Set correct logo for initial theme
-        const logo = document.getElementById('cmrpLogo');
-        if (logo) {
-            logo.src = (initialTheme === 'dark') ? 'Logo/CMRP Logo Light.svg' : 'Logo/CMRP Logo Dark.svg';
-        }
-
-        // Add theme toggle listener
-        const themeToggleButton = document.getElementById('themeToggle');
-        if(themeToggleButton) themeToggleButton.addEventListener('click', toggleTheme);
-
-        // *** ADDED: OP Status Filter Button Listeners ***
-        const opStatusButtonsContainer = document.getElementById('opStatusFilterButtons');
-        if (opStatusButtonsContainer) {
-            opStatusButtonsContainer.addEventListener('click', (e) => {
-                if (e.target.tagName === 'BUTTON' && e.target.dataset.filterValue) {
-                    const selectedStatus = e.target.dataset.filterValue;
-                    if (selectedStatus === currentOpStatusFilter) return; // No change
-
-                    currentOpStatusFilter = selectedStatus;
-
-                    // Update active button style
-                    opStatusButtonsContainer.querySelectorAll('.filter-button').forEach(btn => {
-                        btn.classList.toggle('active', btn.dataset.filterValue === selectedStatus);
-                    });
-
-                    // Fetch and render data for the selected status
-                    fetchForecastData(currentOpStatusFilter).then(data => {
-                        if (data) {
-                            renderForecastDashboard(data, currentOpStatusFilter);
-                        } else {
-                            // Handle error (e.g., clear chart/table, show message)
-                            console.error(`Failed to load data for filter: ${currentOpStatusFilter}`);
-                             const tableBody = document.getElementById('forecastBreakdownTableBody');
-                             if(tableBody) { tableBody.innerHTML = `<tr><td colspan="3" class="text-center py-4 text-red-500">Error loading data for ${currentOpStatusFilter}.</td></tr>`; }
-                             if(forecastChartInstance) forecastChartInstance.destroy();
-                              // Clear cards
-                             const cards = ['forecast-total-count', 'forecast-total-amount', 'forecast-next-month-count', 'forecast-next-month-amount'];
-                             cards.forEach(id => { const el = document.getElementById(id); if(el) el.textContent = 'Error'; });
-                        }
-                    });
-                }
-            });
-        } else {
-            console.error("OP Status filter button container not found!");
-        }
-
-        addQuarterFilterButtons();
-
-        // Fetch and render initial data (defaulting to 'all')
-        fetchForecastData(currentOpStatusFilter).then(data => {
-             if (data) {
-                 renderForecastDashboard(data, currentOpStatusFilter); // Initial render
-                 // Fetch and overlay forecast revision summary
-                 console.log('[DEBUG] Fetching /api/forecast-revision-summary...');
-                 fetch('/api/forecast-revision-summary').then(r => {
-                    console.log('[DEBUG] /api/forecast-revision-summary fetch response:', r);
-                    return r.json();
-                 }).then(summary => {
-                    console.log('[DEBUG] /api/forecast-revision-summary response:', summary);
-                    // Store summary for later if chart is not ready
-                    window._pendingForecastRevisionSummary = summary;
-                    tryAddForecastRevisionSummaryToChart();
-                 });
-                 // If you have raw forecast data for weekly, use it here:
-                 if (data.forecastRawWeekly) {
-                     renderForecastWeeklyChartCMRP(data.forecastRawWeekly);
-                 } else {
-                     // fallback: fetch from API if needed
-                     fetchForecastWeekSummary().then(weekData => {
-                         if (weekData && weekData.weekSummary) {
-                             renderForecastWeeklyChart(weekData.weekSummary);
-                         }
-                     });
-                 }
-             } else {
-                 console.error("Initial forecast data fetch failed.");
-                 // Display error message on page?
-                 const tableBody = document.getElementById('forecastBreakdownTableBody');
-                 if(tableBody) {
-                     const row = document.createElement('tr');
-                     const cell = document.createElement('td');
-                     cell.colSpan = 3; // Match table columns
-                     cell.textContent = 'Error loading forecast data.';
-                     cell.className = 'text-center py-4 text-red-500'; // Style as error
-                     row.appendChild(cell);
-                     tableBody.appendChild(row);
-                 }
-                 // Clear cards
-                 const cards = ['forecast-total-count', 'forecast-total-amount', 'forecast-next-month-count', 'forecast-next-month-amount'];
-                 cards.forEach(id => {
-                     const el = document.getElementById(id);
-                     if(el) el.textContent = 'Error';
-                 });
-             }
-        });
-
-        fetchForecastWeekSummary().then(data => {
-            renderForecastWeeklyChart(data.weekSummary);
-        }).catch(err => {
-            // Show error message in the weekly chart area
-            const chartCanvas = document.getElementById('forecastWeeklyChart');
-            if (chartCanvas) {
-                const ctx = chartCanvas.getContext('2d');
-                ctx.clearRect(0, 0, chartCanvas.width, chartCanvas.height);
-                ctx.save();
-                ctx.font = '18px sans-serif';
-                ctx.fillStyle = '#dc2626';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText('Error loading weekly forecast data.', chartCanvas.width / 2, chartCanvas.height / 2);
-                ctx.restore();
-            }
-        });
-
-        // Add chart toggle logic
-        const showMonthlyBtn = document.getElementById('showMonthlyBtn');
-        const showWeeklyBtn = document.getElementById('showWeeklyBtn');
-        const monthlySection = document.getElementById('monthlyChartSection');
-        const weeklySection = document.getElementById('weeklyChartSection');
-        showMonthlyBtn.addEventListener('click', () => {
-            showMonthlyBtn.classList.add('active');
-            showWeeklyBtn.classList.remove('active');
-            monthlySection.style.display = '';
-            weeklySection.style.display = 'none';
-        });
-        showWeeklyBtn.addEventListener('click', () => {
-            showWeeklyBtn.classList.add('active');
-            showMonthlyBtn.classList.remove('active');
-            weeklySection.style.display = '';
-            monthlySection.style.display = 'none';
-        });
-
-        updateUserMgmtNavVisibility();
-        // Logout button logic (moved here for consistency)
-        const logoutBtn = document.getElementById('logoutBtn');
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', function() {
-                localStorage.removeItem('authToken');
-                window.location.href = 'index.html';
-            });
-        }
-    });
-
-    function updateUserMgmtNavVisibility() {
-        const userMgmtBtn = document.getElementById('userMgmtNavBtn');
-        if (!userMgmtBtn) return;
-        const token = localStorage.getItem('authToken');
-        if (!token) {
-            userMgmtBtn.style.display = 'none';
-            return;
-        }
-        try {
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            const accountType = payload.accountType || payload.account_type || null;
-            userMgmtBtn.style.display = (accountType === 'Admin') ? '' : 'none';
-        } catch {
-            userMgmtBtn.style.display = 'none';
-        }
-    }
-    window.addEventListener('storage', updateUserMgmtNavVisibility);
-
-    // Logout button logic
-    const logoutBtn = document.getElementById('logoutBtn');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', function() {
-            localStorage.removeItem('authToken');
-            window.location.href = 'index.html';
-        });
-    }
-    const observer = new MutationObserver(updateLogoForTheme);
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-
-    // --- CMRP Week Calculation Utilities ---
-    function getFirstSundayOrMonday(year, month) {
-        // month: 0-based (0=Jan)
-        const firstDay = new Date(year, month, 1);
-        const dayOfWeek = firstDay.getDay(); // 0=Sun, 1=Mon, ...
-        let offset = 0;
-        if (dayOfWeek === 0) offset = 0; // Sunday
-        else if (dayOfWeek === 1) offset = 0; // Monday
-        else if (dayOfWeek > 1) offset = (7 - dayOfWeek + 1); // Next Monday
-        // But if Sunday comes before Monday, use Sunday
-        if (dayOfWeek > 0) {
-            const sundayOffset = 7 - dayOfWeek;
-            const mondayOffset = (8 - dayOfWeek) % 7;
-            offset = Math.min(sundayOffset, mondayOffset);
-        }
-        return new Date(year, month, 1 + offset);
-    }
-
-    function getCMRPWeeks(year, month) {
-        // Returns array of {start: Date, end: Date, weekNum: number}
-        // month: 0-based
-        const firstCMRPDay = getFirstSundayOrMonday(year, month);
-        const lastDayOfMonth = new Date(year, month + 1, 0);
-        let weeks = [];
-        let weekStart = new Date(firstCMRPDay);
-        let weekNum = 1;
-        while (weekStart <= lastDayOfMonth) {
-            let weekEnd = new Date(weekStart);
-            weekEnd.setDate(weekEnd.getDate() + 6);
-            // If this is the last week, force weekEnd to last day of month
-            if (weekEnd >= lastDayOfMonth) {
-                weekEnd = new Date(lastDayOfMonth);
-            }
-            weeks.push({
-                start: new Date(weekStart),
-                end: new Date(weekEnd),
-                weekNum
-            });
-            weekNum++;
-            weekStart.setDate(weekStart.getDate() + 7);
-        }
-        return weeks;
-    }
-
-    function getCMRPWeekForDate(date) {
-        // Returns {weekNum, start, end} for the CMRP week this date falls in
-        const year = date.getFullYear();
-        const month = date.getMonth();
-        const weeks = getCMRPWeeks(year, month);
-        if (!Array.isArray(weeks) || weeks.length === 0) return null;
-        for (let w of weeks) {
-            if (date >= w.start && date <= w.end) return w;
-        }
-        // If not found, check if it's in the last week (spillover into next month)
-        if (weeks.length > 0 && date > weeks[weeks.length - 1].end) {
-            return weeks[weeks.length - 1];
-        }
-        return null;
-    }
-
-    // --- Patch Weekly Chart/Table Rendering to Use CMRP Weeks ---
-    function groupForecastByCMRPWeek(forecastData) {
-        // forecastData: array of {date: 'YYYY-MM-DD', ...}
-        const grouped = {};
-        forecastData.forEach(item => {
-            const d = new Date(item.date);
-            const cmrpWeek = getCMRPWeekForDate(d);
-            if (!cmrpWeek) return;
-            const key = `${d.getFullYear()}-${(d.getMonth()+1).toString().padStart(2,'0')}-W${cmrpWeek.weekNum}`;
-            if (!grouped[key]) {
-                grouped[key] = {
-                    weekLabel: `${d.toLocaleString('default', { month: 'short' })} W${cmrpWeek.weekNum}`,
-                    weekNum: cmrpWeek.weekNum,
-                    start: cmrpWeek.start,
-                    end: cmrpWeek.end,
-                    items: []
-                };
-            }
-            grouped[key].items.push(item);
-        });
-        // Sort by week start
-        return Object.values(grouped).sort((a, b) => a.start - b.start);
-    }
-
-    // --- Integrate with Weekly Chart Rendering ---
-    function renderForecastWeeklyChartCMRP(rawData) {
-        // rawData: array of {date, count, totalAmount, ...}
-        const groupedWeeks = groupForecastByCMRPWeek(rawData);
-        // Convert groupedWeeks to week summary array format expected by renderForecastWeeklyChart
-        const weekSummaryArr = groupedWeeks.map(w => ({
-            monthWeek: w.weekLabel,
-            count: w.items.length,
-            totalAmount: w.items.reduce((sum, i) => sum + (i.totalAmount || 0), 0)
-        }));
-        renderForecastWeeklyChart(weekSummaryArr);
-    }
-
-    </script>
-<!-- Unified Auth Modal HTML (copied/adapted from win-loss_dashboard.html) -->
+    <!-- Unified Auth Modal HTML (copied/adapted from win-loss_dashboard.html) -->
     <div id="authModalOverlay" class="auth-modal-overlay" style="display:none;"></div>
     <div id="authModal" class="auth-modal" style="display:none;">
         <h2 id="authModalTitle">Login</h2>
         <form id="authForm">
-            <div class="error-text" id="authError" style="display:none;"></div>
-            <div class="success-text" id="authSuccess" style="display:none;"></div>
-            <label>Email
-                <input type="email" id="authEmail" required autocomplete="username" />
-            </label>
-            <label>Password
-                <input type="password" id="authPassword" required autocomplete="current-password" />
-            </label>
-            <div id="registerFields" style="display:none;">
-                <label>Name
-                    <input type="text" id="authName" autocomplete="name" />
-                </label>
-                <div class="roles-group">
-                    <span>Department/Role:</span><br>
-                    <label><input type="checkbox" name="role" value="technical"> Technical</label>
-                    <label><input type="checkbox" name="role" value="proposal"> Proposal</label>
-                    <label><input type="checkbox" name="role" value="sales"> Sales</label>
-                </div>
-            </div>
-            <button type="submit" id="authSubmitBtn" class="theme-button w-full">Login</button>
-        </form>
-        <div style="margin-top:1rem; text-align:center;">
-            <span id="switchAuthMode" class="switch-link">Don't have an account? Register</span>
-        </div>
-    </div>
-    <style>
-    .auth-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; display: none; }
-    .auth-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--bg-modal); border: 1px solid var(--border-modal); border-radius: 0.5rem; padding: 2rem 2.5rem; z-index: 1010; min-width: 320px; max-width: 95vw; box-shadow: 0 8px 32px rgba(0,0,0,0.18); display: none; }
-    .auth-modal h2 { margin-top: 0; font-size: 1.3rem; font-weight: 600; color: var(--text-title); }
-    .auth-modal label { display: block; margin-bottom: 0.5rem; }
-    .auth-modal input[type="text"], .auth-modal input[type="email"], .auth-modal input[type="password"] { width: 100%; margin-bottom: 1rem; }
-    .auth-modal .roles-group { margin-bottom: 1rem; }
-    .auth-modal .roles-group label { display: inline-block; margin-right: 1.2em; font-weight: 400; }
-    .auth-modal .switch-link { color: var(--text-link); cursor: pointer; text-decoration: underline; font-size: 0.95em; }
-    .auth-modal .error-text { color: var(--text-error); margin-bottom: 0.5rem; }
-    .auth-modal .success-text { color: #16a34a; margin-bottom: 0.5rem; }
-    </style>
-    <script id="authModalScript">
-    // --- Unified Auth Modal Logic (copied/adapted from win-loss_dashboard.html) ---
-    // No DOMContentLoaded wrapper, runs immediately
-    const authModalOverlay = document.getElementById('authModalOverlay');
-    const authModal = document.getElementById('authModal');
-    const authForm = document.getElementById('authForm');
-    const authEmail = document.getElementById('authEmail');
-    const authPassword = document.getElementById('authPassword');
-    const authName = document.getElementById('authName');
-    const registerFields = document.getElementById('registerFields');
-    const authError = document.getElementById('authError');
-    const authSuccess = document.getElementById('authSuccess');
-    const authSubmitBtn = document.getElementById('authSubmitBtn');
-    const switchAuthMode = document.getElementById('switchAuthMode');
-    let isLoginMode = true;
-    function showAuthModal() {
-        authModalOverlay.style.display = 'block';
-        authModal.style.display = 'block';
-    }
-    function hideAuthModal() {
-        authModalOverlay.style.display = 'none';
-        authModal.style.display = 'none';
-        authError.style.display = 'none';
-        authSuccess.style.display = 'none';
-        authForm.reset();
-    }
-    function setAuthMode(login) {
-        isLoginMode = login;
-        document.getElementById('authModalTitle').textContent = login ? 'Login' : 'Register';
-        authSubmitBtn.textContent = login ? 'Login' : 'Register';
-        registerFields.style.display = login ? 'none' : 'block';
-        switchAuthMode.textContent = login ? "Don't have an account? Register" : "Already have an account? Login";
-        authError.style.display = 'none';
-        authSuccess.style.display = 'none';
-        authForm.reset();
-    }
-    if (switchAuthMode) switchAuthMode.onclick = () => setAuthMode(!isLoginMode);
-    if (authModalOverlay) authModalOverlay.onclick = hideAuthModal;
-    function isAuthenticated() {
-        return !!localStorage.getItem('authToken');
-    }
-    function showMainContent(show) {
-        var main = document.querySelector('.main-content');
-        if (main) main.style.display = show ? '' : 'none';
-    }
-    // On page load, check auth
-    if (!isAuthenticated()) {
-        showMainContent(false);
-        setAuthMode(true);
-        showAuthModal();
-    } else {
-        showMainContent(true);
-        hideAuthModal();
-    }
-    if (authForm) authForm.onsubmit = async function(e) {
-        e.preventDefault();
-        authError.style.display = 'none';
-        authSuccess.style.display = 'none';
-        authSubmitBtn.disabled = true;
-        const email = authEmail.value.trim();
-        const password = authPassword.value;
-        if (isLoginMode) {
-            if (!validateEmail(email)) { authError.textContent = 'Invalid email.'; authError.style.display = 'block'; authSubmitBtn.disabled = false; return; }
-            if (!validatePassword(password)) { authError.textContent = 'Password must be 8-100 characters.'; authError.style.display = 'block'; authSubmitBtn.disabled = false; return; }
-            try {
-                const res = await fetch('/api/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.error || 'Login failed');
-                localStorage.setItem('authToken', data.token);
-                showMainContent(true);
-                hideAuthModal();
-            } catch (err) {
-                authError.textContent = err.message;
-                authError.style.display = 'block';
-            } finally {
-                authSubmitBtn.disabled = false;
-            }
-        } else {
-            const name = authName.value.trim();
-            const roles = Array.from(document.querySelectorAll('input[name=role]:checked')).map(cb => cb.value);
-            if (!validateEmail(email)) { authError.textContent = 'Invalid email.'; authError.style.display = 'block'; authSubmitBtn.disabled = false; return; }
-            if (!validatePassword(password)) { authError.textContent = 'Password must be 8-100 characters.'; authError.style.display = 'block'; authSubmitBtn.disabled = false; return; }
-            if (!validateName(name)) { authError.textContent = 'Name must be 2-100 characters.'; authError.style.display = 'block'; authSubmitBtn.disabled = false; return; }
-            if (!validateRoles(roles)) { authError.textContent = 'Select at least one role.'; authError.style.display = 'block'; authSubmitBtn.disabled = false; return; }
-            try {
-                const res = await fetch('/api/register', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password, name, roles })
-                });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.error || 'Registration failed');
-                authSuccess.textContent = 'Registration successful! You may now log in.';
-                authSuccess.style.display = 'block';
-                setTimeout(() => setAuthMode(true), 1200);
-            } catch (err) {
-                authError.textContent = err.message;
-                authError.style.display = 'block';
-            } finally {
-                authSubmitBtn.disabled = false;
-            }
-        }
-    };
-    // --- Input Validation Helpers ---
-    function validateEmail(email) {
-      return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
-    }
-    function validatePassword(password) {
-      return typeof password === 'string' && password.length >= 8 && password.length <= 100;
-    }
-    function validateName(name) {
-      return typeof name === 'string' && name.trim().length >= 2 && name.trim().length <= 100;
-    }
-    function validateRoles(roles) {
-      return Array.isArray(roles) && roles.length > 0 && roles.every(r => typeof r === 'string' && r.length > 0);
-    }
-    // --- Sync login/logout state across tabs/pages ---
-    window.addEventListener('storage', function(e) {
-        if (e.key === 'authToken') {
-            const token = localStorage.getItem('authToken');
-            if (token) {
-                // User logged in from another tab/page
-                showMainContent(true);
-                hideAuthModal();
-            } else {
-                // User logged out from another tab/page
-                showMainContent(false);
-                setAuthMode(true);
-                showAuthModal();
-            }
-        }
-    });
-    </script>
-</body>
-</html>
+            <div class="error-text

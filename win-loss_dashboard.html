@@ -17,8 +17,8 @@
             /* Chart specific */
             --chart-grid-color: rgba(0, 0, 0, 0.1); --chart-tick-color: #666; --chart-title-color: #333; --chart-legend-color: #333; --chart-tooltip-bg: rgba(0, 0, 0, 0.8); --chart-tooltip-text: #fff;
             /* Colors for Win/Loss */
-            --color-loss: #ef4444; --color-loss-bg: rgba(239, 68, 68, 0.7);
-            --color-win: #10b981; --color-win-bg: rgba(16, 185, 129, 0.7);
+            --color-loss: #ef4444; --color-loss-bg: rgba(239, 68, 68, 0.35); --color-loss-dark: #b91c1c;
+            --color-win: #10b981; --color-win-bg: rgba(16, 185, 129, 0.35); --color-win-dark: #059669;
             --color-win-cost: #3b82f6; --color-win-cost-bg: rgba(59, 130, 246, 0.7);
             --color-loss-cost: #f97316; --color-loss-cost-bg: rgba(249, 115, 22, 0.7);
         }
@@ -30,8 +30,8 @@
              /* Chart specific */
             --chart-grid-color: rgba(255, 255, 255, 0.2); --chart-tick-color: #9ca3af; --chart-title-color: #f9fafb; --chart-legend-color: #f9fafb; --chart-tooltip-bg: rgba(255, 255, 255, 0.9); --chart-tooltip-text: #1f2937;
              /* Colors for Win/Loss */
-            --color-loss: #f87171; --color-loss-bg: rgba(248, 113, 113, 0.7);
-            --color-win: #34d399; --color-win-bg: rgba(52, 211, 153, 0.7);
+            --color-loss: #f87171; --color-loss-bg: rgba(248, 113, 113, 0.35); --color-loss-dark: #e06565;
+            --color-win: #34d399; --color-win-bg: rgba(52, 211, 153, 0.35); --color-win-dark: #2cb87f;
             --color-win-cost: #8ab4f8; --color-win-cost-bg: rgba(138, 180, 248, 0.7);
              --color-loss-cost: #fdba74; --color-loss-cost-bg: rgba(253, 186, 116, 0.7);
         }
@@ -90,6 +90,25 @@
         .filter-button.table-status-btn:hover {
             background-color: var(--bg-filter-button-hover);
         }
+
+        /* Quarter filter button styles (to match forecastr_dashboard.html) */
+        .quarter-filter-btn {
+            background-color: var(--bg-filter-button);
+            color: var(--text-filter-button);
+            border: 1px solid var(--border-filter-button);
+            transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+            font-weight: normal; /* Default to normal */
+        }
+        .quarter-filter-btn:hover {
+            background-color: var(--bg-filter-button-hover);
+        }
+        .quarter-filter-btn.active {
+            background-color: var(--bg-filter-button-active);
+            color: var(--text-filter-button-active);
+            border-color: var(--border-filter-button-active);
+            font-weight: 600; /* Bold when active */
+        }
+
         .simple-header {
             position: fixed;
             top: 0;
@@ -192,6 +211,13 @@
                 </div>
             </div>
 
+            <div class="flex flex-wrap gap-2 mb-4" id="quarterFilterButtons">
+                <button data-quarter="1" class="filter-button quarter-filter-btn px-3 py-1 rounded text-xs" style="opacity: 1;">Q1</button>
+                <button data-quarter="2" class="filter-button quarter-filter-btn px-3 py-1 rounded text-xs" style="opacity: 1;">Q2</button>
+                <button data-quarter="3" class="filter-button quarter-filter-btn px-3 py-1 rounded text-xs" style="opacity: 1;">Q3</button>
+                <button data-quarter="4" class="filter-button quarter-filter-btn px-3 py-1 rounded text-xs" style="opacity: 1;">Q4</button>
+            </div>
+
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 <div class="dashboard-card">
                     <div id="op100-total-count-title" class="dashboard-title">Total OP100 Count</div>
@@ -230,9 +256,8 @@
             <div class="mt-10">
                 <h3 class="text-lg font-semibold mb-4">Opportunities List</h3>
                 <div class="flex flex-wrap gap-2 mb-2">
-                    <button id="filterOP100Btn" class="filter-button table-status-btn px-3 py-1 rounded text-xs">OP100</button>
+                    <button id="filterOP100Btn" class="filter-button table-status-btn px-3 py-1 rounded text-xs active">OP100</button> <!-- Set OP100 as active by default -->
                     <button id="filterLOSTBtn" class="filter-button table-status-btn px-3 py-1 rounded text-xs">LOST</button>
-                    <button id="filterAllBtn" class="filter-button table-status-btn px-3 py-1 rounded text-xs active">All</button>
                 </div>
                 <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
                     <table id="opportunitiesTable" class="min-w-full divide-y divide-gray-200 dark:divide-gray-700 dashboard-table">

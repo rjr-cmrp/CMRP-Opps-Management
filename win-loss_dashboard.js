@@ -5,6 +5,11 @@ let dashboardDataCache = null; // Cache fetched data (includes ALL opportunities
 let winChartInstance = null;   // Instance for the Wins chart
 let lossChartInstance = null;  // Instance for the Losses chart
 let currentSolutionFilter = 'all'; // State for the solution filter
+let currentAccountMgrFilter = 'all';
+let currentClientFilter = 'all';
+// let currentQuarterFilter = 'all'; // Replaced by activeQuarters
+let activeQuarters = { '1': true, '2': true, '3': true, '4': true }; // All quarters active by default
+let currentTableStatusFilter = 'OP100'; // Default to OP100 only
 // ...existing code for all helper functions, rendering, filters, etc...
 
 // --- Input Validation Helpers ---
@@ -199,6 +204,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentSolutionFilter = 'all';
     let currentAccountMgrFilter = 'all';
     let currentClientFilter = 'all';
+    let currentQuarterFilter = 'all'; // Added for quarter filtering
     let currentTableStatusFilter = 'OP100'; // Default to OP100 only
     let currentSort = { col: null, dir: 1 };
     const tableHeaders = [
@@ -221,6 +227,25 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         if (currentClientFilter !== 'all') {
             filtered = filtered.filter(opp => opp['client'] === currentClientFilter);
+        }
+
+        // Filter by activeQuarters
+        const anyQuarterActive = Object.values(activeQuarters).some(isActive => isActive);
+        if (anyQuarterActive) {
+            filtered = filtered.filter(opp => {
+                const date = robustParseDate(opp.date_awarded_lost || opp.date_awarded);
+                if (!date) return false;
+                const month = date.getMonth(); // 0-11
+                if (activeQuarters['1'] && month >= 0 && month <= 2) return true;
+                if (activeQuarters['2'] && month >= 3 && month <= 5) return true;
+                if (activeQuarters['3'] && month >= 6 && month <= 8) return true;
+                if (activeQuarters['4'] && month >= 9 && month <= 11) return true;
+                return false;
+            });
+        } else {
+            // If no quarters are active, show no data (or handle as per preference, e.g., show all)
+            // For now, returning an empty array effectively shows no data for charts.
+            return []; 
         }
         return filtered;
     }
@@ -280,6 +305,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             populateDropdowns(data);
             setupTableFilterButtons();
+            setupQuarterFilterButtons(); // Added call
         } catch (err) {
             console.error('[DEBUG] Dashboard data fetch error:', err);
             const main = document.querySelector('.main-content');
@@ -372,6 +398,33 @@ document.addEventListener('DOMContentLoaded', function() {
     function renderWinLossCharts(data) {
         const winCanvas = document.getElementById('winMonthlyChart');
         const lossCanvas = document.getElementById('lossMonthlyChart');
+
+        // Get computed styles for chart colors to ensure theme is applied
+        const rootStyle = getComputedStyle(document.documentElement);
+        const colorWin = rootStyle.getPropertyValue('--color-win').trim();
+        const colorWinBg = rootStyle.getPropertyValue('--color-win-bg').trim();
+        const colorWinDark = rootStyle.getPropertyValue('--color-win-dark').trim();
+        const colorLoss = rootStyle.getPropertyValue('--color-loss').trim();
+        const colorLossBg = rootStyle.getPropertyValue('--color-loss-bg').trim();
+        const colorLossDark = rootStyle.getPropertyValue('--color-loss-dark').trim();
+        const chartTickColor = rootStyle.getPropertyValue('--chart-tick-color').trim();
+        const chartGridColor = rootStyle.getPropertyValue('--chart-grid-color').trim();
+
+        const allMonthsLabels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        let chartLabels = [];
+        let monthIndices = []; // 0-11, stores indices of months to display
+
+        if (activeQuarters['1']) { chartLabels.push('Jan','Feb','Mar'); monthIndices.push(0,1,2); }
+        if (activeQuarters['2']) { chartLabels.push('Apr','May','Jun'); monthIndices.push(3,4,5); }
+        if (activeQuarters['3']) { chartLabels.push('Jul','Aug','Sep'); monthIndices.push(6,7,8); }
+        if (activeQuarters['4']) { chartLabels.push('Oct','Nov','Dec'); monthIndices.push(9,10,11); }
+        
+        // If no quarters selected, default to all months for labels, but data will be empty due to getFilteredChartData
+        if (chartLabels.length === 0) {
+            chartLabels = allMonthsLabels;
+            monthIndices = Array.from({length: 12}, (_, i) => i);
+        }
+
         // --- Wins Chart ---
         let winDataFound = false;
         let winMonthlyAmount = Array(12).fill(0);
@@ -381,96 +434,118 @@ document.addEventListener('DOMContentLoaded', function() {
                 const date = robustParseDate(item.date_awarded);
                 if (date && !isNaN(date)) {
                     const month = date.getMonth();
-                    winMonthlyAmount[month] += Number(item.final_amt) || 0;
-                    winMonthlyCount[month] += 1;
-                    winDataFound = true;
+                    if (monthIndices.includes(month)) { // Only include if month is in selected quarter
+                        winMonthlyAmount[month] += Number(item.final_amt) || 0;
+                        winMonthlyCount[month] += 1;
+                        winDataFound = true;
+                    }
                 }
             }
         });
+
+        // Filter data for the selected quarter for the chart
+        const winChartAmounts = monthIndices.map(idx => winMonthlyAmount[idx]);
+        const winChartCounts = monthIndices.map(idx => winMonthlyCount[idx]);
+
         if (winChartInstance) winChartInstance.destroy();
         if (winCanvas) {
-            if (winDataFound) {
-                winChartInstance = new Chart(winCanvas.getContext('2d'), {
-                    type: 'bar',
-                    data: {
-                        labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
-                        datasets: [
-                            { label: 'OP100 Amount', data: winMonthlyAmount, backgroundColor: '#10b981', borderColor: '#059669', borderWidth: 1, yAxisID: 'yAmount', type: 'bar', order: 2 },
-                            { label: 'OP100 Count', data: winMonthlyCount, borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0.15)', borderWidth: 2, fill: true, tension: 0.1, yAxisID: 'yCount', type: 'line', order: 1, pointRadius: 4, pointHoverRadius: 6 }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        scales: {
-                            yAmount: { beginAtZero: true, position: 'left', ticks: { callback: v => '₱' + v.toLocaleString() } },
-                            yCount: { beginAtZero: true, position: 'right', ticks: { stepSize: 1, precision: 0, callback: v => Number.isInteger(v) ? v : '' }, grid: { drawOnChartArea: false } }
+            // Always render the chart structure. 
+            // If data arrays are empty/zero, Chart.js will render a blank chart.
+            winChartInstance = new Chart(winCanvas.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: chartLabels,
+                    datasets: [
+                        { label: 'OP100 Amount', data: winChartAmounts, backgroundColor: colorWin, borderColor: colorWinDark, borderWidth: 1, yAxisID: 'yAmount', type: 'bar', order: 2 },
+                        { label: 'OP100 Count', data: winChartCounts, borderColor: colorWin, backgroundColor: colorWinBg, borderWidth: 2, fill: true, tension: 0.1, yAxisID: 'yCount', type: 'line', order: 1, pointRadius: 4, pointHoverRadius: 6 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { 
+                            ticks: { color: chartTickColor },
+                            grid: { color: chartGridColor }
+                        },
+                        yAmount: { 
+                            beginAtZero: true, 
+                            position: 'left', 
+                            ticks: { callback: v => '₱' + v.toLocaleString(), color: chartTickColor },
+                            grid: { color: chartGridColor }
+                        },
+                        yCount: { 
+                            beginAtZero: true, 
+                            position: 'right', 
+                            ticks: { stepSize: 1, precision: 0, callback: v => Number.isInteger(v) ? v : '', color: chartTickColor }, 
+                            grid: { drawOnChartArea: false, color: chartGridColor } 
                         }
                     }
-                });
-            } else {
-                // Clear chart and draw message on canvas
-                const ctx = winCanvas.getContext('2d');
-                ctx.clearRect(0, 0, winCanvas.width, winCanvas.height);
-                ctx.save();
-                ctx.font = '18px sans-serif';
-                ctx.fillStyle = '#dc2626';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText('No OP100 chart data available.', winCanvas.width/2, winCanvas.height/2);
-                ctx.restore();
-            }
+                }
+            });
+            // Removed the 'else' block that drew "No OP100 chart data available."
         }
+
         // --- Losses Chart ---
         let lossDataFound = false;
         let lossMonthlyAmount = Array(12).fill(0);
         let lossMonthlyCount = Array(12).fill(0);
         data.forEach(item => {
-            if (item.opp_status === 'LOST' && item.date_awarded) {
-                const date = robustParseDate(item.date_awarded);
+            if (item.opp_status === 'LOST' && item.date_awarded) { // Ensure date_awarded is used, not date_awarded_lost directly for consistency
+                const date = robustParseDate(item.date_awarded); // Use robustParseDate on the consistent field
                 if (date && !isNaN(date)) {
                     const month = date.getMonth();
-                    lossMonthlyAmount[month] += Number(item.final_amt) || 0;
-                    lossMonthlyCount[month] += 1;
-                    lossDataFound = true;
+                    if (monthIndices.includes(month)) { // Only include if month is in selected quarter
+                        lossMonthlyAmount[month] += Number(item.final_amt) || 0;
+                        lossMonthlyCount[month] += 1;
+                        lossDataFound = true;
+                    }
                 }
             }
         });
+
+        // Filter data for the selected quarter for the chart
+        const lossChartAmounts = monthIndices.map(idx => lossMonthlyAmount[idx]);
+        const lossChartCounts = monthIndices.map(idx => lossMonthlyCount[idx]);
+
         if (lossChartInstance) lossChartInstance.destroy();
         if (lossCanvas) {
-            if (lossDataFound) {
-                lossChartInstance = new Chart(lossCanvas.getContext('2d'), {
-                    type: 'bar',
-                    data: {
-                        labels: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
-                        datasets: [
-                            { label: 'Lost Amount', data: lossMonthlyAmount, backgroundColor: '#ef4444', borderColor: '#b91c1c', borderWidth: 1, yAxisID: 'yAmount', type: 'bar', order: 2 },
-                            { label: 'Lost Count', data: lossMonthlyCount, borderColor: '#ef4444', backgroundColor: 'rgba(239,68,68,0.15)', borderWidth: 2, fill: true, tension: 0.1, yAxisID: 'yCount', type: 'line', order: 1, pointRadius: 4, pointHoverRadius: 6 }
-                        ]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        plugins: { legend: { display: false } },
-                        scales: {
-                            yAmount: { beginAtZero: true, position: 'left', ticks: { callback: v => '₱' + v.toLocaleString() } },
-                            yCount: { beginAtZero: true, position: 'right', ticks: { stepSize: 1, precision: 0, callback: v => Number.isInteger(v) ? v : '' }, grid: { drawOnChartArea: false } }
+            // Always render the chart structure.
+            lossChartInstance = new Chart(lossCanvas.getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: chartLabels,
+                    datasets: [
+                        { label: 'Lost Amount', data: lossChartAmounts, backgroundColor: colorLoss, borderColor: colorLossDark, borderWidth: 1, yAxisID: 'yAmount', type: 'bar', order: 2 },
+                        { label: 'Lost Count', data: lossChartCounts, borderColor: colorLoss, backgroundColor: colorLossBg, borderWidth: 2, fill: true, tension: 0.1, yAxisID: 'yCount', type: 'line', order: 1, pointRadius: 4, pointHoverRadius: 6 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { 
+                            ticks: { color: chartTickColor },
+                            grid: { color: chartGridColor }
+                        },
+                        yAmount: { 
+                            beginAtZero: true, 
+                            position: 'left', 
+                            ticks: { callback: v => '₱' + v.toLocaleString(), color: chartTickColor },
+                            grid: { color: chartGridColor }
+                        },
+                        yCount: { 
+                            beginAtZero: true, 
+                            position: 'right', 
+                            ticks: { stepSize: 1, precision: 0, callback: v => Number.isInteger(v) ? v : '', color: chartTickColor }, 
+                            grid: { drawOnChartArea: false, color: chartGridColor } 
                         }
                     }
-                });
-            } else {
-                // Clear chart and draw message on canvas
-                const ctx = lossCanvas.getContext('2d');
-                ctx.clearRect(0, 0, lossCanvas.width, lossCanvas.height);
-                ctx.save();
-                ctx.font = '18px sans-serif';
-                ctx.fillStyle = '#dc2626';
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText('No LOST chart data available.', lossCanvas.width/2, lossCanvas.height/2);
-                ctx.restore();
-            }
+                }
+            });
+            // Removed the 'else' block that drew "No LOST chart data available."
         }
     }
 
@@ -657,16 +732,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- Table filter buttons (OP100/LOST/All) ---
     function setTableFilterActive(activeId) {
-        ['filterOP100Btn','filterLOSTBtn','filterAllBtn'].forEach(id => {
+        ['filterOP100Btn','filterLOSTBtn'/*,'filterAllBtn'*/].forEach(id => { // Removed filterAllBtn
             const btn = document.getElementById(id);
             if (btn) btn.classList.toggle('active', id === activeId);
         });
     }
     function setupTableFilterButtons() {
-        const opBtn = document.getElementById('filterOP100Btn');
+        const op100Btn = document.getElementById('filterOP100Btn');
         const lostBtn = document.getElementById('filterLOSTBtn');
-        const allBtn = document.getElementById('filterAllBtn');
-        if (opBtn) opBtn.onclick = function() {
+        // const allBtn = document.getElementById('filterAllBtn'); // Removed allBtn
+
+        if (op100Btn) op100Btn.onclick = function() {
             currentTableStatusFilter = 'OP100';
             setTableFilterActive('filterOP100Btn');
             renderOpportunitiesTable(dashboardDataCache);
@@ -676,10 +752,39 @@ document.addEventListener('DOMContentLoaded', function() {
             setTableFilterActive('filterLOSTBtn');
             renderOpportunitiesTable(dashboardDataCache);
         };
-        if (allBtn) allBtn.onclick = function() {
-            currentTableStatusFilter = 'all';
-            setTableFilterActive('filterAllBtn');
-            renderOpportunitiesTable(dashboardDataCache);
-        };
+        // if (allBtn) allBtn.onclick = function() { // Removed allBtn logic
+        //     currentTableStatusFilter = 'all';
+        //     setTableFilterActive('filterAllBtn');
+        //     renderOpportunitiesTable(dashboardDataCache);
+        // };
+        // Set initial state (OP100 is default)
+        setTableFilterActive('filterOP100Btn');
+    }
+
+    // --- Quarter Filter Buttons --- 
+    function updateQuarterButtonStates() {
+        document.querySelectorAll('#quarterFilterButtons .quarter-filter-btn').forEach(btn => {
+            const quarter = btn.dataset.quarter;
+            if (activeQuarters[quarter]) {
+                btn.style.opacity = '1';
+                btn.classList.add('active'); // Use active class for styling if desired, or just opacity
+            } else {
+                btn.style.opacity = '0.5';
+                btn.classList.remove('active');
+            }
+        });
+    }
+
+    function setupQuarterFilterButtons() {
+        const quarterButtons = document.querySelectorAll('#quarterFilterButtons .quarter-filter-btn');
+        quarterButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const quarter = this.dataset.quarter;
+                activeQuarters[quarter] = !activeQuarters[quarter]; // Toggle the state
+                updateQuarterButtonStates();
+                renderDashboard(dashboardDataCache); // Re-render dashboard with new quarter filter
+            });
+        });
+        updateQuarterButtonStates(); // Set initial states
     }
 });

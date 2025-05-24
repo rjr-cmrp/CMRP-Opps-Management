@@ -241,6 +241,42 @@ function calculateForecastDashboardData(opportunities) {
 }
 
 
+// --- CMRP Week Helper ---
+/**
+ * Returns an array of objects: [{ weekNumber, startDate, endDate }]
+ * Only includes weeks whose start date is in the given month/year.
+ * Week starts on Sunday or Monday (whichever comes first in the month),
+ * and each week is Sunday–Saturday.
+ *
+ * If the week start date is not in the current month, it is not included (e.g., if the last Sunday/Monday is the last day of the month, skip it).
+ */
+function getCMRPWeeksForMonth(year, month) {
+    // month: 0-based (0=Jan)
+    const firstOfMonth = new Date(Date.UTC(year, month, 1));
+    const lastOfMonth = new Date(Date.UTC(year, month + 1, 0));
+    // Find first Sunday or Monday
+    let firstWeekStart = new Date(firstOfMonth);
+    while (firstWeekStart.getUTCDay() !== 0 && firstWeekStart.getUTCDay() !== 1) {
+        firstWeekStart.setUTCDate(firstWeekStart.getUTCDate() + 1);
+    }
+    const weeks = [];
+    let weekStart = new Date(firstWeekStart);
+    let weekNumber = 1;
+    // Include all weeks whose start date is in the month, even if the end date is in the next month
+    while (weekStart.getUTCMonth() === month && weekStart <= lastOfMonth) {
+        const weekEnd = new Date(weekStart);
+        weekEnd.setUTCDate(weekEnd.getUTCDate() + 6);
+        weeks.push({
+            weekNumber,
+            startDate: new Date(weekStart),
+            endDate: new Date(weekEnd)
+        });
+        weekNumber++;
+        weekStart.setUTCDate(weekStart.getUTCDate() + 7);
+    }
+    return weeks;
+}
+
 // --- Express Setup ---
 app.use(express.json());
 
@@ -361,9 +397,9 @@ app.get('/api/forecast-dashboard', async (req, res) => {
   const requestedStatus = req.query.status;
   console.log(`[API /api/forecast-dashboard] Request received. Status filter: ${requestedStatus}`);
   try {
-    // *** Use correct column name "final_amt" and "opp_status" ***
+    // *** MODIFIED: Added uid to the SELECT statement ***
     let sql = `
-        SELECT forecast_date, final_amt, opp_status, project_name
+        SELECT uid, forecast_date, final_amt, opp_status, project_name
         FROM opps_monitoring
         WHERE forecast_date IS NOT NULL
           AND (decision IS NULL OR decision NOT IN ('DECLINE', 'DECLINED'))
@@ -442,29 +478,61 @@ app.get('/api/forecast-dashboard', async (req, res) => {
         const forecastDateKey = getColumnInsensitive(opp, 'forecast_date');
         const amtKey = getColumnInsensitive(opp, 'final_amt');
         const projNameKey = getColumnInsensitive(opp, 'project_name');
+        const uidKey = getColumnInsensitive(opp, 'uid'); // Get uid key
+
         const forecastDateValue = forecastDateKey ? opp[forecastDateKey] : null;
         const finalAmt = amtKey ? parseCurrency(opp[amtKey]) : 0;
         const projectName = projNameKey ? opp[projNameKey] : 'Unknown Project';
+        const projectUid = uidKey ? opp[uidKey] : null; // Get actual uid
+
         let parsedForecastDate = robustParseDate(forecastDateValue);
         let forecastMonth = '';
         let forecastWeek = '';
+        let displayableForecastDate = null; // For YYYY-MM-DD format or null
+
         if (parsedForecastDate && !isNaN(parsedForecastDate)) {
             forecastMonth = parsedForecastDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
-            const day = parsedForecastDate.getUTCDate();
-            const firstDayOfMonth = new Date(Date.UTC(parsedForecastDate.getUTCFullYear(), parsedForecastDate.getUTCMonth(), 1));
-            const firstDayWeekday = firstDayOfMonth.getUTCDay();
-            forecastWeek = Math.ceil((day + firstDayWeekday) / 7);
-        }
-        if (parsedForecastDate && !isNaN(parsedForecastDate)) {
-            totalForecastCount++;
-            totalForecastAmount += finalAmt;
+            displayableForecastDate = parsedForecastDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
+            
+            // --- CORRECTED: Use getCMRPWeeksForMonth to calculate forecastWeek ---
             const year = parsedForecastDate.getUTCFullYear();
-            const month = parsedForecastDate.getUTCMonth();
-            if (year === nextMonthDate.getUTCFullYear() && month === nextMonthDate.getUTCMonth()) {
-                nextMonthForecastCount++;
-                nextMonthForecastAmount += finalAmt;
+            const month = parsedForecastDate.getUTCMonth(); // 0-indexed
+            const cmrpMonthWeeks = getCMRPWeeksForMonth(year, month);
+            
+            forecastWeek = ''; // Default to empty if not found in a CMRP week
+            for (const cmrpWeek of cmrpMonthWeeks) {
+                // Ensure dates are compared correctly. parsedForecastDate is already UTC midnight.
+                // cmrpWeek.startDate and cmrpWeek.endDate are also UTC.
+                if (parsedForecastDate >= cmrpWeek.startDate && parsedForecastDate <= cmrpWeek.endDate) {
+                    forecastWeek = cmrpWeek.weekNumber;
+                    break;
+                }
             }
-            projectDetails.push({ name: projectName, amount: finalAmt, forecastMonth, forecastWeek });
+            // console.log(`[SERVER DEBUG /api/forecast-dashboard] Parsed Date=${parsedForecastDate.toISOString()}, Calculated CMRP Week=${forecastWeek}`);
+        } else {
+            // console.log(`[SERVER DEBUG /api/forecast-dashboard] ForecastDate invalid or not parsable: ${forecastDateValue}`);
+        }
+
+        // This block pushes to projectDetails
+        if (projectUid && projectName) { // Push project even if forecast date is invalid/missing, so it appears in list
+            if (parsedForecastDate && !isNaN(parsedForecastDate)) {
+                totalForecastCount++;
+                totalForecastAmount += finalAmt;
+                const year = parsedForecastDate.getUTCFullYear();
+                const month = parsedForecastDate.getUTCMonth();
+                if (year === nextMonthDate.getUTCFullYear() && month === nextMonthDate.getUTCMonth()) {
+                    nextMonthForecastCount++;
+                    nextMonthForecastAmount += finalAmt;
+                }
+            }
+            projectDetails.push({
+                uid: projectUid,
+                name: projectName,
+                amount: finalAmt,
+                forecastMonth,
+                forecastWeek,
+                forecast_date: displayableForecastDate // MODIFIED: Use YYYY-MM-DD formatted string or null
+            });
         }
     });
 
@@ -528,7 +596,7 @@ app.get('/api/forecast-dashboard-weeks', async (req, res) => {
             res.json({ weekSummary: [] });
             return;
         }
-        // --- Build all weeks between min and max ---
+        // --- Build all CMRP weeks between min and max ---
         const allWeeks = [];
         let cursor = new Date(Date.UTC(minDate.getUTCFullYear(), minDate.getUTCMonth(), 1));
         const end = new Date(Date.UTC(maxDate.getUTCFullYear(), maxDate.getUTCMonth(), maxDate.getUTCDate()));
@@ -536,22 +604,31 @@ app.get('/api/forecast-dashboard-weeks', async (req, res) => {
             const year = cursor.getUTCFullYear();
             const month = cursor.getUTCMonth();
             const monthName = cursor.toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
-            // Find number of weeks in this month
-            const lastDay = new Date(Date.UTC(year, month + 1, 0));
-            const lastDate = lastDay.getUTCDate();
-            for (let d = 1; d <= lastDate; d++) {
-                const date = new Date(Date.UTC(year, month, d));
-                const weekNumber = getWeekOfMonth(date);
-                const monthWeek = `${monthName} - Week ${weekNumber}`;
-                if (!allWeeks.includes(monthWeek)) {
-                    allWeeks.push(monthWeek);
-                }
+            // Use CMRP week logic
+            const cmrpWeeks = getCMRPWeeksForMonth(year, month);
+            for (const w of cmrpWeeks) {
+                const monthWeek = `${monthName} - Week ${w.weekNumber}`;
+                allWeeks.push(monthWeek);
             }
             // Move to next month
             cursor = new Date(Date.UTC(year, month + 1, 1));
         }
-        // Group by 'Month - Week'
+        // --- Build weekMap using only valid CMRP weeks ---
         const weekMap = {};
+        // Precompute all valid CMRP monthWeek labels for the range
+        const validMonthWeeksSet = new Set();
+        let validCursor = new Date(Date.UTC(minDate.getUTCFullYear(), minDate.getUTCMonth(), 1));
+        while (validCursor <= end) {
+            const year = validCursor.getUTCFullYear();
+            const month = validCursor.getUTCMonth();
+            const monthName = validCursor.toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+            const cmrpWeeks = getCMRPWeeksForMonth(year, month);
+            for (const w of cmrpWeeks) {
+                validMonthWeeksSet.add(`${monthName} - Week ${w.weekNumber}`);
+            }
+            validCursor = new Date(Date.UTC(year, month + 1, 1));
+        }
+        // Only count opportunities for valid CMRP weeks
         opportunities.forEach(opp => {
             const forecastDateKey = getColumnInsensitive(opp, 'forecast_date');
             const amtKey = getColumnInsensitive(opp, 'final_amt');
@@ -562,19 +639,33 @@ app.get('/api/forecast-dashboard-weeks', async (req, res) => {
             const monthName = parsedDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
             const weekNumber = getWeekOfMonth(parsedDate);
             const monthWeek = `${monthName} - Week ${weekNumber}`;
+            if (!validMonthWeeksSet.has(monthWeek)) return; // Only count valid CMRP weeks
             if (!weekMap[monthWeek]) weekMap[monthWeek] = { monthWeek, count: 0, totalAmount: 0 };
             weekMap[monthWeek].count++;
             weekMap[monthWeek].totalAmount += finalAmt;
         });
-        // Build weekSummaryArr with all weeks (fill missing with 0)
-        const weekSummaryArr = allWeeks.map(monthWeek => {
-            if (weekMap[monthWeek]) return weekMap[monthWeek];
-            return { monthWeek, count: 0, totalAmount: 0 };
-        });
-        // Sort by date (parse month/year/week)
+        // --- Build weekSummaryArr with only valid CMRP weeks ---
+        const weekSummaryArr = [];
+        let cursor2 = new Date(Date.UTC(minDate.getUTCFullYear(), minDate.getUTCMonth(), 1));
+        while (cursor2 <= end) {
+            const year = cursor2.getUTCFullYear();
+            const month = cursor2.getUTCMonth();
+            const monthName = cursor2.toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' });
+            const cmrpWeeks = getCMRPWeeksForMonth(year, month); // Only weeks whose start and end are in the month
+            for (const w of cmrpWeeks) {
+                const monthWeek = `${monthName} - Week ${w.weekNumber}`;
+                if (weekMap[monthWeek]) {
+                    weekSummaryArr.push(weekMap[monthWeek]);
+                } else {
+                    weekSummaryArr.push({ monthWeek, count: 0, totalAmount: 0 });
+                }
+            }
+            cursor2 = new Date(Date.UTC(year, month + 1, 1));
+        }
+        // No further filtering needed: weekSummaryArr now contains only valid CMRP weeks for each month
         weekSummaryArr.sort((a, b) => {
             function parseMonthWeek(mw) {
-                const match = mw.match(/^(\w+) (\d{4}) - Week (\d+)$/);
+                const match = mw.match(/^([A-Za-z]+) (\d{4}) - Week (\d+)$/);
                 if (!match) return { y: 0, m: 0, w: 0 };
                 const [_, monthStr, yearStr, weekStr] = match;
                 const m = new Date(`${monthStr} 1, ${yearStr}`).getMonth();
@@ -587,10 +678,77 @@ app.get('/api/forecast-dashboard-weeks', async (req, res) => {
             return pa.w - pb.w;
         });
         res.json({ weekSummary: weekSummaryArr });
+        return;
     } catch (error) {
         console.error('[API /api/forecast-dashboard-weeks] Error:', error);
         res.status(500).json({ error: 'Failed to generate weekly forecast dashboard data' });
     }
+});
+
+// API endpoint: Forecast Sliding Summary (Monthly)
+app.get('/api/forecast-sliding-summary', async (req, res) => {
+  console.log(`[API /api/forecast-sliding-summary] Request received.`);
+  try {
+    const intervalDays = '30 days'; // Period for considering revisions
+
+    const slidingSummarySql = `
+      WITH recent_revisions AS (
+        SELECT
+          fr.opportunity_uid,
+          fr.old_forecast_date,
+          fr.new_forecast_date,
+          om.final_amt
+        FROM forecast_revisions fr
+        JOIN opps_monitoring om ON fr.opportunity_uid::uuid = om.uid -- CORRECTED: Cast TEXT to UUID for join
+        WHERE fr.changed_at >= NOW() - INTERVAL '${intervalDays}'
+      ),
+      monthly_changes AS (
+        SELECT
+          to_char(new_forecast_date::date, 'YYYY-MM') AS month_year_key, -- Cast to DATE
+          SUM(final_amt) AS inflow_amount,
+          COUNT(DISTINCT opportunity_uid) AS inflow_count
+        FROM recent_revisions
+        WHERE new_forecast_date IS NOT NULL
+          AND (old_forecast_date IS NULL OR to_char(old_forecast_date::date, 'YYYY-MM') != to_char(new_forecast_date::date, 'YYYY-MM')) -- Cast to DATE
+        GROUP BY to_char(new_forecast_date::date, 'YYYY-MM') -- Cast to DATE
+
+        UNION ALL
+
+        SELECT
+          to_char(old_forecast_date::date, 'YYYY-MM') AS month_year_key, -- Cast to DATE
+          SUM(final_amt * -1) AS inflow_amount, -- Negative for outflow
+          COUNT(DISTINCT opportunity_uid) * -1 AS inflow_count -- Negative for outflow
+        FROM recent_revisions
+        WHERE old_forecast_date IS NOT NULL
+          AND (new_forecast_date IS NULL OR to_char(new_forecast_date::date, 'YYYY-MM') != to_char(old_forecast_date::date, 'YYYY-MM')) -- Cast to DATE
+        GROUP BY to_char(old_forecast_date::date, 'YYYY-MM') -- Cast to DATE
+      )
+      SELECT
+        month_year_key,
+        SUM(inflow_amount) AS net_change_amount,
+        SUM(inflow_count) AS net_change_count
+      FROM monthly_changes
+      WHERE month_year_key IS NOT NULL
+      GROUP BY month_year_key
+      ORDER BY month_year_key ASC;
+    `;
+
+    const result = await pool.query(slidingSummarySql);
+    
+    const formattedResult = result.rows.map(row => ({
+      // Ensure monthYear is formatted correctly for matching with main chart labels
+      monthYear: formatMonthYear(new Date(row.month_year_key + '-02T00:00:00Z')), // Use day 02 to avoid timezone issues with day 01
+      netChangeAmount: parseFloat(row.net_change_amount) || 0,
+      netChangeCount: parseInt(row.net_change_count) || 0
+    }));
+
+    console.log(`[API /api/forecast-sliding-summary] Sending summary:`, formattedResult);
+    res.json(formattedResult);
+
+  } catch (error) {
+    console.error('[API /api/forecast-sliding-summary] Error:', error);
+    res.status(500).json({ error: 'Failed to generate forecast sliding summary' });
+  }
 });
 
 app.post('/api/opportunities', authenticateToken,
@@ -1140,7 +1298,7 @@ app.post('/api/audit-log-page-access', express.json(), (req, res) => {
 // --- Opps Monitoring Import/Export API ---
 const multer = require('multer');
 const upload = multer({ dest: 'uploads/' });
-const fs = require('fs');
+// const fs = require('fs'); // Duplicate import removed
 const csv = require('fast-csv');
 
 // Export opps_monitoring as CSV (import-template ready)
@@ -1150,7 +1308,7 @@ app.get('/api/opps-monitoring/export', async (req, res) => {
     const columns = [
       'encoded_date','project_name','project_code','rev','client','solutions','sol_particulars','industries','ind_particulars','date_received','client_deadline','decision','account_mgr','pic','bom','status','submitted_date','margin','final_amt','opp_status','date_awarded_lost','lost_rca','l_particulars','a','c','r','u','d','remarks_comments','uid','forecast_date'
     ];
-    const result = await pool.query('SELECT ' + columns.map(c => `"${c}"`).join(', ') + ' FROM opps_monitoring ORDER BY encoded_date DESC');
+    const result = await pool.query('SELECT ' + columns.map(c => `"${c}"`).join(', ') + ' FROM opps_monitoring ORDER BY encoded_date ASC');
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', 'attachment; filename="opps_monitoring_import_template.csv"');
     csv.write([columns, ...result.rows.map(row => columns.map(c => row[c]))], { headers: false }).pipe(res);
