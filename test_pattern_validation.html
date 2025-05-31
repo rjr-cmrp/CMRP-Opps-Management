@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pattern-Based Validation Test</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--bg-body);
+        }
+        .test-form {
+            background: var(--bg-container);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-container);
+            margin: 20px 0;
+        }
+        .form-group {
+            margin: 15px 0;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-control);
+            border-radius: 4px;
+        }
+        .error {
+            border-color: var(--text-error) !important;
+            border-width: 2px !important;
+            box-shadow: 0 0 0 1px var(--text-error) !important;
+            background-color: rgba(220, 38, 38, 0.05) !important;
+        }
+        .console {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 14px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 15px 0;
+        }
+        button {
+            background: var(--bg-modal-save);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: var(--bg-modal-save-hover);
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Pattern-Based Validation Test</h1>
+    <p>This test simulates the new pattern-based validation logic for the edit form.</p>
+
+    <div class="test-form">
+        <h2>Test Form (Various Field Naming Scenarios)</h2>
+        
+        <!-- Scenario 1: Exact match -->
+        <form id="testForm1" data-scenario="Exact field names">
+            <h3>Scenario 1: Exact Field Names</h3>
+            <div class="form-group">
+                <label for="project_name">Project Name</label>
+                <input type="text" id="project_name" name="project_name" value="Test Project 1">
+            </div>
+            <div class="form-group">
+                <label for="status">Status</label>
+                <select id="status" name="status">
+                    <option value="">Select...</option>
+                    <option value="Active" selected>Active</option>
+                    <option value="Inactive">Inactive</option>
+                </select>
+            </div>
+            <button type="submit">Test Scenario 1</button>
+        </form>
+
+        <!-- Scenario 2: Alternative naming -->
+        <form id="testForm2" data-scenario="Alternative field names">
+            <h3>Scenario 2: Alternative Field Names</h3>
+            <div class="form-group">
+                <label for="Project Name">Project Name</label>
+                <input type="text" id="Project Name" name="Project Name" value="Test Project 2">
+            </div>
+            <div class="form-group">
+                <label for="opp_status">Opportunity Status</label>
+                <select id="opp_status" name="opp_status">
+                    <option value="">Select...</option>
+                    <option value="Op50" selected>Op50</option>
+                    <option value="Op75">Op75</option>
+                </select>
+            </div>
+            <button type="submit">Test Scenario 2</button>
+        </form>
+
+        <!-- Scenario 3: Mixed naming -->
+        <form id="testForm3" data-scenario="Mixed field names">
+            <h3>Scenario 3: Mixed Field Names</h3>
+            <div class="form-group">
+                <label for="projectname">Project Name</label>
+                <input type="text" id="projectname" name="projectname" value="">
+            </div>
+            <div class="form-group">
+                <label for="opportunity_status">Status</label>
+                <select id="opportunity_status" name="opportunity_status">
+                    <option value="" selected>Select...</option>
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
+                </select>
+            </div>
+            <button type="submit">Test Scenario 3 (Should Fail)</button>
+        </form>
+    </div>
+
+    <div class="console" id="console">
+        <div style="color: #569cd6;">Pattern-Based Validation Test Console</div>
+        <div style="color: #6a9955;">// Test results will appear here</div>
+    </div>
+
+    <button onclick="clearConsole()">Clear Console</button>
+    <button onclick="runAllTests()">Run All Tests</button>
+
+    <script>
+        const consoleEl = document.getElementById('console');
+        
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            switch(type) {
+                case 'error':
+                    div.style.color = '#f85149';
+                    break;
+                case 'success':
+                    div.style.color = '#3fb950';
+                    break;
+                case 'warn':
+                    div.style.color = '#f2cc60';
+                    break;
+                default:
+                    div.style.color = '#d4d4d4';
+            }
+            
+            div.innerHTML = `[${timestamp}] ${message}`;
+            consoleEl.appendChild(div);
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        }
+        
+        function clearConsole() {
+            consoleEl.innerHTML = '';
+            log('Console cleared');
+        }
+        
+        function testFormValidation(form) {
+            const scenario = form.dataset.scenario;
+            log(`=== Testing: ${scenario} ===`, 'info');
+            
+            // Clear previous errors
+            const allInputs = form.querySelectorAll('input, select, textarea');
+            allInputs.forEach(input => input.classList.remove('error'));
+            
+            // Get form data
+            const formData = new FormData(form);
+            const opportunityData = {};
+            for (const [key, value] of formData.entries()) {
+                opportunityData[key] = value;
+            }
+            
+            log(`Form data: ${JSON.stringify(opportunityData)}`, 'info');
+            
+            // Apply the new pattern-based validation
+            let hasError = false;
+            
+            const allFormFields = Array.from(allInputs).map(input => ({
+                element: input,
+                name: input.name || input.id || '',
+                value: input.value || '',
+                type: input.type || input.tagName.toLowerCase()
+            }));
+            
+            log(`Found form fields: ${allFormFields.map(f => f.name).join(', ')}`, 'info');
+            
+            // Define patterns for required fields
+            const requiredFieldPatterns = [
+                {
+                    pattern: /project.*name|name.*project|project_name|projectname/i,
+                    description: 'Project Name',
+                    found: false
+                },
+                {
+                    pattern: /^status$|opp.*status|opportunity.*status/i,
+                    description: 'Status',
+                    found: false
+                }
+            ];
+            
+            // Check each required pattern
+            for (const requiredPattern of requiredFieldPatterns) {
+                let fieldFound = false;
+                
+                for (const formField of allFormFields) {
+                    if (requiredPattern.pattern.test(formField.name)) {
+                        log(`Found required field "${requiredPattern.description}": ${formField.name} = "${formField.value}"`, 'success');
+                        
+                        const isEmpty = !formField.value || formField.value.trim() === '';
+                        
+                        if (isEmpty) {
+                            formField.element.classList.add('error');
+                            hasError = true;
+                            log(`Field "${formField.name}" is empty - marked as error`, 'error');
+                        } else {
+                            log(`Field "${formField.name}" validation PASSED`, 'success');
+                        }
+                        
+                        fieldFound = true;
+                        requiredPattern.found = true;
+                        break;
+                    }
+                }
+                
+                if (!fieldFound) {
+                    log(`Required field pattern "${requiredPattern.description}" not found`, 'warn');
+                }
+            }
+            
+            log(`Validation result: ${hasError ? 'FAILED' : 'PASSED'}`, hasError ? 'error' : 'success');
+            
+            if (hasError) {
+                alert(`${scenario}: Please fill in all required fields.`);
+            } else {
+                alert(`${scenario}: Validation successful!`);
+            }
+            
+            log('', 'info'); // Empty line for separation
+        }
+        
+        function runAllTests() {
+            log('=== Running All Validation Tests ===', 'info');
+            setTimeout(() => testFormValidation(document.getElementById('testForm1')), 100);
+            setTimeout(() => testFormValidation(document.getElementById('testForm2')), 200);
+            setTimeout(() => testFormValidation(document.getElementById('testForm3')), 300);
+        }
+        
+        // Add event listeners to all forms
+        document.querySelectorAll('form').forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                testFormValidation(this);
+            });
+        });
+        
+        // Initial message
+        setTimeout(() => {
+            log('Pattern-based validation test ready', 'success');
+            log('Submit forms to test different naming scenarios', 'info');
+        }, 500);
+    </script>
+</body>
+</html>

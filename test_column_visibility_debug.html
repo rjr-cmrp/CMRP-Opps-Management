@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Column Visibility Debug Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .button {
+            background: #007cba;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .button:hover {
+            background: #005a87;
+        }
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .info { background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+        .warning { background: #fff3cd; border: 1px solid #ffeaa7; color: #856404; }
+        .log-output {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .hidden-col {
+            background-color: #ffebee;
+        }
+        .visible-col {
+            background-color: #e8f5e8;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Column Visibility Debug Test</h1>
+        
+        <div class="test-section">
+            <h3>1. Clear Storage & Reset</h3>
+            <button class="button" onclick="clearStorage()">Clear All Storage</button>
+            <button class="button" onclick="loadMainApp()">Load Main App in New Tab</button>
+            <div id="clear-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>2. Test Column Visibility Logic</h3>
+            <button class="button" onclick="testColumnLogic()">Test Column Matching Logic</button>
+            <div id="logic-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>3. Simulate Data Loading</h3>
+            <button class="button" onclick="simulateDataLoad()">Simulate CSV Data Load</button>
+            <div id="data-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>4. Check Current State</h3>
+            <button class="button" onclick="checkCurrentState()">Check Current localStorage</button>
+            <div id="state-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>5. Full Integration Test</h3>
+            <button class="button" onclick="runFullTest()">Run Complete Column Visibility Test</button>
+            <div id="full-test-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Debug Log</h3>
+            <button class="button" onclick="clearLog()">Clear Log</button>
+            <div class="log-output" id="debug-log"></div>
+        </div>
+    </div>
+
+    <script>
+        // Real column structure based on database schema
+        const expectedColumns = [
+            'encoded_date', 'project_name', 'project_code', 'rev', 'client', 'solutions', 
+            'sol_particulars', 'industries', 'ind_particulars', 'date_received', 'client_deadline', 
+            'decision', 'account_mgr', 'pic', 'bom', 'status', 'submitted_date', 'margin', 
+            'final_amt', 'opp_status', 'date_awarded_lost', 'lost_rca', 'l_particulars', 
+            'a', 'c', 'r', 'u', 'd', 'remarks_comments', 'uid', 'forecast_date', 'Actions'
+        ];
+
+        const defaultHiddenColumns = [
+            'description', 'comments', 'uid', 'created_at', 'updated_at', 'encoded_date', 'a', 'c', 'r', 'u', 'd'
+        ];
+
+        function log(message) {
+            const logElement = document.getElementById('debug-log');
+            const timestamp = new Date().toLocaleTimeString();
+            logElement.textContent += `[${timestamp}] ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(message);
+        }
+
+        function clearLog() {
+            document.getElementById('debug-log').textContent = '';
+        }
+
+        function clearStorage() {
+            try {
+                localStorage.removeItem('columnVisibility');
+                localStorage.removeItem('tableState');
+                localStorage.removeItem('filterState');
+                sessionStorage.clear();
+                
+                document.getElementById('clear-result').innerHTML = 
+                    '<div class="result success">✅ Storage cleared successfully</div>';
+                log('🧹 All storage cleared');
+            } catch (e) {
+                document.getElementById('clear-result').innerHTML = 
+                    '<div class="result error">❌ Error clearing storage: ' + e.message + '</div>';
+                log('❌ Storage clear error: ' + e.message);
+            }
+        }
+
+        function loadMainApp() {
+            window.open('http://localhost:3000', '_blank');
+            log('🚀 Main app opened in new tab');
+        }
+
+        function testColumnLogic() {
+            log('🧪 Testing column matching logic...');
+            
+            let html = '<div class="result info"><h4>Column Visibility Logic Test</h4>';
+            html += '<table><tr><th>Column</th><th>Should Hide</th><th>Logic Match</th><th>Final Visibility</th></tr>';
+            
+            expectedColumns.forEach(header => {
+                const shouldHide = defaultHiddenColumns.some(col => 
+                    header.toLowerCase().includes(col.toLowerCase())
+                );
+                const finalVisibility = !shouldHide;
+                const matchedCol = defaultHiddenColumns.find(col => 
+                    header.toLowerCase().includes(col.toLowerCase())
+                );
+                
+                const rowClass = shouldHide ? 'hidden-col' : 'visible-col';
+                html += `<tr class="${rowClass}">
+                    <td>${header}</td>
+                    <td>${shouldHide ? 'YES' : 'NO'}</td>
+                    <td>${matchedCol || 'none'}</td>
+                    <td>${finalVisibility ? 'VISIBLE' : 'HIDDEN'}</td>
+                </tr>`;
+                
+                log(`Column "${header}": ${finalVisibility ? 'visible' : 'hidden'} (matched: ${matchedCol || 'none'})`);
+            });
+            
+            html += '</table></div>';
+            document.getElementById('logic-result').innerHTML = html;
+        }
+
+        function simulateDataLoad() {
+            log('📊 Simulating data load and column initialization...');
+            
+            // Simulate the initializeColumnVisibility function
+            let visibilitySettings = {};
+            
+            // Check if storage exists
+            const stored = localStorage.getItem('columnVisibility');
+            
+            if (stored) {
+                try {
+                    visibilitySettings = JSON.parse(stored);
+                    log('📋 Found existing columnVisibility in localStorage');
+                } catch (e) {
+                    log('❌ Error parsing stored visibility: ' + e.message);
+                }
+            } else {
+                log('🆕 No stored preferences found, creating defaults...');
+                // Set defaults
+                expectedColumns.forEach(header => {
+                    const shouldHide = defaultHiddenColumns.some(col => 
+                        header.toLowerCase().includes(col.toLowerCase())
+                    );
+                    visibilitySettings[header] = !shouldHide;
+                });
+                
+                // Save defaults
+                localStorage.setItem('columnVisibility', JSON.stringify(visibilitySettings));
+                log('💾 Default visibility settings saved to localStorage');
+            }
+            
+            // Display results
+            let html = '<div class="result info"><h4>Simulated Column Visibility Settings</h4>';
+            html += '<table><tr><th>Column</th><th>Visible</th><th>Status</th></tr>';
+            
+            let visibleCount = 0;
+            let hiddenCount = 0;
+            
+            expectedColumns.forEach(header => {
+                const isVisible = visibilitySettings[header];
+                if (isVisible) visibleCount++;
+                else hiddenCount++;
+                
+                const statusClass = isVisible ? 'visible-col' : 'hidden-col';
+                html += `<tr class="${statusClass}">
+                    <td>${header}</td>
+                    <td>${isVisible ? 'YES' : 'NO'}</td>
+                    <td>${isVisible ? '👁️ Visible' : '🙈 Hidden'}</td>
+                </tr>`;
+            });
+            
+            html += `</table>
+                <p><strong>Summary:</strong> ${visibleCount} visible, ${hiddenCount} hidden</p>
+                </div>`;
+            
+            document.getElementById('data-result').innerHTML = html;
+            log(`📊 Results: ${visibleCount} visible columns, ${hiddenCount} hidden columns`);
+        }
+
+        function checkCurrentState() {
+            log('🔍 Checking current localStorage state...');
+            
+            const columnVisibility = localStorage.getItem('columnVisibility');
+            const tableState = localStorage.getItem('tableState');
+            const filterState = localStorage.getItem('filterState');
+            
+            let html = '<div class="result info"><h4>Current Storage State</h4>';
+            
+            if (columnVisibility) {
+                try {
+                    const parsed = JSON.parse(columnVisibility);
+                    html += '<h5>Column Visibility:</h5><ul>';
+                    Object.entries(parsed).forEach(([col, visible]) => {
+                        html += `<li>${col}: ${visible ? '✅ Visible' : '❌ Hidden'}</li>`;
+                    });
+                    html += '</ul>';
+                    log('✅ columnVisibility found and parsed successfully');
+                } catch (e) {
+                    html += '<p class="error">❌ Error parsing columnVisibility: ' + e.message + '</p>';
+                    log('❌ Error parsing columnVisibility: ' + e.message);
+                }
+            } else {
+                html += '<p>❌ No columnVisibility in localStorage</p>';
+                log('❌ No columnVisibility found in localStorage');
+            }
+            
+            if (tableState) {
+                html += '<h5>Table State:</h5><pre>' + tableState + '</pre>';
+                log('📋 tableState found');
+            } else {
+                html += '<p>ℹ️ No tableState in localStorage</p>';
+                log('ℹ️ No tableState found');
+            }
+            
+            if (filterState) {
+                html += '<h5>Filter State:</h5><pre>' + filterState + '</pre>';
+                log('🔍 filterState found');
+            } else {
+                html += '<p>ℹ️ No filterState in localStorage</p>';
+                log('ℹ️ No filterState found');
+            }
+            
+            html += '</div>';
+            document.getElementById('state-result').innerHTML = html;
+        }
+
+        function runFullTest() {
+            log('🚀 Running complete column visibility test...');
+            
+            // Clear storage first
+            clearStorage();
+            
+            // Wait a moment then run simulation
+            setTimeout(() => {
+                simulateDataLoad();
+                
+                // Check results
+                setTimeout(() => {
+                    const stored = localStorage.getItem('columnVisibility');
+                    if (stored) {
+                        try {
+                            const parsed = JSON.parse(stored);
+                            const visibleCols = Object.entries(parsed).filter(([col, visible]) => visible).map(([col]) => col);
+                            const hiddenCols = Object.entries(parsed).filter(([col, visible]) => !visible).map(([col]) => col);
+                            
+                            let result = '<div class="result success">';
+                            result += '<h4>✅ Full Test Complete</h4>';
+                            result += `<p><strong>Visible Columns (${visibleCols.length}):</strong><br>${visibleCols.join(', ')}</p>`;
+                            result += `<p><strong>Hidden Columns (${hiddenCols.length}):</strong><br>${hiddenCols.join(', ')}</p>`;
+                            
+                            // Check if the expected columns are hidden
+                            const expectedHidden = defaultHiddenColumns.filter(col => 
+                                expectedColumns.some(header => header.toLowerCase().includes(col.toLowerCase()))
+                            );
+                            const actuallyHidden = hiddenCols.filter(col => 
+                                defaultHiddenColumns.some(hiddenCol => col.toLowerCase().includes(hiddenCol.toLowerCase()))
+                            );
+                            
+                            if (actuallyHidden.length > 0) {
+                                result += '<p class="success">✅ Expected columns are being hidden correctly</p>';
+                            } else {
+                                result += '<p class="warning">⚠️ No expected columns are hidden - check logic</p>';
+                            }
+                            
+                            result += '</div>';
+                            document.getElementById('full-test-result').innerHTML = result;
+                            
+                            log('✅ Full test completed successfully');
+                            log(`Visible: ${visibleCols.join(', ')}`);
+                            log(`Hidden: ${hiddenCols.join(', ')}`);
+                            
+                        } catch (e) {
+                            document.getElementById('full-test-result').innerHTML = 
+                                '<div class="result error">❌ Error in full test: ' + e.message + '</div>';
+                            log('❌ Full test error: ' + e.message);
+                        }
+                    } else {
+                        document.getElementById('full-test-result').innerHTML = 
+                            '<div class="result error">❌ No columnVisibility created during test</div>';
+                        log('❌ No columnVisibility created during test');
+                    }
+                }, 1000);
+            }, 500);
+        }
+
+        // Auto-run basic checks on load
+        window.onload = function() {
+            log('🔄 Page loaded, running initial checks...');
+            checkCurrentState();
+        };
+    </script>
+</body>
+</html>

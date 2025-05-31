@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Form Validation Debug</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--bg-body);
+        }
+        .debug-section {
+            background: var(--bg-container);
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border: 1px solid var(--border-container);
+        }
+        .console-output {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 14px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin: 15px 0;
+        }
+        button {
+            background: var(--bg-modal-save);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: var(--bg-modal-save-hover);
+        }
+        .form-field {
+            margin: 10px 0;
+        }
+        .form-field label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-field input, .form-field select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-control);
+            border-radius: 4px;
+        }
+        .error {
+            border-color: var(--text-error) !important;
+            border-width: 2px !important;
+            box-shadow: 0 0 0 1px var(--text-error) !important;
+            background-color: rgba(220, 38, 38, 0.05) !important;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 Form Validation Debug Tool</h1>
+    
+    <div class="debug-section">
+        <h2>Test Form (Simulates Edit Modal)</h2>
+        <form id="testForm">
+            <div class="form-field">
+                <label for="project_name">Project Name (Required)</label>
+                <input type="text" id="project_name" name="project_name" value="Test Project">
+            </div>
+            
+            <div class="form-field">
+                <label for="status">Status (Required)</label>
+                <select id="status" name="status">
+                    <option value="">Select status...</option>
+                    <option value="Active" selected>Active</option>
+                    <option value="Inactive">Inactive</option>
+                    <option value="On Hold">On Hold</option>
+                </select>
+            </div>
+            
+            <div class="form-field">
+                <label for="opp_status">Opportunity Status</label>
+                <select id="opp_status" name="opp_status">
+                    <option value="">Select opportunity status...</option>
+                    <option value="Op25">Op25</option>
+                    <option value="Op50" selected>Op50</option>
+                    <option value="Op75">Op75</option>
+                    <option value="Op100">Op100</option>
+                    <option value="Lost">Lost</option>
+                    <option value="Declined">Declined</option>
+                </select>
+            </div>
+            
+            <div class="form-field">
+                <label for="client">Client</label>
+                <input type="text" id="client" name="client" value="Test Client">
+            </div>
+            
+            <button type="submit">Test Validation</button>
+            <button type="button" onclick="debugFormData()">Debug Form Data</button>
+            <button type="button" onclick="clearFields()">Clear Required Fields</button>
+        </form>
+    </div>
+    
+    <div class="debug-section">
+        <h2>Debug Console</h2>
+        <div class="console-output" id="debugConsole">
+            <div style="color: #569cd6;">Form Validation Debug Console Ready</div>
+            <div style="color: #6a9955;">// Click buttons to test validation behavior</div>
+        </div>
+        <button onclick="clearConsole()">Clear Console</button>
+    </div>
+
+    <script src="app.js"></script>
+    <script>
+        const debugConsole = document.getElementById('debugConsole');
+        
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            switch(type) {
+                case 'error':
+                    div.style.color = '#f85149';
+                    break;
+                case 'success':
+                    div.style.color = '#3fb950';
+                    break;
+                case 'warn':
+                    div.style.color = '#f2cc60';
+                    break;
+                default:
+                    div.style.color = '#d4d4d4';
+            }
+            
+            div.innerHTML = `[${timestamp}] ${message}`;
+            debugConsole.appendChild(div);
+            debugConsole.scrollTop = debugConsole.scrollHeight;
+        }
+        
+        function clearConsole() {
+            debugConsole.innerHTML = '';
+            log('Console cleared');
+        }
+        
+        function debugFormData() {
+            const form = document.getElementById('testForm');
+            const formData = new FormData(form);
+            const opportunityData = {};
+            
+            log('=== FORM DATA DEBUG ===', 'info');
+            
+            // Convert FormData to object
+            for (const [key, value] of formData.entries()) {
+                opportunityData[key] = value;
+                log(`Field: "${key}" = "${value}"`, 'info');
+            }
+            
+            log('=== VALIDATION TEST ===', 'info');
+            
+            // Test the validation logic
+            const requiredFields = ['project_name', 'status'];
+            let hasError = false;
+            
+            for (const requiredField of requiredFields) {
+                let fieldValue = opportunityData[requiredField];
+                let fieldElement = form.querySelector(`[name="${requiredField}"]`);
+                
+                log(`Checking field: "${requiredField}"`, 'info');
+                log(`  Raw value: "${fieldValue}"`, 'info');
+                log(`  Element found: ${fieldElement ? 'YES' : 'NO'}`, fieldElement ? 'success' : 'error');
+                
+                if (!fieldElement) {
+                    // Try alternative field names
+                    const alternativeNames = {
+                        'project_name': ['projectname', 'project_name', 'project name'],
+                        'status': ['status', 'opp_status', 'opportunity_status']
+                    };
+                    
+                    log(`  Trying alternative names for "${requiredField}":`, 'warn');
+                    for (const altName of (alternativeNames[requiredField] || [])) {
+                        const altElement = form.querySelector(`[name="${altName}"]`);
+                        log(`    "${altName}": ${altElement ? 'FOUND' : 'NOT FOUND'}`, altElement ? 'success' : 'error');
+                        if (altElement) {
+                            fieldElement = altElement;
+                            fieldValue = altElement.value;
+                            log(`    Using value: "${fieldValue}"`, 'success');
+                            break;
+                        }
+                    }
+                }
+                
+                // Check if field value is empty
+                const isEmpty = !fieldValue || (typeof fieldValue === 'string' && fieldValue.trim() === '');
+                log(`  Is empty: ${isEmpty}`, isEmpty ? 'error' : 'success');
+                
+                if (isEmpty) {
+                    if (fieldElement) {
+                        fieldElement.classList.add('error');
+                        log(`  Added error styling to field`, 'error');
+                    }
+                    hasError = true;
+                }
+            }
+            
+            log(`=== VALIDATION RESULT: ${hasError ? 'FAILED' : 'PASSED'} ===`, hasError ? 'error' : 'success');
+        }
+        
+        function clearFields() {
+            document.getElementById('project_name').value = '';
+            document.getElementById('status').value = '';
+            log('Cleared required fields for testing', 'warn');
+        }
+        
+        // Override the form submit handler for testing
+        document.getElementById('testForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            log('=== FORM SUBMISSION TEST ===', 'info');
+            
+            // Clear any previous error styling
+            const allInputs = this.querySelectorAll('input, select, textarea');
+            allInputs.forEach(input => input.classList.remove('error'));
+            
+            // Get form data
+            const formData = new FormData(this);
+            const opportunityData = {};
+            
+            // Convert FormData to a regular object
+            for (const [key, value] of formData.entries()) {
+                opportunityData[key] = value;
+            }
+            
+            // Validate required fields - using the same logic as the main app
+            let hasError = false;
+            const requiredFields = ['project_name', 'status'];
+            
+            for (const requiredField of requiredFields) {
+                let fieldValue = opportunityData[requiredField];
+                let fieldElement = this.querySelector(`[name="${requiredField}"]`);
+                
+                // If field not found by name, try to find it by checking all form elements
+                if (!fieldElement) {
+                    const alternativeNames = {
+                        'project_name': ['projectname', 'project_name', 'project name'],
+                        'status': ['status', 'opp_status', 'opportunity_status']
+                    };
+                    
+                    for (const altName of (alternativeNames[requiredField] || [])) {
+                        fieldElement = this.querySelector(`[name="${altName}"]`);
+                        if (fieldElement) {
+                            fieldValue = fieldElement.value;
+                            break;
+                        }
+                    }
+                }
+                
+                // Check if field value is empty
+                const isEmpty = !fieldValue || (typeof fieldValue === 'string' && fieldValue.trim() === '');
+                
+                if (isEmpty) {
+                    if (fieldElement) {
+                        fieldElement.classList.add('error');
+                        hasError = true;
+                        log(`Field "${requiredField}" is empty - added error styling`, 'error');
+                    } else {
+                        log(`Required field "${requiredField}" not found in form`, 'error');
+                        hasError = true;
+                    }
+                }
+            }
+            
+            if (hasError) {
+                log('❌ VALIDATION FAILED - Please fill in all required fields', 'error');
+                alert('Please fill in all required fields.');
+            } else {
+                log('✅ VALIDATION PASSED - Form would be submitted', 'success');
+                alert('Form validation successful!');
+            }
+        });
+        
+        // Initial log
+        setTimeout(() => {
+            log('Debug tool ready. Form has pre-filled values for testing.', 'success');
+            log('Use "Debug Form Data" to see field values and validation logic.', 'info');
+        }, 500);
+    </script>
+</body>
+</html>

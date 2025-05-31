@@ -1,0 +1,11 @@
+id,email,password_hash,name,is_verified,created_at,updated_at,roles,account_type
+12fb7b1d-308e-4116-8f1e-c54ce59e0758,riverareuel@gmail.com,$2b$10$1hljxtli9NGe97ID3EUPB.j2F.swzl/tMur/6ap4AFLjOuf38AzNy,Reuel Rivera,t,2025-05-10 23:38:35.390841,2025-05-10 23:38:35.390841,"{Technical,Proposal}",Admin
+917c0109-8b76-4a35-aac4-c87787f01385,crisostomo.diaz@cmrpautomation.com,$2b$10$XkmOq0UzDtWdDn7loOe2q.GeLVzPMzc/LgGWk3fGsriokug.6jp96,CBD,t,2025-05-21 05:49:08.212052,2025-05-21 05:49:08.212052,{Sales},User
+333be6a2-7b33-4d79-b3bd-ef61d1c5f065,tyronejames.caballero@cmrpautomation.com,$2b$10$iXM6PdLPqC5v.xX6eXZLUOc24rubFsNx8/BDIyWcN75l7YmPi3zAW,TJC,t,2025-05-21 05:49:52.457315,2025-05-21 05:49:52.457315,"{Technical,Proposal}",User
+e638e394-114e-4500-a2a4-36932ae84c1d,dianne.rael@cmrpautomation.com,$2b$10$Wg.LWiOqo.s9hghlKn6Ir.8LGtAogOzMu/X8ws.W6piPBk1BX.Bi6,DAR,t,2025-05-21 05:50:23.845187,2025-05-21 05:50:23.845187,{Sales},User
+33a6f374-3365-42d9-be7e-585cb870ba7b,ivy.pico@cmrpautomation.com,$2b$10$4RMsnV4k.gMs3sB3hf3Gw.PKu2TbD8YqytxpM6Ns6rlbUVGkqegoC,ISP,t,2025-05-21 05:50:46.056895,2025-05-21 05:50:46.056895,{Sales},User
+49ad8d0a-8aad-45b2-84f0-36234b4e54a6,neil.gomez@cmrpautomation.com,$2b$10$psepchTQR60A7mRISSxWt.WvOyPcSLKG5hPceBMXcxYjZQqccSTw6,NSG,t,2025-05-21 05:51:46.597781,2025-05-21 05:51:46.597781,"{Proposal,Sales}",User
+8483d8cb-f2d5-42eb-91ca-65a90d7f3caa,shiella.bagalacsa@cmrpautomation.com,$2b$10$P4UlQuHgDON7NiVnotA9tOArZz60SFEgMCm90w/M5/7uvCkFpj.pO,SLB,t,2025-05-21 05:51:18.56515,2025-05-21 05:51:18.56515,{Sales},Admin
+f1c777df-650e-434b-a539-7cffdcf00e0f,reuel.rivera@cmrpautomation.com,$2b$10$LrG6lSAGqCF1xZlkeigMZu5TeJFpVmb0xuXx3PdyqrkhUpXY0algy,RJR,t,2025-05-13 20:19:07.964646,2025-05-13 20:19:07.964646,"{Technical,Proposal}",Admin
+acec2530-e612-4bca-892e-277eabe2f8bf,rojel.rivera@cmrpautomation.com,$2b$10$rfBlQTp7ce8jgb3iMnmXk.OWrP6KC6A02fpcRDUEn4sh/Aa/zkVUa,RTR,t,2025-05-21 05:11:55.866801,2025-05-21 05:11:55.866801,"{Technical,Proposal,Sales}",Admin
+d372f63f-c48a-45ef-9103-605a4d8acff5,juan.ortiz@cmrpautomation.com,$2b$10$oKlyGWPLwUuvVyyld.cddui8HWkMoOGZGdRgCIgtbanJztdV6XEeK,JMO,t,2025-05-21 05:12:44.931825,2025-05-21 05:12:44.931825,"{Proposal,Sales}",User

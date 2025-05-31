@@ -8,7 +8,25 @@ let currentSolutionFilter = 'all'; // State for the solution filter
 let currentAccountMgrFilter = 'all';
 let currentClientFilter = 'all';
 // let currentQuarterFilter = 'all'; // Replaced by activeQuarters
-let activeQuarters = { '1': true, '2': true, '3': true, '4': true }; // All quarters active by default
+
+// Initialize activeQuarters based on current date
+function initializeActiveQuarters() {
+    const now = new Date();
+    const currentMonth = now.getMonth(); // 0-11
+    const currentQuarter = Math.floor(currentMonth / 3) + 1; // 1-4
+    
+    // Initialize all quarters as inactive
+    const quarters = { '1': false, '2': false, '3': false, '4': false };
+    
+    // Activate current quarter and all previous quarters in the current year
+    for (let q = 1; q <= currentQuarter; q++) {
+        quarters[q] = true;
+    }
+    
+    return quarters;
+}
+
+let activeQuarters = initializeActiveQuarters(); // Initialize based on current date
 let currentTableStatusFilter = 'OP100'; // Default to OP100 only
 // ...existing code for all helper functions, rendering, filters, etc...
 
@@ -250,14 +268,49 @@ document.addEventListener('DOMContentLoaded', function() {
         return filtered;
     }
 
-    // Table data: filtered only by OP100/LOST/All
+    // Table data: filtered by all filters (status, solution, account mgr, client, quarters)
     function getFilteredTableData(opportunities) {
+        if (!Array.isArray(opportunities)) return [];
+        
         let filtered = opportunities;
+
+        // Apply status filter (OP100/LOST)
         if (currentTableStatusFilter === 'OP100') {
             filtered = filtered.filter(opp => (opp['opp_status']||'').toUpperCase() === 'OP100');
         } else if (currentTableStatusFilter === 'LOST') {
             filtered = filtered.filter(opp => (opp['opp_status']||'').toUpperCase() === 'LOST');
         }
+
+        // Apply solution filter
+        if (currentSolutionFilter !== 'all') {
+            filtered = filtered.filter(opp => opp['solutions'] === currentSolutionFilter);
+        }
+
+        // Apply account manager filter
+        if (currentAccountMgrFilter !== 'all') {
+            filtered = filtered.filter(opp => opp['account_mgr'] === currentAccountMgrFilter);
+        }
+
+        // Apply client filter
+        if (currentClientFilter !== 'all') {
+            filtered = filtered.filter(opp => opp['client'] === currentClientFilter);
+        }
+
+        // Apply quarter filter
+        const anyQuarterActive = Object.values(activeQuarters).some(isActive => isActive);
+        if (anyQuarterActive) {
+            filtered = filtered.filter(opp => {
+                const date = robustParseDate(opp.date_awarded_lost || opp.date_awarded);
+                if (!date) return false;
+                const month = date.getMonth(); // 0-11
+                if (activeQuarters['1'] && month >= 0 && month <= 2) return true;
+                if (activeQuarters['2'] && month >= 3 && month <= 5) return true;
+                if (activeQuarters['3'] && month >= 6 && month <= 8) return true;
+                if (activeQuarters['4'] && month >= 9 && month <= 11) return true;
+                return false;
+            });
+        }
+
         return filtered;
     }
 
@@ -281,7 +334,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('op100-total-amount').textContent = '₱' + op100Amount.toLocaleString();
         document.getElementById('loss-total-count').textContent = lossCount;
         document.getElementById('loss-total-amount').textContent = '₱' + lossAmount.toLocaleString();
-        renderWinLossCharts(chartData);
+        renderWinLossCharts(data);
         // 2. Render table using table filter only
         renderOpportunitiesTable(data);
     }
@@ -396,156 +449,257 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- CHART RENDERING (robust, with fallback) ---
     function renderWinLossCharts(data) {
-        const winCanvas = document.getElementById('winMonthlyChart');
-        const lossCanvas = document.getElementById('lossMonthlyChart');
+        if (!Array.isArray(data)) {
+            console.error('[DEBUG] Invalid data format for charts:', data);
+            return;
+        }
 
-        // Get computed styles for chart colors to ensure theme is applied
-        const rootStyle = getComputedStyle(document.documentElement);
-        const colorWin = rootStyle.getPropertyValue('--color-win').trim();
-        const colorWinBg = rootStyle.getPropertyValue('--color-win-bg').trim();
-        const colorWinDark = rootStyle.getPropertyValue('--color-win-dark').trim();
-        const colorLoss = rootStyle.getPropertyValue('--color-loss').trim();
-        const colorLossBg = rootStyle.getPropertyValue('--color-loss-bg').trim();
-        const colorLossDark = rootStyle.getPropertyValue('--color-loss-dark').trim();
-        const chartTickColor = rootStyle.getPropertyValue('--chart-tick-color').trim();
-        const chartGridColor = rootStyle.getPropertyValue('--chart-grid-color').trim();
-
+        // Process monthly data
         const allMonthsLabels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
         let chartLabels = [];
         let monthIndices = []; // 0-11, stores indices of months to display
 
+        // Build labels based on active quarters
         if (activeQuarters['1']) { chartLabels.push('Jan','Feb','Mar'); monthIndices.push(0,1,2); }
         if (activeQuarters['2']) { chartLabels.push('Apr','May','Jun'); monthIndices.push(3,4,5); }
         if (activeQuarters['3']) { chartLabels.push('Jul','Aug','Sep'); monthIndices.push(6,7,8); }
         if (activeQuarters['4']) { chartLabels.push('Oct','Nov','Dec'); monthIndices.push(9,10,11); }
         
-        // If no quarters selected, default to all months for labels, but data will be empty due to getFilteredChartData
+        // If no quarters selected, default to all months
         if (chartLabels.length === 0) {
             chartLabels = allMonthsLabels;
             monthIndices = Array.from({length: 12}, (_, i) => i);
         }
 
-        // --- Wins Chart ---
-        let winDataFound = false;
+        // Initialize arrays for monthly data
         let winMonthlyAmount = Array(12).fill(0);
         let winMonthlyCount = Array(12).fill(0);
-        data.forEach(item => {
-            if (item.opp_status === 'OP100' && item.date_awarded) {
-                const date = robustParseDate(item.date_awarded);
-                if (date && !isNaN(date)) {
-                    const month = date.getMonth();
-                    if (monthIndices.includes(month)) { // Only include if month is in selected quarter
-                        winMonthlyAmount[month] += Number(item.final_amt) || 0;
-                        winMonthlyCount[month] += 1;
-                        winDataFound = true;
-                    }
-                }
-            }
-        });
-
-        // Filter data for the selected quarter for the chart
-        const winChartAmounts = monthIndices.map(idx => winMonthlyAmount[idx]);
-        const winChartCounts = monthIndices.map(idx => winMonthlyCount[idx]);
-
-        if (winChartInstance) winChartInstance.destroy();
-        if (winCanvas) {
-            // Always render the chart structure. 
-            // If data arrays are empty/zero, Chart.js will render a blank chart.
-            winChartInstance = new Chart(winCanvas.getContext('2d'), {
-                type: 'bar',
-                data: {
-                    labels: chartLabels,
-                    datasets: [
-                        { label: 'OP100 Amount', data: winChartAmounts, backgroundColor: colorWin, borderColor: colorWinDark, borderWidth: 1, yAxisID: 'yAmount', type: 'bar', order: 2 },
-                        { label: 'OP100 Count', data: winChartCounts, borderColor: colorWin, backgroundColor: colorWinBg, borderWidth: 2, fill: true, tension: 0.1, yAxisID: 'yCount', type: 'line', order: 1, pointRadius: 4, pointHoverRadius: 6 }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { 
-                            ticks: { color: chartTickColor },
-                            grid: { color: chartGridColor }
-                        },
-                        yAmount: { 
-                            beginAtZero: true, 
-                            position: 'left', 
-                            ticks: { callback: v => '₱' + v.toLocaleString(), color: chartTickColor },
-                            grid: { color: chartGridColor }
-                        },
-                        yCount: { 
-                            beginAtZero: true, 
-                            position: 'right', 
-                            ticks: { stepSize: 1, precision: 0, callback: v => Number.isInteger(v) ? v : '', color: chartTickColor }, 
-                            grid: { drawOnChartArea: false, color: chartGridColor } 
-                        }
-                    }
-                }
-            });
-            // Removed the 'else' block that drew "No OP100 chart data available."
-        }
-
-        // --- Losses Chart ---
-        let lossDataFound = false;
         let lossMonthlyAmount = Array(12).fill(0);
         let lossMonthlyCount = Array(12).fill(0);
+
+        // Process data
         data.forEach(item => {
-            if (item.opp_status === 'LOST' && item.date_awarded) { // Ensure date_awarded is used, not date_awarded_lost directly for consistency
-                const date = robustParseDate(item.date_awarded); // Use robustParseDate on the consistent field
-                if (date && !isNaN(date)) {
-                    const month = date.getMonth();
-                    if (monthIndices.includes(month)) { // Only include if month is in selected quarter
+            const date = robustParseDate(item.date_awarded || item.date_awarded_lost);
+            if (date && !isNaN(date)) {
+                const month = date.getMonth();
+                if (monthIndices.includes(month)) {
+                    if (item.opp_status === 'OP100') {
+                        winMonthlyAmount[month] += Number(item.final_amt) || 0;
+                        winMonthlyCount[month] += 1;
+                    } else if (item.opp_status === 'LOST') {
                         lossMonthlyAmount[month] += Number(item.final_amt) || 0;
                         lossMonthlyCount[month] += 1;
-                        lossDataFound = true;
                     }
                 }
             }
         });
 
-        // Filter data for the selected quarter for the chart
+        // Filter data for selected quarters
+        const winChartAmounts = monthIndices.map(idx => winMonthlyAmount[idx]);
+        const winChartCounts = monthIndices.map(idx => winMonthlyCount[idx]);
         const lossChartAmounts = monthIndices.map(idx => lossMonthlyAmount[idx]);
         const lossChartCounts = monthIndices.map(idx => lossMonthlyCount[idx]);
 
-        if (lossChartInstance) lossChartInstance.destroy();
-        if (lossCanvas) {
-            // Always render the chart structure.
-            lossChartInstance = new Chart(lossCanvas.getContext('2d'), {
+        // Get computed styles for chart colors
+        const rootStyle = getComputedStyle(document.documentElement);
+        const colorWin = rootStyle.getPropertyValue('--color-win').trim() || '#16a34a';
+        const colorWinBg = rootStyle.getPropertyValue('--color-win-bg').trim() || 'rgba(22, 163, 74, 0.2)';
+        const colorWinDark = rootStyle.getPropertyValue('--color-win-dark').trim() || '#15803d';
+        const colorLoss = rootStyle.getPropertyValue('--color-loss').trim() || '#dc2626';
+        const colorLossBg = rootStyle.getPropertyValue('--color-loss-bg').trim() || 'rgba(220, 38, 38, 0.2)';
+        const colorLossDark = rootStyle.getPropertyValue('--color-loss-dark').trim() || '#b91c1c';
+        const gridColor = rootStyle.getPropertyValue('--chart-grid-color').trim() || '#e5e7eb';
+        const tickColor = rootStyle.getPropertyValue('--chart-tick-color').trim() || '#6b7280';
+        const titleColor = rootStyle.getPropertyValue('--chart-title-color').trim() || '#111827';
+        const legendColor = rootStyle.getPropertyValue('--chart-legend-color').trim() || '#374151';
+        const tooltipBgColor = rootStyle.getPropertyValue('--chart-tooltip-bg').trim() || '#ffffff';
+        const tooltipTextColor = rootStyle.getPropertyValue('--chart-tooltip-text').trim() || '#111827';
+
+        // Set chart container heights
+        const chartContainers = document.querySelectorAll('.chart-container');
+        chartContainers.forEach(container => {
+            container.style.height = '500px';
+        });
+
+        const winCanvas = document.getElementById('winMonthlyChart');
+        const lossCanvas = document.getElementById('lossMonthlyChart');
+
+        if (winCanvas && lossCanvas) {
+            // Helper function to get a nice round maximum value
+            function getNiceMaxValue(maxValue) {
+                // If value is 0, return a default scale
+                if (maxValue === 0) return 10;
+                
+                // Find the magnitude (10^n) just above the max value
+                const magnitude = Math.pow(10, Math.floor(Math.log10(maxValue)));
+                const normalized = maxValue / magnitude;  // Between 1 and 10
+                
+                // Choose a nice round number just above the normalized value
+                let niceNormalized;
+                if (normalized <= 1.5) niceNormalized = 1.5;
+                else if (normalized <= 2) niceNormalized = 2;
+                else if (normalized <= 2.5) niceNormalized = 2.5;
+                else if (normalized <= 3) niceNormalized = 3;
+                else if (normalized <= 4) niceNormalized = 4;
+                else if (normalized <= 5) niceNormalized = 5;
+                else if (normalized <= 6) niceNormalized = 6;
+                else if (normalized <= 8) niceNormalized = 8;
+                else niceNormalized = 10;
+                
+                return niceNormalized * magnitude;
+            }
+
+            // Get the maximum amount from both win and loss data to set consistent scale
+            const maxWinAmount = Math.max(...winChartAmounts);
+            const maxLossAmount = Math.max(...lossChartAmounts);
+            const maxAmount = Math.max(maxWinAmount, maxLossAmount);
+            const niceMaxAmount = getNiceMaxValue(maxAmount);
+            
+            // Get the maximum count and make it a nice round number
+            const maxWinCount = Math.max(...winChartCounts);
+            const maxLossCount = Math.max(...lossChartCounts);
+            const maxCount = Math.max(maxWinCount, maxLossCount);
+            const niceMaxCount = getNiceMaxValue(maxCount);
+
+            // Common options with synchronized scales
+            const commonOptions = {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'bottom',
+                        labels: {
+                            color: legendColor,
+                            padding: 20,
+                            usePointStyle: true,
+                            pointStyle: 'circle'
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: tooltipBgColor,
+                        titleColor: tooltipTextColor,
+                        bodyColor: tooltipTextColor,
+                        callbacks: {
+                            label: function(context) {
+                                if (context.dataset.yAxisID === 'y') {
+                                    return `Amount: ${abbreviateAmount(context.raw)}`;
+                                }
+                                return `Count: ${context.raw}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { color: gridColor },
+                        ticks: { color: tickColor }
+                    },
+                    y: {
+                        position: 'left',
+                        grid: { color: gridColor },
+                        min: 0,
+                        max: niceMaxAmount,
+                        ticks: {
+                            color: tickColor,
+                            callback: function(value) {
+                                return abbreviateAmount(value);
+                            }
+                        }
+                    },
+                    y1: {
+                        position: 'right',
+                        grid: {
+                            drawOnChartArea: false,
+                            color: gridColor
+                        },
+                        min: 0,
+                        max: niceMaxCount,
+                        ticks: {
+                            color: tickColor,
+                            stepSize: 1,
+                            precision: 0
+                        }
+                    }
+                }
+            };
+
+            // Helper function to abbreviate amounts
+            function abbreviateAmount(value) {
+                const absValue = Math.abs(value);
+                if (absValue >= 1e6) {
+                    return '₱' + (value / 1e6).toFixed(1) + 'M';
+                }
+                if (absValue >= 1e3) {
+                    return '₱' + (value / 1e3).toFixed(1) + 'K';
+                }
+                return '₱' + value.toFixed(2);
+            }
+
+            // Win Chart Configuration
+            const winConfig = {
                 type: 'bar',
                 data: {
                     labels: chartLabels,
                     datasets: [
-                        { label: 'Lost Amount', data: lossChartAmounts, backgroundColor: colorLoss, borderColor: colorLossDark, borderWidth: 1, yAxisID: 'yAmount', type: 'bar', order: 2 },
-                        { label: 'Lost Count', data: lossChartCounts, borderColor: colorLoss, backgroundColor: colorLossBg, borderWidth: 2, fill: true, tension: 0.1, yAxisID: 'yCount', type: 'line', order: 1, pointRadius: 4, pointHoverRadius: 6 }
+                        {
+                            label: 'Win Amount',
+                            data: winChartAmounts,
+                            backgroundColor: colorWinBg,
+                            borderColor: colorWin,
+                            borderWidth: 1,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'Win Count',
+                            data: winChartCounts,
+                            type: 'line',
+                            borderColor: colorWinDark,
+                            borderWidth: 2,
+                            pointBackgroundColor: colorWinDark,
+                            tension: 0.4,
+                            yAxisID: 'y1'
+                        }
                     ]
                 },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { display: false } },
-                    scales: {
-                        x: { 
-                            ticks: { color: chartTickColor },
-                            grid: { color: chartGridColor }
+                options: commonOptions
+            };
+
+            // Loss Chart Configuration
+            const lossConfig = {
+                type: 'bar',
+                data: {
+                    labels: chartLabels,
+                    datasets: [
+                        {
+                            label: 'Loss Amount',
+                            data: lossChartAmounts,
+                            backgroundColor: colorLossBg,
+                            borderColor: colorLoss,
+                            borderWidth: 1,
+                            yAxisID: 'y'
                         },
-                        yAmount: { 
-                            beginAtZero: true, 
-                            position: 'left', 
-                            ticks: { callback: v => '₱' + v.toLocaleString(), color: chartTickColor },
-                            grid: { color: chartGridColor }
-                        },
-                        yCount: { 
-                            beginAtZero: true, 
-                            position: 'right', 
-                            ticks: { stepSize: 1, precision: 0, callback: v => Number.isInteger(v) ? v : '', color: chartTickColor }, 
-                            grid: { drawOnChartArea: false, color: chartGridColor } 
+                        {
+                            label: 'Loss Count',
+                            data: lossChartCounts,
+                            type: 'line',
+                            borderColor: colorLossDark,
+                            borderWidth: 2,
+                            pointBackgroundColor: colorLossDark,
+                            tension: 0.4,
+                            yAxisID: 'y1'
                         }
-                    }
-                }
-            });
-            // Removed the 'else' block that drew "No LOST chart data available."
+                    ]
+                },
+                options: commonOptions
+            };
+
+            // Create the charts
+            if (window.winChart) window.winChart.destroy();
+            if (window.lossChart) window.lossChart.destroy();
+
+            window.winChart = new Chart(winCanvas, winConfig);
+            window.lossChart = new Chart(lossCanvas, lossConfig);
         }
     }
 
@@ -599,6 +753,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!tableBody) return;
         tableBody.innerHTML = '';
         let filtered = getFilteredTableData(opportunities);
+        
         // --- Table Sorting ---
         if (currentSort.col) {
             filtered = filtered.slice().sort((a, b) => {
@@ -648,32 +803,27 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             const finalAmtValue = opp['final_amt'] || '';
             const marginValue = opp['margin_percentage'] || opp['margin'] || '';
+
+            // Add status-based classes
+            const status = (opp['opp_status'] || '').toUpperCase();
+            if (status === 'OP100') {
+                tr.classList.add('bg-op100');
+            } else if (status === 'LOST') {
+                tr.classList.add('bg-lost');
+            }
+
             tr.innerHTML = `
-                <td class="project-name-cell px-4 py-2 whitespace-normal text-sm text-gray-900 dark:text-gray-100">${projectName}</td>
-                <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">${client}</td>
-                <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">${acctMgr}</td>
-                <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">${dateAwarded}</td>
-                <td class="px-4 py-2 whitespace-nowrap text-sm text-right text-gray-900 dark:text-gray-100">${formatCurrency(finalAmtValue)}</td>
-                <td class="px-4 py-2 whitespace-nowrap text-sm text-right text-gray-900 dark:text-gray-100">${formatMargin(marginValue)}</td>
+                <td class="project-name-cell px-3 py-2 whitespace-normal text-sm">${projectName}</td>
+                <td class="px-3 py-2 whitespace-nowrap text-sm">${client}</td>
+                <td class="px-3 py-2 whitespace-nowrap text-sm">${acctMgr}</td>
+                <td class="px-3 py-2 whitespace-nowrap text-sm">${dateAwarded}</td>
+                <td class="px-3 py-2 whitespace-nowrap text-sm text-right">${formatCurrency(finalAmtValue)}</td>
+                <td class="px-3 py-2 whitespace-nowrap text-sm text-right">${formatMargin(marginValue)}</td>
             `;
+
             tableBody.appendChild(tr);
         });
     }
-    // --- Table header click: sorting ---
-    document.querySelectorAll('#opportunitiesTable th').forEach((th, idx) => {
-        th.style.cursor = 'pointer';
-        th.onclick = function() {
-            const key = tableHeaders[idx].key;
-            if (!key) return;
-            if (currentSort.col === key) currentSort.dir *= -1;
-            else { currentSort.col = key; currentSort.dir = 1; }
-            renderOpportunitiesTable(dashboardDataCache);
-            document.querySelectorAll('#opportunitiesTable th').forEach((h, i) => {
-                h.classList.toggle('sorted', i === idx);
-                h.setAttribute('data-sort-dir', (i === idx) ? (currentSort.dir === 1 ? 'asc' : 'desc') : '');
-            });
-        };
-    });
 
     // --- Dropdown population for chart filters ---
     function populateDropdowns(data) {
@@ -777,7 +927,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function setupQuarterFilterButtons() {
         const quarterButtons = document.querySelectorAll('#quarterFilterButtons .quarter-filter-btn');
+        
+        // Set initial states based on activeQuarters
         quarterButtons.forEach(button => {
+            const quarter = button.dataset.quarter;
+            // Set initial opacity based on activeQuarters
+            button.style.opacity = activeQuarters[quarter] ? '1' : '0.5';
+            button.classList.toggle('active', activeQuarters[quarter]);
+            
             button.addEventListener('click', function() {
                 const quarter = this.dataset.quarter;
                 activeQuarters[quarter] = !activeQuarters[quarter]; // Toggle the state
@@ -785,6 +942,48 @@ document.addEventListener('DOMContentLoaded', function() {
                 renderDashboard(dashboardDataCache); // Re-render dashboard with new quarter filter
             });
         });
-        updateQuarterButtonStates(); // Set initial states
+    }
+
+    const changePasswordBtn = document.getElementById('changePasswordBtn');
+    if (changePasswordBtn) {
+        changePasswordBtn.addEventListener('click', function() {
+            window.location.href = 'update_password.html';
+        });
+    }
+    // Hide Change Password button if not authenticated
+    function updateChangePasswordBtnVisibility() {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            if (changePasswordBtn) changePasswordBtn.style.display = 'none';
+        } else {
+            if (changePasswordBtn) changePasswordBtn.style.display = '';
+        }
+    }
+    updateChangePasswordBtnVisibility();
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'authToken' || e.key === 'authEvent') {
+            updateChangePasswordBtnVisibility();
+        }
+    });
+});
+
+// --- CHANGE PASSWORD BUTTON HANDLER ---
+function setupChangePasswordButton() {
+    const changePasswordBtn = document.getElementById('changePasswordBtn');
+    if (changePasswordBtn) {
+        // Remove any previous event listeners by replacing the node
+        const newBtn = changePasswordBtn.cloneNode(true);
+        changePasswordBtn.parentNode.replaceChild(newBtn, changePasswordBtn);
+        newBtn.addEventListener('click', function() {
+            window.location.href = 'update_password.html';
+        });
+    }
+}
+document.addEventListener('DOMContentLoaded', setupChangePasswordButton);
+window.addEventListener('storage', function(e) {
+    if (e.key === 'authToken' || e.key === 'authEvent') {
+        setupChangePasswordButton();
     }
 });
+// ...existing code...
+

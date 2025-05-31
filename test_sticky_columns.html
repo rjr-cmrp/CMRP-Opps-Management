@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sticky Column Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-results {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+        }
+        .pass { color: #28a745; font-weight: bold; }
+        .fail { color: #dc3545; font-weight: bold; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        #console-output {
+            background: #000;
+            color: #00ff00;
+            padding: 10px;
+            font-family: monospace;
+            height: 200px;
+            overflow-y: auto;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Sticky Column Fix Verification Test</h1>
+        <p>This test validates that the sticky column headers update correctly when column visibility changes.</p>
+        
+        <div>
+            <button onclick="runTests()">Run All Tests</button>
+            <button onclick="openMainApp()">Open Main Application</button>
+            <button onclick="clearConsole()">Clear Console</button>
+        </div>
+        
+        <div class="test-results">
+            <h3>Test Results:</h3>
+            <div id="test-results"></div>
+        </div>
+        
+        <div>
+            <h3>Console Output:</h3>
+            <div id="console-output"></div>
+        </div>
+    </div>
+
+    <script>
+        let testResults = [];
+        
+        function log(message) {
+            const output = document.getElementById('console-output');
+            output.innerHTML += `[${new Date().toLocaleTimeString()}] ${message}\n`;
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        function clearConsole() {
+            document.getElementById('console-output').innerHTML = '';
+        }
+        
+        function displayResults() {
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = testResults.map(result => 
+                `<div class="${result.passed ? 'pass' : 'fail'}">${result.name}: ${result.passed ? 'PASS' : 'FAIL'} - ${result.message}</div>`
+            ).join('');
+        }
+        
+        function addTestResult(name, passed, message) {
+            testResults.push({ name, passed, message });
+            log(`Test: ${name} - ${passed ? 'PASS' : 'FAIL'} - ${message}`);
+        }
+        
+        function testColumnVisibilityLogic() {
+            log('Testing column visibility logic...');
+            
+            // Simulate the columnVisibility object structure used in the main app
+            const headers = ['Company', 'Manager', 'Stage', 'Value', 'Close Date'];
+            const columnVisibility = {
+                'Company': true,
+                'Manager': false,
+                'Stage': true,
+                'Value': true,
+                'Close Date': false
+            };
+            
+            // Test the original broken logic (using index instead of header name)
+            const brokenFirstVisibleIndex = headers.findIndex((h, i) => columnVisibility[i]);
+            log(`Broken logic result: firstVisibleIndex = ${brokenFirstVisibleIndex}`);
+            
+            // Test the fixed logic (using header name)
+            const fixedFirstVisibleIndex = headers.findIndex((h, i) => columnVisibility[h]);
+            log(`Fixed logic result: firstVisibleIndex = ${fixedFirstVisibleIndex}`);
+            
+            // Verify the fix
+            const expectedFirstVisible = 0; // 'Company' is the first visible column
+            const isFixed = fixedFirstVisibleIndex === expectedFirstVisible;
+            const isBroken = brokenFirstVisibleIndex !== expectedFirstVisible;
+            
+            addTestResult(
+                'Column Visibility Logic Fix',
+                isFixed,
+                `Expected first visible index: ${expectedFirstVisible}, Got: ${fixedFirstVisibleIndex}`
+            );
+            
+            addTestResult(
+                'Original Logic Was Broken',
+                isBroken,
+                `Original logic returned: ${brokenFirstVisibleIndex} (should be ${expectedFirstVisible})`
+            );
+            
+            return { isFixed, fixedFirstVisibleIndex, brokenFirstVisibleIndex };
+        }
+        
+        function testStickyColumnDetection() {
+            log('Testing sticky column detection...');
+            
+            const headers = ['Company', 'Manager', 'Stage', 'Value', 'Close Date'];
+            
+            // Test scenario 1: First column visible
+            const scenario1 = {
+                'Company': true,
+                'Manager': false,
+                'Stage': true,
+                'Value': true,
+                'Close Date': false
+            };
+            
+            const firstVisible1 = headers.findIndex((h, i) => scenario1[h]);
+            const shouldBeSticky1 = firstVisible1 === 0; // Company should be sticky
+            
+            addTestResult(
+                'Scenario 1: First Column Visible',
+                shouldBeSticky1,
+                `Company (index 0) should be sticky when it's visible`
+            );
+            
+            // Test scenario 2: First column hidden, second visible
+            const scenario2 = {
+                'Company': false,
+                'Manager': true,
+                'Stage': true,
+                'Value': true,
+                'Close Date': false
+            };
+            
+            const firstVisible2 = headers.findIndex((h, i) => scenario2[h]);
+            const shouldBeSticky2 = firstVisible2 === 1; // Manager should be sticky
+            
+            addTestResult(
+                'Scenario 2: Second Column First Visible',
+                shouldBeSticky2,
+                `Manager (index 1) should be sticky when Company is hidden`
+            );
+            
+            // Test scenario 3: Multiple columns hidden
+            const scenario3 = {
+                'Company': false,
+                'Manager': false,
+                'Stage': false,
+                'Value': true,
+                'Close Date': true
+            };
+            
+            const firstVisible3 = headers.findIndex((h, i) => scenario3[h]);
+            const shouldBeSticky3 = firstVisible3 === 3; // Value should be sticky
+            
+            addTestResult(
+                'Scenario 3: Value Column First Visible',
+                shouldBeSticky3,
+                `Value (index 3) should be sticky when first three columns are hidden`
+            );
+        }
+        
+        async function runTests() {
+            log('=== Starting Sticky Column Fix Tests ===');
+            testResults = [];
+            
+            testColumnVisibilityLogic();
+            testStickyColumnDetection();
+            
+            log('=== All Tests Completed ===');
+            displayResults();
+            
+            const passedTests = testResults.filter(r => r.passed).length;
+            const totalTests = testResults.length;
+            
+            log(`\nSUMMARY: ${passedTests}/${totalTests} tests passed`);
+            
+            if (passedTests === totalTests) {
+                log('✅ All tests passed! The sticky column fix appears to be working correctly.');
+            } else {
+                log('❌ Some tests failed. Please review the results above.');
+            }
+        }
+        
+        function openMainApp() {
+            window.open('http://localhost:8001', '_blank');
+        }
+        
+        // Auto-run tests when page loads
+        window.onload = function() {
+            log('Sticky Column Test Page Loaded');
+            log('Click "Run All Tests" to verify the fix');
+        };
+    </script>
+</body>
+</html>

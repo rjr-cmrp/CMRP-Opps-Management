@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Column Case Fix Verification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .button {
+            background: #007cba;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .button:hover {
+            background: #005a8b;
+        }
+        .result {
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #007cba;
+        }
+        .success {
+            background-color: #d4edda;
+            border-left-color: #28a745;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-left-color: #dc3545;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border-left-color: #17a2b8;
+            color: #0c5460;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        .hidden-col {
+            background-color: #ffebee;
+        }
+        .visible-col {
+            background-color: #e8f5e8;
+        }
+        .log-output {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Column Case Fix Verification</h1>
+        <p>This test verifies that the column case fix (uppercase A,C,R,U,D → lowercase a,c,r,u,d) works correctly.</p>
+        
+        <button class="button" onclick="testColumnCaseFix()">🧪 Test Column Case Fix</button>
+        <button class="button" onclick="clearLog()">🧹 Clear Log</button>
+        
+        <div id="results"></div>
+        
+        <h3>📋 Debug Log</h3>
+        <div class="log-output" id="debug-log"></div>
+    </div>
+
+    <script>
+        function log(message) {
+            const logElement = document.getElementById('debug-log');
+            const timestamp = new Date().toLocaleTimeString();
+            logElement.textContent += `[${timestamp}] ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(message);
+        }
+
+        function clearLog() {
+            document.getElementById('debug-log').textContent = '';
+            document.getElementById('results').innerHTML = '';
+        }
+
+        function testColumnCaseFix() {
+            log('🔧 Testing Column Case Fix...');
+            log('=====================================');
+            
+            // Current fixed defaultHiddenColumns (with lowercase)
+            const defaultHiddenColumns = [
+                'description', 'comments', 'uid', 'created_at', 'updated_at', 
+                'encoded_date', 'a', 'c', 'r', 'u', 'd', 'rev', 'project_code',
+                'sol_particulars', 'ind_particulars', 'lost_rca', 'l_particulars',
+                'client_deadline', 'submitted_date', 'date_awarded_lost', 'forecast_date'
+            ];
+            
+            // Sample headers that match the database schema
+            const actualHeaders = [
+                'encoded_date', 'project_name', 'project_code', 'rev', 'client', 'solutions',
+                'sol_particulars', 'industries', 'ind_particulars', 'date_received', 'client_deadline',
+                'decision', 'account_mgr', 'pic', 'bom', 'status', 'submitted_date', 'margin',
+                'final_amt', 'opp_status', 'date_awarded_lost', 'lost_rca', 'l_particulars',
+                'a', 'c', 'r', 'u', 'd', 'remarks_comments', 'uid', 'forecast_date'
+            ];
+            
+            log(`📋 Testing with ${actualHeaders.length} actual headers:`);
+            log(`${actualHeaders.join(', ')}`);
+            log('');
+            
+            // Apply the column visibility logic
+            let visibilitySettings = {};
+            let hiddenCount = 0;
+            let visibleCount = 0;
+            
+            actualHeaders.forEach(header => {
+                const shouldHide = defaultHiddenColumns.some(col => 
+                    header.toLowerCase().includes(col.toLowerCase())
+                );
+                visibilitySettings[header] = !shouldHide;
+                
+                if (shouldHide) {
+                    hiddenCount++;
+                    log(`❌ ${header} -> HIDDEN (matches rule)`);
+                } else {
+                    visibleCount++;
+                    log(`✅ ${header} -> VISIBLE`);
+                }
+            });
+            
+            // Check specifically for the requested columns
+            const requestedHiddenColumns = ['a', 'c', 'r', 'u', 'd', 'encoded_date'];
+            let allCorrect = true;
+            
+            log('');
+            log('🎯 SPECIFIC COLUMN CHECK:');
+            log('==========================');
+            
+            requestedHiddenColumns.forEach(col => {
+                const isHidden = !visibilitySettings[col];
+                const status = isHidden ? '✅ HIDDEN (correct)' : '❌ VISIBLE (error)';
+                log(`${col}: ${status}`);
+                if (!isHidden) allCorrect = false;
+            });
+            
+            // Display results
+            let resultsHtml = '';
+            
+            if (allCorrect) {
+                resultsHtml += '<div class="result success">';
+                resultsHtml += '<h3>🎉 SUCCESS: Column Case Fix Working!</h3>';
+                resultsHtml += '<p>All requested columns (a, c, r, u, d, encoded_date) are now properly hidden by default.</p>';
+                resultsHtml += '</div>';
+            } else {
+                resultsHtml += '<div class="result error">';
+                resultsHtml += '<h3>❌ ISSUE: Some columns still not hidden</h3>';
+                resultsHtml += '<p>The fix may not be complete. Check the log for details.</p>';
+                resultsHtml += '</div>';
+            }
+            
+            resultsHtml += '<div class="result info">';
+            resultsHtml += '<h4>📊 Summary</h4>';
+            resultsHtml += `<p><strong>Total columns:</strong> ${actualHeaders.length}</p>`;
+            resultsHtml += `<p><strong>Visible:</strong> ${visibleCount}</p>`;
+            resultsHtml += `<p><strong>Hidden:</strong> ${hiddenCount}</p>`;
+            
+            // Create table showing all columns
+            resultsHtml += '<h4>🔍 Column Visibility Details</h4>';
+            resultsHtml += '<table>';
+            resultsHtml += '<tr><th>Column</th><th>Status</th><th>Matched Rule</th></tr>';
+            
+            actualHeaders.forEach(header => {
+                const shouldHide = defaultHiddenColumns.some(col => 
+                    header.toLowerCase().includes(col.toLowerCase())
+                );
+                const matchedRule = defaultHiddenColumns.find(col => 
+                    header.toLowerCase().includes(col.toLowerCase())
+                );
+                const rowClass = shouldHide ? 'hidden-col' : 'visible-col';
+                const status = shouldHide ? 'HIDDEN' : 'VISIBLE';
+                
+                resultsHtml += `<tr class="${rowClass}">`;
+                resultsHtml += `<td>${header}</td>`;
+                resultsHtml += `<td>${status}</td>`;
+                resultsHtml += `<td>${matchedRule || 'none'}</td>`;
+                resultsHtml += '</tr>';
+            });
+            
+            resultsHtml += '</table>';
+            resultsHtml += '</div>';
+            
+            document.getElementById('results').innerHTML = resultsHtml;
+            
+            log('');
+            log('✅ Column case fix verification completed!');
+            log(`📊 Final result: ${allCorrect ? 'SUCCESS' : 'NEEDS ATTENTION'}`);
+        }
+        
+        // Auto-run test on page load
+        window.onload = function() {
+            testColumnCaseFix();
+        };
+    </script>
+</body>
+</html>

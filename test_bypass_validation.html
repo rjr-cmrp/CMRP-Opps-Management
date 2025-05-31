@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Validation Bypass Test</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--bg-body);
+        }
+        .info-box {
+            background: var(--bg-container);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid var(--border-container);
+            margin: 20px 0;
+        }
+        .warning-box {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        .success-box {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+        button {
+            background: var(--bg-modal-save);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: var(--bg-modal-save-hover);
+        }
+        .console {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 14px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 15px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="info-box">
+        <h1>🔧 Validation Bypass Test Tool</h1>
+        <p>This tool helps test if the form submission issue is caused by validation logic by temporarily bypassing all validation checks.</p>
+    </div>
+
+    <div class="warning-box">
+        <strong>⚠️ Warning:</strong> This tool bypasses all form validation. Only use this for testing purposes to isolate the issue.
+    </div>
+
+    <div class="info-box">
+        <h2>How to Use:</h2>
+        <ol>
+            <li>Open this page in one tab</li>
+            <li>Open the main application in another tab</li>
+            <li>Click "Activate Bypass" below</li>
+            <li>Go to the main app and try to edit an opportunity</li>
+            <li>The form should submit without validation checks</li>
+        </ol>
+    </div>
+
+    <div class="info-box">
+        <button onclick="activateBypass()">🚀 Activate Bypass</button>
+        <button onclick="checkStatus()">📊 Check Status</button>
+        <button onclick="deactivateBypass()">🛑 Deactivate Bypass</button>
+        <button onclick="openMainApp()">🌐 Open Main App</button>
+    </div>
+
+    <div class="console" id="console">
+        <div style="color: #569cd6;">Validation Bypass Console</div>
+        <div style="color: #6a9955;">// Status messages will appear here</div>
+    </div>
+
+    <div id="statusBox" class="info-box" style="display: none;">
+        <h3>Status: <span id="statusText">Unknown</span></h3>
+        <p id="statusDescription">Click "Check Status" to see current state.</p>
+    </div>
+
+    <!-- Include the bypass script -->
+    <script src="bypass_validation.js"></script>
+    
+    <script>
+        const consoleEl = document.getElementById('console');
+        const statusBox = document.getElementById('statusBox');
+        const statusText = document.getElementById('statusText');
+        const statusDescription = document.getElementById('statusDescription');
+        
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            switch(type) {
+                case 'error':
+                    div.style.color = '#f85149';
+                    break;
+                case 'success':
+                    div.style.color = '#3fb950';
+                    break;
+                case 'warn':
+                    div.style.color = '#f2cc60';
+                    break;
+                default:
+                    div.style.color = '#d4d4d4';
+            }
+            
+            div.innerHTML = `[${timestamp}] ${message}`;
+            consoleEl.appendChild(div);
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        }
+        
+        function activateBypass() {
+            log('Attempting to activate validation bypass...', 'warn');
+            
+            // Try to activate bypass in current window
+            if (typeof bypassValidation === 'function') {
+                if (bypassValidation()) {
+                    log('✅ Bypass activated in current window', 'success');
+                } else {
+                    log('❌ Failed to activate bypass in current window', 'error');
+                }
+            }
+            
+            // Store bypass flag in localStorage for other windows
+            localStorage.setItem('validationBypassActive', 'true');
+            localStorage.setItem('validationBypassTime', Date.now().toString());
+            
+            log('✅ Bypass flag set in localStorage', 'success');
+            log('The bypass will be active for other application windows', 'info');
+            
+            updateStatus();
+        }
+        
+        function deactivateBypass() {
+            log('Deactivating validation bypass...', 'warn');
+            
+            localStorage.removeItem('validationBypassActive');
+            localStorage.removeItem('validationBypassTime');
+            
+            log('✅ Bypass deactivated', 'success');
+            log('Reload the main application for normal validation to resume', 'info');
+            
+            updateStatus();
+        }
+        
+        function checkStatus() {
+            log('Checking bypass status...', 'info');
+            updateStatus();
+        }
+        
+        function updateStatus() {
+            const bypassActive = localStorage.getItem('validationBypassActive') === 'true';
+            const bypassTime = localStorage.getItem('validationBypassTime');
+            
+            statusBox.style.display = 'block';
+            
+            if (bypassActive) {
+                statusText.textContent = '🟢 ACTIVE';
+                statusText.style.color = '#155724';
+                statusDescription.textContent = `Validation bypass is active. Set at ${new Date(parseInt(bypassTime)).toLocaleString()}`;
+                log('📊 Status: Bypass is ACTIVE', 'success');
+            } else {
+                statusText.textContent = '🔴 INACTIVE';
+                statusText.style.color = '#721c24';
+                statusDescription.textContent = 'Validation bypass is not active. Normal validation is in effect.';
+                log('📊 Status: Bypass is INACTIVE', 'info');
+            }
+        }
+        
+        function openMainApp() {
+            window.open('index.html', '_blank');
+            log('🌐 Opened main application in new tab', 'info');
+        }
+        
+        // Override console methods to capture bypass script messages
+        const originalLog = console.log;
+        console.log = function(...args) {
+            const message = args.join(' ');
+            if (message.includes('[BYPASS]')) {
+                log(message.replace('[BYPASS]', ''), 'warn');
+            }
+            originalLog.apply(console, args);
+        };
+        
+        // Initial status check
+        setTimeout(() => {
+            log('🔧 Validation Bypass Tool Ready', 'success');
+            updateStatus();
+        }, 500);
+    </script>
+</body>
+</html>

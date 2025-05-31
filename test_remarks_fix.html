@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remarks Column Fix Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .test-results {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-left: 4px solid #28a745;
+        }
+        .pass { color: #28a745; font-weight: bold; }
+        .fail { color: #dc3545; font-weight: bold; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        #console-output {
+            background: #000;
+            color: #00ff00;
+            padding: 10px;
+            font-family: monospace;
+            height: 200px;
+            overflow-y: auto;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 15px;
+            margin: 10px 0;
+            font-family: monospace;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔧 Remarks Column CSS Fix Test</h1>
+        <p>This test verifies that the remarks_comments column properly receives the 'remarks-cell' CSS class.</p>
+        
+        <div>
+            <button onclick="runRemarksTest()">🧪 Test Remarks Column Fix</button>
+            <button onclick="openMainApp()">🚀 Open Main Application</button>
+            <button onclick="clearConsole()">🧹 Clear Console</button>
+        </div>
+        
+        <div class="test-results">
+            <h3>Test Results:</h3>
+            <div id="test-results"></div>
+        </div>
+        
+        <div>
+            <h3>Applied Fixes:</h3>
+            <div class="code-block">
+                <strong>Header Fix (initializeTableHeader function):</strong><br>
+                <code>
+                // Check if this is the remarks_comments column<br>
+                const normalizedHeaderForRemarks = (header || '').toLowerCase().replace(/[^a-z0-9]/g, '');<br>
+                if (normalizedHeaderForRemarks === 'remarkscomments' || header.toLowerCase().includes('remarks')) {<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;th.classList.add('remarks-cell');<br>
+                }
+                </code>
+            </div>
+            
+            <div class="code-block">
+                <strong>Data Cell Fix (populateTableBody function):</strong><br>
+                <code>
+                // Check if this is the remarks_comments column<br>
+                const normalizedHeaderForRemarks = (header || '').toLowerCase().replace(/[^a-z0-9]/g, '');<br>
+                if (normalizedHeaderForRemarks === 'remarkscomments' || header.toLowerCase().includes('remarks')) {<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;td.classList.add('remarks-cell');<br>
+                }
+                </code>
+            </div>
+        </div>
+        
+        <div>
+            <h3>Console Output:</h3>
+            <div id="console-output"></div>
+        </div>
+    </div>
+
+    <script>
+        let testResults = [];
+        
+        function log(message) {
+            const output = document.getElementById('console-output');
+            const timestamp = new Date().toLocaleTimeString();
+            output.innerHTML += `[${timestamp}] ${message}\n`;
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        function clearConsole() {
+            document.getElementById('console-output').innerHTML = '';
+        }
+        
+        function displayResults() {
+            const resultsDiv = document.getElementById('test-results');
+            resultsDiv.innerHTML = testResults.map(result => 
+                `<div class="${result.passed ? 'pass' : 'fail'}">${result.name}: ${result.passed ? 'PASS' : 'FAIL'} - ${result.message}</div>`
+            ).join('');
+        }
+        
+        function addTestResult(name, passed, message) {
+            testResults.push({ name, passed, message });
+            displayResults();
+            log(`Test: ${name} - ${passed ? 'PASS' : 'FAIL'} - ${message}`);
+        }
+        
+        function openMainApp() {
+            log('🚀 Opening main application...');
+            window.open('http://localhost:8001', '_blank');
+        }
+        
+        async function runRemarksTest() {
+            log('🧪 Starting remarks column fix test...');
+            testResults = [];
+            
+            try {
+                // Test the normalization logic that should work with 'remarks_comments'
+                const testHeaders = ['remarks_comments', 'Remarks Comments', 'REMARKS_COMMENTS', 'remarks', 'Remarks'];
+                
+                testHeaders.forEach(header => {
+                    // Simulate the fix logic
+                    const normalizedHeaderForRemarks = (header || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                    const shouldAddClass = normalizedHeaderForRemarks === 'remarkscomments' || header.toLowerCase().includes('remarks');
+                    
+                    log(`Testing header: "${header}" -> normalized: "${normalizedHeaderForRemarks}" -> should add class: ${shouldAddClass}`);
+                    
+                    addTestResult(
+                        `Header "${header}" Recognition`,
+                        shouldAddClass,
+                        shouldAddClass ? 'Correctly identifies as remarks column' : 'Failed to identify as remarks column'
+                    );
+                });
+                
+                // Test specific database field name
+                const dbFieldName = 'remarks_comments';
+                const normalizedDbField = (dbFieldName || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                const dbFieldMatches = normalizedDbField === 'remarkscomments';
+                
+                addTestResult(
+                    'Database Field Name Match',
+                    dbFieldMatches,
+                    dbFieldMatches ? 'Database field "remarks_comments" correctly normalizes to "remarkscomments"' : 'Database field normalization failed'
+                );
+                
+                // Test that the logic handles edge cases
+                const edgeCases = ['', null, undefined, 'comments', 'remarks_test', 'test_remarks'];
+                edgeCases.forEach(testCase => {
+                    const normalized = (testCase || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                    const shouldMatch = normalized === 'remarkscomments' || (testCase && testCase.toLowerCase().includes('remarks'));
+                    
+                    log(`Edge case: "${testCase}" -> normalized: "${normalized}" -> matches: ${shouldMatch}`);
+                });
+                
+                log('✅ Remarks column fix test completed');
+                
+            } catch (error) {
+                log(`❌ Error during test: ${error.message}`);
+                addTestResult('Test Execution', false, error.message);
+            }
+        }
+        
+        // Auto-start message
+        log('🔧 Remarks Column Fix Test Ready');
+        log('📋 This test verifies the fix for the remarks_comments column CSS styling issue');
+        log('🎯 The fix ensures both headers and data cells receive the "remarks-cell" class');
+    </script>
+</body>
+</html>

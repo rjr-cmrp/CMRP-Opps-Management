@@ -51,3 +51,14 @@ CREATE TABLE user_roles (
     role_id INTEGER REFERENCES roles(id) ON DELETE CASCADE,
     PRIMARY KEY (user_id, role_id)
 );
+
+-- User-specific column visibility preferences
+CREATE TABLE user_column_preferences (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID REFERENCES users(id) ON DELETE CASCADE,
+    page_name TEXT NOT NULL, -- e.g., 'opportunities', 'forecast', 'win-loss'
+    column_settings JSONB NOT NULL, -- stores column visibility as {"column_name": true/false}
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW(),
+    UNIQUE(user_id, page_name)
+);

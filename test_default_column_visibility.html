@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Default Column Visibility Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        .test-section {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .status {
+            font-weight: bold;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .log-area {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            margin: 10px 0;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover { background: #0056b3; }
+        .column-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .column-item {
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .hidden { background: #f8d7da; color: #721c24; }
+        .visible { background: #d4edda; color: #155724; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Default Column Visibility Test</h1>
+    
+    <div class="test-section">
+        <h2>📋 Testing Default Column Visibility for New Users</h2>
+        <p>This test verifies that new users have the correct default column visibility settings with A, C, R, U, D, and encoded_date hidden by default.</p>
+        
+        <button onclick="testDefaultVisibility()">🔍 Test Default Visibility Logic</button>
+        <button onclick="testWithSampleHeaders()">📊 Test with Sample Headers</button>
+        <button onclick="clearLog()">📄 Clear Log</button>
+    </div>
+
+    <div class="test-section">
+        <h3>📝 Test Log</h3>
+        <div id="test-log" class="log-area"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>📊 Column Visibility Results</h3>
+        <div id="column-results" class="column-grid"></div>
+    </div>
+
+    <script>
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logArea = document.getElementById('test-log');
+            logArea.innerHTML += `[${timestamp}] ${message}\n`;
+            logArea.scrollTop = logArea.scrollHeight;
+            console.log(message);
+        }
+
+        function clearLog() {
+            document.getElementById('test-log').innerHTML = '';
+            document.getElementById('column-results').innerHTML = '';
+        }
+
+        function testDefaultVisibility() {
+            log('🔍 Testing default column visibility logic...');
+            
+            // Copy the exact logic from app.js
+            const defaultHiddenColumns = [
+                'description', 'comments', 'uid', 'created_at', 'updated_at', 
+                'encoded_date', 'A', 'C', 'R', 'U', 'D', 'rev', 'project_code',
+                'sol_particulars', 'ind_particulars', 'lost_rca', 'l_particulars',
+                'client_deadline', 'submitted_date', 'date_awarded_lost', 'forecast_date'
+            ];
+
+            log(`📋 Default hidden columns: ${defaultHiddenColumns.join(', ')}`);
+            
+            // Test specific columns that should be hidden
+            const testColumns = ['A', 'C', 'R', 'U', 'D', 'encoded_date'];
+            
+            log('\n🧪 Testing specific columns that should be hidden:');
+            testColumns.forEach(col => {
+                const shouldHide = defaultHiddenColumns.some(hiddenCol => 
+                    col.toLowerCase().includes(hiddenCol.toLowerCase())
+                );
+                log(`   ${col}: ${shouldHide ? '❌ HIDDEN (correct)' : '✅ VISIBLE (incorrect)'}`);
+            });
+            
+            log('\n✅ Default visibility logic test completed');
+        }
+
+        function testWithSampleHeaders() {
+            log('📊 Testing with sample headers from actual data...');
+            
+            // Sample headers that might appear in the actual application
+            const sampleHeaders = [
+                'project_name', 'project_code', 'client', 'solutions', 'final_amt',
+                'A', 'C', 'R', 'U', 'D', 'encoded_date', 'created_at', 'updated_at',
+                'description', 'comments', 'uid', 'rev', 'sol_particulars',
+                'account_mgr', 'pic', 'status', 'opp_status', 'margin'
+            ];
+
+            const defaultHiddenColumns = [
+                'description', 'comments', 'uid', 'created_at', 'updated_at', 
+                'encoded_date', 'A', 'C', 'R', 'U', 'D', 'rev', 'project_code',
+                'sol_particulars', 'ind_particulars', 'lost_rca', 'l_particulars',
+                'client_deadline', 'submitted_date', 'date_awarded_lost', 'forecast_date'
+            ];
+
+            let visibilitySettings = {};
+            const resultsContainer = document.getElementById('column-results');
+            resultsContainer.innerHTML = '';
+
+            log('\n📋 Processing sample headers:');
+            
+            sampleHeaders.forEach(header => {
+                const shouldHide = defaultHiddenColumns.some(col => 
+                    header.toLowerCase().includes(col.toLowerCase())
+                );
+                visibilitySettings[header] = !shouldHide;
+                
+                const isVisible = visibilitySettings[header];
+                log(`   ${header}: ${isVisible ? '✅ VISIBLE' : '❌ HIDDEN'}`);
+                
+                // Create visual element
+                const columnDiv = document.createElement('div');
+                columnDiv.className = `column-item ${isVisible ? 'visible' : 'hidden'}`;
+                columnDiv.textContent = `${header}: ${isVisible ? 'VISIBLE' : 'HIDDEN'}`;
+                resultsContainer.appendChild(columnDiv);
+            });
+
+            // Summary
+            const hiddenCount = Object.values(visibilitySettings).filter(v => !v).length;
+            const visibleCount = Object.values(visibilitySettings).filter(v => v).length;
+            
+            log(`\n📊 Summary:`);
+            log(`   Total columns: ${sampleHeaders.length}`);
+            log(`   Visible by default: ${visibleCount}`);
+            log(`   Hidden by default: ${hiddenCount}`);
+            
+            // Check if the requested columns are hidden
+            const requestedHidden = ['A', 'C', 'R', 'U', 'D', 'encoded_date'];
+            const actuallyHidden = requestedHidden.filter(col => !visibilitySettings[col]);
+            
+            log(`\n🎯 Verification of requested hidden columns:`);
+            requestedHidden.forEach(col => {
+                const isHidden = !visibilitySettings[col];
+                log(`   ${col}: ${isHidden ? '✅ HIDDEN (correct)' : '❌ VISIBLE (incorrect)'}`);
+            });
+            
+            if (actuallyHidden.length === requestedHidden.length) {
+                log('\n🎉 SUCCESS: All requested columns (A, C, R, U, D, encoded_date) are hidden by default!');
+            } else {
+                log('\n⚠️ WARNING: Some requested columns are not hidden by default');
+            }
+        }
+
+        // Auto-start test when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            log('🚀 Default Column Visibility Test Suite Loaded');
+            log('📋 Ready to test new user default settings');
+        });
+    </script>
+</body>
+</html>

@@ -6,209 +6,42 @@
     <title>User Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <style>
-        /* --- Theme Variables (Copied from index.html) --- */
-        :root {
-            /* Light Theme Variables */
-            --bg-body: #f9fafb; --text-body: #1f2937; --bg-container: #ffffff; --border-container: #e5e7eb; --text-title: #111827; --text-label: #4b5563; --border-table: #e5e7eb; --bg-header: #f3f4f6; --text-header: #6b7280; --bg-row: #ffffff; --text-row: #374151; --bg-row-hover: #f3f4f6; --bg-op100: #dcfce7; --text-op100: #166534; --bg-op100-hover: #bbf7d0; --bg-lost: #fee2e2; --text-lost: #991b1b; --bg-lost-hover: #fecaca; --bg-declined: #e5e7eb; --text-declined: #4b5563; --bg-declined-hover: #d1d5db; --border-urgent-soon: #f59e0b; --border-urgent-past: #ef4444; --bg-control: #ffffff; --border-control: #d1d5db; --text-control: #111827; --placeholder-control: #9ca3af; --bg-control-hover: #f9fafb; --border-focus: #3b82f6; --shadow-focus: rgba(59, 130, 246, 0.3); --text-secondary: #6b7280; --text-error: #dc2626; --text-link: #3b82f6; --text-link-hover: #2563eb;
-            --select-arrow-url: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-            --bg-modal: #ffffff; --border-modal: #e5e7eb; --text-modal-title: #111827; --bg-modal-close-hover: #e5e7eb; --bg-modal-save: #3b82f6; --text-modal-save: #ffffff; --bg-modal-save-hover: #2563eb; --bg-theme-button: #e5e7eb; --text-theme-button: #1f2937; --border-theme-button: #d1d5db; --bg-theme-button-hover: #d1d5db; --bg-filter-button: #e5e7eb; --text-filter-button: #374151; --border-filter-button: #d1d5db; --bg-filter-button-hover: #d1d5db; --bg-filter-button-active: #4f46e5; --text-filter-button-active: #ffffff; --border-filter-button-active: #4f46e5;
-        }
-        .dark {
-            /* Dark Theme Variables */
-            --bg-body: #1e1e1e; --text-body: #e0e0e0; --bg-container: #2d2d2d; --border-container: #404040; --text-title: #ffffff; --text-label: #c0c0c0; --border-table: #4a4a4a; --bg-header: #1a1a1a; --text-header: #a0a0a0; --bg-row: #2d2d2d; --text-row: #e0e0e0; --bg-row-hover: #3c3c3c; --bg-op100: #14532d; --text-op100: #dcfce7; --bg-op100-hover: #166534; --bg-lost: #7f1d1d; --text-lost: #fee2e2; --bg-lost-hover: #991b1b; --bg-declined: #4b5563; --text-declined: #bdc3c7; --bg-declined-hover: #525f70; --border-urgent-soon: #f97316; --border-urgent-past: #dc2626; --bg-control: #3c3c3c; --border-control: #5a5a5a; --text-control: #e0e0e0; --placeholder-control: #8e8e93; --bg-control-hover: #4a4a4a; --border-focus: #0a84ff; --shadow-focus: rgba(10, 132, 255, 0.3); --text-secondary: #a0a0a0; --text-error: #ff8080; --text-link: #8ab4f8; --text-link-hover: #a7c7fa;
-             --select-arrow-url: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23a0a0a0' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-             --bg-modal: #2d2d2d; --border-modal: #404040; --text-modal-title: #ffffff; --bg-modal-close-hover: #6b6b6b; --bg-modal-save: #4f46e5; --text-modal-save: #ffffff; --bg-modal-save-hover: #4338ca; --bg-theme-button: #4b5563; --text-theme-button: #f9fafb; --border-theme-button: #6b7280; --bg-theme-button-hover: #6b7280; --bg-filter-button: #374151; --text-filter-button: #d1d5db; --border-filter-button: #4b5563; --bg-filter-button-hover: #4b5563; --bg-filter-button-active: #6366f1; --text-filter-button-active: #ffffff; --border-filter-button-active: #6366f1;
-        }
-        /* Base Styles from index.html */
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; background-color: var(--bg-body); color: var(--text-body); transition: background-color 0.3s ease, color 0.3s ease; margin: 0; }
-        .container { background-color: var(--bg-container); border-color: var(--border-container); }
-        h1, h2, h3 { color: var(--text-title); }
-        label { color: var(--text-label); }
-        /* Table Styles */
-        .table-container { overflow: auto; border-radius: 0.5rem; margin-top: 1rem; transition: border-color 0.3s ease; border-width: 1px; border-color: var(--border-table); max-height: 70vh;}
-        .table-container th, .table-container td { padding: 8px 10px; text-align: left; transition: border-color 0.3s ease, background-color 0.3s ease; border-bottom-width: 1px; vertical-align: middle; font-size: 0.75rem; line-height: 1rem; border-bottom-color: var(--border-table); }
-        th { font-weight: 600; position: sticky; top: 0; z-index: 10; background-color: var(--bg-header); color: var(--text-header); border-top-color: var(--border-table); }
-        tbody tr { transition: background-color 0.1s ease-in-out; background-color: var(--bg-row); color: var(--text-row); }
-        tbody tr:hover { background-color: var(--bg-row-hover); }
-        
-        /* Form Controls */
-        input[type="text"], input[type="email"], input[type="password"], select, button, textarea { padding: 8px 12px; border-radius: 0.375rem; transition: border-color 0.2s, background-color 0.2s, color 0.2s; border-width: 1px; background-color: var(--bg-control); border-color: var(--border-control); color: var(--text-control); }
-        input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus, select:focus, button:focus, textarea:focus { outline: none; border-color: var(--border-focus); box-shadow: 0 0 0 3px var(--shadow-focus); }
-        input::placeholder, textarea::placeholder { color: var(--placeholder-control); }
-        button { font-weight: 500; }
-        select { appearance: none; background-position: right 0.5rem center; background-repeat: no-repeat; background-size: 1.5em 1.5em; padding-right: 2.5rem; background-image: var(--select-arrow-url); }
-        select option { background-color: var(--bg-control); color: var (--text-control); }
-
-        /* Modal Styles */
-        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0, 0, 0, 0.6); backdrop-filter: blur(5px); z-index: 40; display: flex; align-items: center; justify-content: center; }
-        .modal { background-color: var(--bg-modal); border-color: var(--border-modal); border-radius: 0.5rem; padding: 1.5rem; z-index: 50; width: 98%; max-width: 500px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5); transition: background-color 0.3s ease, border-color 0.3s ease; border-width: 1px; max-height: 92vh; overflow-y: auto; }
-        .modal h2 { margin-top: 0; margin-bottom: 1rem; font-size: 1.25rem; font-weight: 600; color: var(--text-modal-title); }
-        .modal label { display: block; margin-bottom: 0.25rem; font-size: 0.875rem; font-weight: 500; color: var(--text-label); }
-        .modal input[type="text"], .modal input[type="email"], .modal input[type="password"], .modal select { width: 100%; margin-bottom: 1rem; }
-        .modal .form-actions { display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 1.5rem; }
-        .modal .form-actions button { padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: 500; }
-        .modal .form-actions .cancel-button { background-color: var(--bg-control); color: var(--text-control); border: 1px solid var(--border-control); }
-        .modal .form-actions .cancel-button:hover { background-color: var(--bg-control-hover); }
-        .modal .form-actions .save-button { background-color: var(--bg-modal-save); color: var(--text-modal-save); border: 1px solid transparent; }
-        .modal .form-actions .save-button:hover { background-color: var(--bg-modal-save-hover); }
-
-        /* Button Styles */
-        .theme-button { background-color: var(--bg-theme-button); color: var(--text-theme-button); border: 1.5px solid var(--border-theme-button); transition: background 0.18s, color 0.18s, border-color 0.18s, box-shadow 0.18s; box-shadow: 0 2px 8px 0 rgba(59,130,246,0.06); }
-        .theme-button:hover, .theme-button:focus { background-color: var(--bg-theme-button-hover); box-shadow: 0 4px 16px 0 rgba(59,130,246,0.10); }
-        
-        .action-button { background-color: var(--bg-modal-save); color: var(--text-modal-save); transition: filter 0.2s; padding: 0.5rem 1rem; border-radius: 0.375rem; font-weight: 500; border: 1px solid transparent; display: inline-flex; align-items: center; }
-        .action-button:hover { filter: brightness(90%); }
-        
-        .edit-button { color: var(--text-link); background:none; border:none; padding:0; cursor:pointer; display: inline-flex; align-items: center; }
-        .edit-button:hover { color: var(--text-link-hover); }
-        .delete-button { color: var(--text-error); background:none; border:none; padding:0; cursor:pointer; display: inline-flex; align-items: center; }
-        .delete-button:hover { filter: brightness(90%); }
-
-        .hidden { display: none; }
-
-        .auth-modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); z-index: 1000; display: none; }
-        .auth-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--bg-modal); border: 1px solid var(--border-modal); border-radius: 0.5rem; padding: 2rem 2.5rem; z-index: 1010; min-width: 320px; max-width: 95vw; box-shadow: 0 8px 32px rgba(0,0,0,0.18); display: none; }
-        .auth-modal h2 { margin-top: 0; font-size: 1.3rem; font-weight: 600; color: var(--text-title); }
-        .auth-modal label { display: block; margin-bottom: 0.5rem; }
-        .auth-modal input[type="text"], .auth-modal input[type="email"], .auth-modal input[type="password"] { width: 100%; margin-bottom: 1rem; }
-        .auth-modal .roles-group { margin-bottom: 1rem; }
-        .auth-modal .roles-group label { display: inline-block; margin-right: 1.2em; font-weight: 400; }
-        .auth-modal .switch-link { color: var(--text-link); cursor: pointer; text-decoration: underline; font-size: 0.95em; }
-        .auth-modal .error-text { color: var(--text-error); margin-bottom: 0.5rem; }
-        .auth-modal .success-text { color: #16a34a; margin-bottom: 0.5rem; }
-        .logout-btn {
-            margin-left: 1rem;
-            background: var(--bg-theme-button);
-            color: var(--text-theme-button);
-            border: 1.5px solid var(--border-theme-button);
-            border-radius: 0.75rem;
-            width: 44px;
-            height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.6rem;
-            box-shadow: 0 2px 8px 0 rgba(59,130,246,0.06);
-            transition: background 0.18s, color 0.18s, border-color 0.18s, box-shadow 0.18s;
-            padding: 0;
-        }
-        .logout-btn:hover, .logout-btn:focus {
-            background: var(--bg-theme-button-hover);
-            color: var(--text-theme-button);
-            box-shadow: 0 4px 16px 0 rgba(59,130,246,0.10);
-            outline: none;
-        }
-        .main-content {
-            margin-top: 4.5rem; /* Height of nav bar + spacing, matches index.html */
-        }
-        .simple-header {
-        position: fixed;
-        top: 0;
-        left: 0;
-        right: 0;
-        width: 100%;
-        z-index: 100;
-        box-shadow: 0 2px 8px 0 rgba(0,0,0,0.08);
-        background: var(--bg-header);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0 2rem;
-        min-height: 3.5rem;
-        gap: 1.5rem;
-    }
-    .title-group {
-        display: flex;
-        align-items: center;
-        gap: 0.35rem;
-    }
-    .subtitle {
-        font-size: 1.125rem;
-        font-weight: 400;
-        color: var(--text-title);
-        letter-spacing: 0.01em;
-        margin-left: 0.5rem;
-    }
-    nav.flex.gap-2 {
-        display: flex;
-        gap: 0.5rem;
-    }
-    .nav-square-btn {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 44px;
-        height: 44px;
-        border-radius: 0.75rem;
-        background: var(--bg-theme-button);
-        color: var(--text-theme-button);
-        border: 1.5px solid var(--border-theme-button);
-        font-size: 1.6rem;
-        transition: background 0.18s, color 0.18s, border-color 0.18s, box-shadow 0.18s;
-        box-shadow: 0 2px 8px 0 rgba(59,130,246,0.06);
-        margin: 0;
-        padding: 0;
-    }
-    .nav-square-btn:hover, .nav-square-btn:focus {
-        background: var(--bg-theme-button-hover);
-        color: var(--text-theme-button);
-        box-shadow: 0 4px 16px 0 rgba(59,130,246,0.10);
-        outline: none;
-    }
-    .nav-square-btn.active, .nav-square-btn.bg-blue-600 {
-        background: #6366f1;
-        color: #fff !important;
-        border-color: #6366f1;
-        cursor: default;
-        pointer-events: none;
-    }
-    .nav-square-btn .material-icons {
-        font-size: 1.7rem;
-    }
-    .dark .nav-square-btn.active {
-        background: #6366f1;
-        color: #fff !important;
-        border-color: #6366f1;
-    }
-    .dark .nav-square-btn:hover:not(.active) {
-        background: #6b7280;
-        color: #fff;
-    }
-    .logout-btn { margin-left: 1rem; background: #ef4444; color: #fff; border: none; border-radius: 0.5rem; padding: 0.5rem 1.2rem; font-weight: 500; cursor: pointer; }
-    .logout-btn:hover { background: #b91c1c; }
-    .main-content { margin-top: 4.5rem; }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body class="min-h-screen">
-    <div class="simple-header">
-        <div class="title-group">
-            <img id="cmrpLogo" src="Logo/CMRP Logo Light.svg" alt="CMRP Logo" style="height:2.2rem;width:auto;display:inline-block;vertical-align:middle;transition:filter 0.2s;" />
-            <span class="subtitle">User Management</span>
-        </div>
-        <div class="flex items-center gap-2">
-            <nav class="flex gap-2" id="mainNav">
-                <a href="index.html" class="nav-square-btn" title="Opportunities"><span class="material-icons">dashboard</span></a>
-                <a href="win-loss_dashboard.html" class="nav-square-btn" title="Win-Loss Dashboard"><span class="material-icons">line_axis</span></a>
-                <a href="forecastr_dashboard.html" class="nav-square-btn" title="Forecast Dashboard"><span class="material-icons">insights</span></a>
-                <a href="user_management.html" class="nav-square-btn active" id="userMgmtNavBtn" title="User Management"><span class="material-icons">group</span></a>
-                <a href="csv_formatter.html" class="nav-square-btn" id="csvFormatterNavBtn" title="CSV Formatter" style="display:none;"><span class="material-icons">table_view</span></a>
-                <a href="opps_monitoring_import_export.html" class="nav-square-btn" id="oppsImportExportNavBtn" title="Opps Monitoring Import/Export" style="display:none;"><span class="material-icons">sync_alt</span></a>
-                <a href="opps_monitoring_import_export.html" class="nav-square-btn" title="Import/Export Opps Monitoring">
-                    <span class="material-icons">import_export</span>
-                </a>
-            </nav>
-            <button id="themeToggle" class="nav-square-btn" title="Toggle Theme"><span class="material-icons">light_mode</span></button>
-            <button id="changePasswordBtn" class="nav-square-btn" title="Change Password"><span class="material-icons">lock</span></button>
-            <button id="logoutBtn" class="nav-square-btn" title="Logout"><span class="material-icons">logout</span></button>
-        </div>
-    </div>
-    <div style="height:3.5rem;"></div>
-    <!-- header spacer to match index.html -->
-    <!-- Access Denied Banner (hidden by default) -->
-    <div id="accessDeniedBanner" style="display:none;color:#fff;background:#d32f2f;padding:1rem;text-align:center;font-weight:bold;margin-top:4.5rem;z-index:200;">Access Denied: You do not have admin privileges.</div>
-    <!-- Main Content Wrapper Start -->
+    <nav class="sidebar">
+        <!-- Sidebar content -->
+    </nav>
     <div class="main-content">
+        <div class="simple-header">
+            <div class="title-group">
+                <a href="index.html" title="Go to Home" style="text-decoration: none; color: inherit;">
+                    <img id="cmrpLogo" src="Logo/CMRP Logo Light.svg" alt="CMRP Logo" style="height:2.2rem;width:auto;display:inline-block;vertical-align:middle;transition:filter 0.2s;cursor:pointer;" />
+                </a>
+                <span class="subtitle">User Management</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <nav class="flex gap-2" id="mainNav">
+                    <a href="index.html" class="nav-square-btn" title="Opportunities Management - View and manage all opportunities"><span class="material-icons">dashboard</span></a>
+                    <a href="win-loss_dashboard.html" class="nav-square-btn" title="Win-Loss Dashboard - Analyze won and lost opportunities"><span class="material-icons">line_axis</span></a>
+                    <a href="forecastr_dashboard.html" class="nav-square-btn" title="Forecast Dashboard - View revenue forecasts and trends"><span class="material-icons">insights</span></a>
+                    <a href="user_management.html" class="nav-square-btn active" id="userMgmtNavBtn" title="User Management - Manage users and permissions (Admin only)"><span class="material-icons">group</span></a>
+                    <a href="csv_formatter.html" class="nav-square-btn" id="csvFormatterNavBtn" title="CSV Formatter - Format and validate CSV data (Admin only)" style="display:none;"><span class="material-icons">table_view</span></a>
+                    <a href="opps_monitoring_import_export.html" class="nav-square-btn" id="oppsImportExportNavBtn" title="Opportunities Import/Export - Import and export opportunity data (Admin only)" style="display:none;"><span class="material-icons">sync_alt</span></a>
+                    <a href="opps_monitoring_import_export.html" class="nav-square-btn" title="Import/Export Opportunities - Bulk data operations (Admin only)">
+                        <span class="material-icons">import_export</span>
+                    </a>
+                </nav>
+                <button id="themeToggle" class="nav-square-btn" title="Toggle between light and dark theme"><span class="material-icons">light_mode</span></button>
+                <button id="changePasswordBtn" class="nav-square-btn" title="Change your account password"><span class="material-icons">lock</span></button>
+                <button id="logoutBtn" class="nav-square-btn" title="Sign out of your account"><span class="material-icons">logout</span></button>
+            </div>
+        </div>
+        <div style="height:3.5rem;"></div>
+        <!-- header spacer to match index.html -->        <!-- Access Denied Banner (hidden by default) -->
+        <div id="accessDeniedBanner" style="display:none;color:#fff;background:#d32f2f;padding:1rem;text-align:center;font-weight:bold;margin-top:4.5rem;z-index:200;">Access Denied: You do not have admin privileges.</div>
+        <!-- Main Content Wrapper Start -->
+        
         <!-- Place all user management UI, modals, and tables here -->
         
         <!-- User Management Table and Controls (move all relevant HTML here) -->
@@ -369,6 +202,14 @@
             // Broadcast logout to all tabs
             localStorage.setItem('authEvent', JSON.stringify({ type: 'logout', ts: Date.now() }));
             window.location.href = 'index.html'; // Redirect to index login page
+        });
+    }
+
+    // --- Change Password Button ---
+    const changePasswordBtn = document.getElementById('changePasswordBtn');
+    if (changePasswordBtn) {
+        changePasswordBtn.addEventListener('click', function() {
+            window.location.href = 'update_password.html';
         });
     }
 
@@ -924,7 +765,7 @@
       }, true);
     }
     // --- Patch Table Rendering to Sanitize Output ---
-    function safeText(str) { return sanitizeHTML(str == null ? '' : String(str)); }
+        function safeText(str) { return sanitizeHTML(str == null ? '' : String(str)); }
     // Example: When rendering user-generated content in table cells, use safeText(...)
     // Listen for login/logout events to update nav visibility in all tabs
     window.addEventListener('storage', function(e) {
@@ -933,5 +774,6 @@
         }
     });
     </script>
+    </div>
 </body>
 </html>

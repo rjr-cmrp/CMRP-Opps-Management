@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toggle Functionality Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .success { border-color: #4CAF50; background-color: #f1f8e9; }
+        .error { border-color: #f44336; background-color: #ffebee; }
+        .warning { border-color: #ff9800; background-color: #fff3e0; }
+        button {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #1976D2; }
+        #results {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 CMRP Toggle Functionality Test</h1>
+        
+        <div class="test-section">
+            <h3>Test Actions</h3>
+            <button onclick="openMainApp()">1. Open Main App</button>
+            <button onclick="testToggleButton()">2. Test Toggle Button</button>
+            <button onclick="testColumnToggles()">3. Test Column Toggles</button>
+            <button onclick="checkActionButtons()">4. Check Action Buttons</button>
+            <button onclick="runFullTest()">🚀 Run Full Test</button>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        let mainWindow = null;
+        
+        function log(message) {
+            const results = document.getElementById('results');
+            const timestamp = new Date().toLocaleTimeString();
+            results.textContent += `[${timestamp}] ${message}\n`;
+            results.scrollTop = results.scrollHeight;
+        }
+        
+        function openMainApp() {
+            log('🚀 Opening main application...');
+            mainWindow = window.open('http://localhost:8000', 'mainApp');
+            if (mainWindow) {
+                log('✅ Main app opened successfully');
+                setTimeout(() => {
+                    checkAppLoaded();
+                }, 3000);
+            } else {
+                log('❌ Failed to open main app - check popup blocker');
+            }
+        }
+        
+        function checkAppLoaded() {
+            if (!mainWindow || mainWindow.closed) {
+                log('❌ Main app window not available');
+                return false;
+            }
+            
+            try {
+                const table = mainWindow.document.getElementById('opportunitiesTable');
+                const toggleButton = mainWindow.document.getElementById('toggleColumnsButton');
+                const toggleContainer = mainWindow.document.getElementById('columnToggleContainer');
+                
+                if (table && toggleButton && toggleContainer) {
+                    log('✅ All required elements found in main app');
+                    return true;
+                } else {
+                    log('❌ Missing elements in main app');
+                    return false;
+                }
+            } catch (error) {
+                log(`❌ Error accessing main app: ${error.message}`);
+                return false;
+            }
+        }
+        
+        function testToggleButton() {
+            if (!checkAppLoaded()) return;
+            
+            log('🔄 Testing toggle columns button...');
+            
+            try {
+                const toggleButton = mainWindow.document.getElementById('toggleColumnsButton');
+                const toggleContainer = mainWindow.document.getElementById('columnToggleContainer');
+                
+                // Check initial state
+                const initiallyHidden = toggleContainer.classList.contains('hidden');
+                log(`📋 Initial toggle container state: ${initiallyHidden ? 'hidden' : 'visible'}`);
+                
+                // Click the toggle button
+                toggleButton.click();
+                
+                setTimeout(() => {
+                    const afterClickHidden = toggleContainer.classList.contains('hidden');
+                    log(`📋 After click toggle container state: ${afterClickHidden ? 'hidden' : 'visible'}`);
+                    
+                    if (initiallyHidden !== afterClickHidden) {
+                        log('✅ Toggle button working correctly!');
+                    } else {
+                        log('❌ Toggle button not working - state did not change');
+                    }
+                }, 100);
+                
+            } catch (error) {
+                log(`❌ Error testing toggle button: ${error.message}`);
+            }
+        }
+        
+        function testColumnToggles() {
+            if (!checkAppLoaded()) return;
+            
+            log('🔄 Testing column toggle checkboxes...');
+            
+            try {
+                const toggleContainer = mainWindow.document.getElementById('columnToggleContainer');
+                
+                // Make sure toggle container is visible
+                if (toggleContainer.classList.contains('hidden')) {
+                    mainWindow.document.getElementById('toggleColumnsButton').click();
+                }
+                
+                setTimeout(() => {
+                    const checkboxes = toggleContainer.querySelectorAll('input[type="checkbox"]');
+                    log(`📋 Found ${checkboxes.length} column toggle checkboxes`);
+                    
+                    if (checkboxes.length > 0) {
+                        checkboxes.forEach((checkbox, index) => {
+                            const columnName = checkbox.dataset.columnName || `column-${index}`;
+                            const isChecked = checkbox.checked;
+                            const isDisabled = checkbox.disabled;
+                            log(`  - ${columnName}: ${isChecked ? 'visible' : 'hidden'}${isDisabled ? ' (disabled)' : ''}`);
+                        });
+                        
+                        log('✅ Column toggle controls populated successfully!');
+                    } else {
+                        log('❌ No column toggle checkboxes found');
+                    }
+                }, 200);
+                
+            } catch (error) {
+                log(`❌ Error testing column toggles: ${error.message}`);
+            }
+        }
+        
+        function checkActionButtons() {
+            if (!checkAppLoaded()) return;
+            
+            log('🔄 Checking for action buttons in table...');
+            
+            try {
+                const table = mainWindow.document.getElementById('opportunitiesTable');
+                const tbody = table.querySelector('tbody');
+                const rows = tbody.querySelectorAll('tr');
+                
+                log(`📋 Found ${rows.length} table rows`);
+                
+                if (rows.length > 0) {
+                    const firstRow = rows[0];
+                    const cells = firstRow.querySelectorAll('td');
+                    const lastCell = cells[cells.length - 1];
+                    
+                    log(`📋 First row has ${cells.length} cells`);
+                    
+                    // Check for action buttons in the last cell
+                    const actionButtons = lastCell.querySelectorAll('button');
+                    
+                    if (actionButtons.length > 0) {
+                        log(`✅ Found ${actionButtons.length} action buttons!`);
+                        actionButtons.forEach((btn, index) => {
+                            const title = btn.title || btn.textContent || `button-${index}`;
+                            log(`  - Action button: ${title}`);
+                        });
+                    } else {
+                        log('❌ No action buttons found in table rows');
+                        log(`📋 Last cell content: ${lastCell.textContent || '(empty)'}`);
+                        log(`📋 Last cell HTML: ${lastCell.innerHTML.substring(0, 100)}...`);
+                    }
+                } else {
+                    log('❌ No data rows found in table');
+                }
+                
+            } catch (error) {
+                log(`❌ Error checking action buttons: ${error.message}`);
+            }
+        }
+        
+        function runFullTest() {
+            log('🚀 Running full test sequence...\n');
+            
+            openMainApp();
+            
+            setTimeout(() => {
+                testToggleButton();
+            }, 4000);
+            
+            setTimeout(() => {
+                testColumnToggles();
+            }, 5000);
+            
+            setTimeout(() => {
+                checkActionButtons();
+            }, 6000);
+            
+            setTimeout(() => {
+                log('\n🎯 Full test sequence completed!');
+            }, 7000);
+        }
+        
+        // Initialize
+        log('🔧 Toggle Functionality Test Tool Ready');
+        log('📝 Instructions:');
+        log('1. Make sure the server is running on localhost:8000');
+        log('2. Click "Run Full Test" or run individual tests');
+        log('3. Check results below');
+        log('');
+    </script>
+</body>
+</html>

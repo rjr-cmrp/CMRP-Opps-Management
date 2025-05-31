@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Final Verification Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+        }
+        .test-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .test-result {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+        .success {
+            background-color: #2d5a2d;
+            border-left-color: #4caf50;
+        }
+        .error {
+            background-color: #5a2d2d;
+            border-left-color: #f44336;
+        }
+        .warning {
+            background-color: #5a5a2d;
+            border-left-color: #ff9800;
+        }
+        .info {
+            background-color: #2d4d5a;
+            border-left-color: #2196f3;
+        }
+        h1, h2, h3 {
+            color: #ffffff;
+        }
+        button {
+            background-color: #4f46e5;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #6366f1;
+        }
+        .log {
+            background-color: #2a2a2a;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Final Verification Test</h1>
+        <p>This test verifies all three requested changes have been implemented correctly:</p>
+        
+        <div class="test-result info">
+            <h3>📋 Test Objectives</h3>
+            <ol>
+                <li><strong>Column Visibility:</strong> Verify encoded_date, A, C, R, U, D columns are hidden by default</li>
+                <li><strong>Green Border Removal:</strong> Confirm no green diagnostic border on table container</li>
+                <li><strong>Action Buttons:</strong> Ensure Edit, Duplicate, Delete, History buttons display correctly</li>
+            </ol>
+        </div>
+
+        <div class="controls">
+            <button onclick="runAllTests()">🔍 Run All Tests</button>
+            <button onclick="openMainApp()">🔗 Open Main App</button>
+            <button onclick="clearLog()">🗑️ Clear Log</button>
+        </div>
+
+        <div id="testResults"></div>
+        <div class="log" id="testLog"></div>
+    </div>
+
+    <script>
+        let mainWindow = null;
+        
+        function log(message) {
+            const logDiv = document.getElementById('testLog');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.textContent += `[${timestamp}] ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        function clearLog() {
+            document.getElementById('testLog').textContent = '';
+        }
+        
+        function openMainApp() {
+            mainWindow = window.open('http://localhost:8001', '_blank');
+            log('🔗 Main application opened in new window');
+        }
+        
+        async function runAllTests() {
+            log('🧪 Starting comprehensive verification tests...');
+            clearTestResults();
+            
+            // Test 1: Check default column visibility
+            await testDefaultColumnVisibility();
+            
+            // Test 2: Check green border removal
+            await testGreenBorderRemoval();
+            
+            // Test 3: Check action buttons
+            await testActionButtons();
+            
+            log('✅ All tests completed!');
+        }
+        
+        function clearTestResults() {
+            document.getElementById('testResults').innerHTML = '';
+        }
+        
+        function addTestResult(title, success, message) {
+            const resultsDiv = document.getElementById('testResults');
+            const resultClass = success ? 'success' : 'error';
+            const icon = success ? '✅' : '❌';
+            
+            resultsDiv.innerHTML += `
+                <div class="test-result ${resultClass}">
+                    <h3>${icon} ${title}</h3>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+        
+        async function testDefaultColumnVisibility() {
+            log('🔍 Testing default column visibility...');
+            
+            try {
+                // Open main app if not already open
+                if (!mainWindow || mainWindow.closed) {
+                    mainWindow = window.open('http://localhost:8001', '_blank');
+                    await new Promise(resolve => setTimeout(resolve, 2000)); // Wait for load
+                }
+                
+                // Check if main window is accessible
+                if (!mainWindow || mainWindow.closed) {
+                    throw new Error('Could not access main application window');
+                }
+                
+                await new Promise(resolve => setTimeout(resolve, 3000)); // Extra wait for app initialization
+                
+                // Check for columnVisibility object in main window
+                const columnVisibility = mainWindow.columnVisibility;
+                
+                if (!columnVisibility) {
+                    throw new Error('columnVisibility object not found in main app');
+                }
+                
+                // Check specific columns that should be hidden by default
+                const shouldBeHidden = ['encoded_date', 'A', 'C', 'R', 'U', 'D'];
+                const hiddenColumns = [];
+                const visibleColumns = [];
+                
+                shouldBeHidden.forEach(col => {
+                    if (columnVisibility[col] === false || columnVisibility[col] === undefined) {
+                        hiddenColumns.push(col);
+                    } else {
+                        visibleColumns.push(col);
+                    }
+                });
+                
+                log(`📊 Hidden columns: ${hiddenColumns.join(', ')}`);
+                log(`📊 Visible columns: ${visibleColumns.join(', ')}`);
+                
+                if (hiddenColumns.length === shouldBeHidden.length) {
+                    addTestResult('Default Column Visibility', true, 
+                        `All target columns (${shouldBeHidden.join(', ')}) are hidden by default.`);
+                } else {
+                    addTestResult('Default Column Visibility', false, 
+                        `Some columns are not hidden by default. Hidden: ${hiddenColumns.join(', ')}, Visible: ${visibleColumns.join(', ')}`);
+                }
+                
+            } catch (error) {
+                log(`❌ Column visibility test error: ${error.message}`);
+                addTestResult('Default Column Visibility', false, 
+                    `Test failed: ${error.message}. Please ensure the main app is running and accessible.`);
+            }
+        }
+        
+        async function testGreenBorderRemoval() {
+            log('🎨 Testing green border removal...');
+            
+            try {
+                if (!mainWindow || mainWindow.closed) {
+                    throw new Error('Main application window not accessible');
+                }
+                
+                // Check for green border in table container
+                const tableContainer = mainWindow.document.querySelector('.table-container');
+                
+                if (!tableContainer) {
+                    throw new Error('Table container not found');
+                }
+                
+                const computedStyle = mainWindow.getComputedStyle(tableContainer);
+                const borderColor = computedStyle.borderColor;
+                const border = computedStyle.border;
+                
+                log(`🎨 Table container border: ${border}`);
+                log(`🎨 Border color: ${borderColor}`);
+                
+                // Check if green color is present in border
+                const hasGreenBorder = borderColor.includes('rgb(0, 255, 0)') || 
+                                     borderColor.includes('#00ff00') || 
+                                     border.includes('2px solid') && borderColor.includes('rgb(0, 255, 0)');
+                
+                if (hasGreenBorder) {
+                    addTestResult('Green Border Removal', false, 
+                        `Green diagnostic border still present: ${border}`);
+                } else {
+                    addTestResult('Green Border Removal', true, 
+                        'Green diagnostic border successfully removed from table container.');
+                }
+                
+            } catch (error) {
+                log(`❌ Green border test error: ${error.message}`);
+                addTestResult('Green Border Removal', false, 
+                    `Test failed: ${error.message}`);
+            }
+        }
+        
+        async function testActionButtons() {
+            log('🔘 Testing action buttons...');
+            
+            try {
+                if (!mainWindow || mainWindow.closed) {
+                    throw new Error('Main application window not accessible');
+                }
+                
+                // Wait for table to load
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                
+                // Check for action buttons in the table
+                const table = mainWindow.document.getElementById('opportunitiesTable');
+                if (!table) {
+                    throw new Error('Opportunities table not found');
+                }
+                
+                // Check headers for Actions column
+                const headers = table.querySelectorAll('thead th');
+                let actionsHeaderFound = false;
+                
+                headers.forEach(header => {
+                    if (header.textContent.trim().toLowerCase() === 'actions') {
+                        actionsHeaderFound = true;
+                    }
+                });
+                
+                log(`📋 Headers found: ${headers.length}`);
+                log(`📋 Actions header found: ${actionsHeaderFound}`);
+                
+                // Check for action buttons in table body
+                const firstRow = table.querySelector('tbody tr');
+                let actionButtonsFound = 0;
+                
+                if (firstRow) {
+                    const actionButtons = firstRow.querySelectorAll('button');
+                    actionButtonsFound = actionButtons.length;
+                    
+                    log(`🔘 Action buttons found in first row: ${actionButtonsFound}`);
+                    
+                    actionButtons.forEach((btn, index) => {
+                        const title = btn.title || btn.textContent || `Button ${index}`;
+                        log(`  - Button ${index + 1}: ${title}`);
+                    });
+                }
+                
+                // Expected action buttons: Edit, Duplicate, Delete, History
+                const expectedButtons = 4;
+                
+                if (actionsHeaderFound && actionButtonsFound >= expectedButtons) {
+                    addTestResult('Action Buttons', true, 
+                        `Actions column header found and ${actionButtonsFound} action buttons present in table rows.`);
+                } else {
+                    const issues = [];
+                    if (!actionsHeaderFound) issues.push('Actions header missing');
+                    if (actionButtonsFound < expectedButtons) issues.push(`Only ${actionButtonsFound} action buttons found (expected ${expectedButtons})`);
+                    
+                    addTestResult('Action Buttons', false, 
+                        `Action buttons not properly displayed: ${issues.join(', ')}`);
+                }
+                
+            } catch (error) {
+                log(`❌ Action buttons test error: ${error.message}`);
+                addTestResult('Action Buttons', false, 
+                    `Test failed: ${error.message}`);
+            }
+        }
+        
+        // Auto-run tests when page loads
+        window.addEventListener('load', () => {
+            log('🚀 Final verification test page loaded');
+            log('Click "Run All Tests" to verify all changes are working correctly');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Remarks Modal Test</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .status {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <h1>Remarks Modal Test</h1>
+    <p>This page tests the remarks modal functionality.</p>
+    
+    <button class="test-button" onclick="testModal1()">Test Modal #1</button>
+    <button class="test-button" onclick="testModal2()">Test Modal #2</button>
+    <button class="test-button" onclick="testModal3()">Test Modal #3</button>
+    
+    <div id="testStatus"></div>
+    
+    <!-- Copy the remarks modal from index.html -->
+    <div id="remarksModalOverlay" class="modal-overlay hidden">
+        <div id="remarksModal" class="modal hidden" style="max-width: 800px; max-height: 80vh;">
+            <button type="button" aria-label="Close" class="modal-close-x">&times;</button>
+            <h2>Edit Remarks / Comments</h2>
+            <textarea id="remarksTextarea" style="width: 100%; min-height: 400px; padding: 1rem; margin: 1rem 0; font-family: inherit; border: 1px solid var(--border-color); border-radius: 4px;"></textarea>
+            <div class="modal-actions">
+                <button id="closeModalButton" class="modal-close-btn" type="button">Cancel</button>
+                <button id="saveRemarksButton" class="modal-save-btn" type="button">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let testCount = 0;
+        
+        function updateStatus(message, isError = false) {
+            const status = document.getElementById('testStatus');
+            status.innerHTML = `<div class="${isError ? 'error' : 'success'}">${message}</div>`;
+        }
+        
+        function testModal1() {
+            testCount++;
+            updateStatus(`Opening modal test #${testCount}...`);
+            showRemarksModal('Test content 1', 'remarks_comments', 'test-uid-1');
+        }
+        
+        function testModal2() {
+            testCount++;
+            updateStatus(`Opening modal test #${testCount}...`);
+            showRemarksModal('Test content 2', 'remarks_comments', 'test-uid-2');
+        }
+        
+        function testModal3() {
+            testCount++;
+            updateStatus(`Opening modal test #${testCount}...`);
+            showRemarksModal('Test content 3', 'remarks_comments', 'test-uid-3');
+        }
+        
+        // Mock saveEdit function for testing
+        async function saveEdit(newValue, header, uid) {
+            console.log('Mock saveEdit:', { newValue, header, uid });
+            updateStatus(`Mock save: "${newValue}" for ${uid}`);
+            return Promise.resolve();
+        }
+        
+        // Copy the improved showRemarksModal function
+        function showRemarksModal(currentValue, header, uid, td) {
+            const overlay = document.getElementById('remarksModalOverlay');
+            const modal = document.getElementById('remarksModal');
+            const textarea = document.getElementById('remarksTextarea');
+            const closeBtn = modal.querySelector('button[aria-label="Close"]');
+            const saveBtn = document.getElementById('saveRemarksButton');
+            const cancelBtn = document.getElementById('closeModalButton');
+
+            if (!overlay || !modal || !textarea || !closeBtn || !saveBtn || !cancelBtn) {
+                updateStatus('Remarks modal elements not found', true);
+                return;
+            }
+
+            console.log('showRemarksModal called with:', { currentValue, header, uid });
+
+            // Store references for cleanup
+            let overlayClickHandler, escHandler;
+
+            // Handle close
+            function closeModal() {
+                console.log('Closing modal...');
+                overlay.classList.add('hidden');
+                modal.classList.add('hidden');
+                
+                // Clean up event listeners
+                if (overlayClickHandler) {
+                    overlay.removeEventListener('click', overlayClickHandler);
+                }
+                if (escHandler) {
+                    document.removeEventListener('keydown', escHandler);
+                }
+                updateStatus('Modal closed');
+            }
+
+            // Handle save
+            async function saveRemarks() {
+                const newValue = textarea.value.trim();
+                console.log('Save clicked, newValue:', newValue, 'currentValue:', currentValue);
+                
+                // Only save if value actually changed
+                if (newValue === currentValue) {
+                    updateStatus('No changes made, closing modal');
+                    closeModal();
+                    return;
+                }
+                try {
+                    await saveEdit(newValue, header, uid);
+                    // If td is provided, update it immediately
+                    if (td) {
+                        td.textContent = newValue;
+                        td.dataset.fullRemarks = newValue;
+                    }
+                    closeModal();
+                } catch (error) {
+                    console.error('Error saving remarks:', error);
+                    updateStatus('Failed to save remarks: ' + error.message, true);
+                }
+            }
+
+            // Clean up any existing event listeners first
+            const newCloseBtn = closeBtn.cloneNode(true);
+            const newSaveBtn = saveBtn.cloneNode(true);
+            const newCancelBtn = cancelBtn.cloneNode(true);
+            
+            closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+            saveBtn.parentNode.replaceChild(newSaveBtn, saveBtn);
+            cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
+
+            // Add fresh event listeners
+            newCloseBtn.addEventListener('click', closeModal);
+            newSaveBtn.addEventListener('click', saveRemarks);
+            newCancelBtn.addEventListener('click', closeModal);
+            
+            // Set up overlay click handler
+            overlayClickHandler = (e) => {
+                if (e.target === overlay) {
+                    console.log('Overlay clicked, closing modal');
+                    closeModal();
+                }
+            };
+            overlay.addEventListener('click', overlayClickHandler);
+
+            // Set up ESC key handler
+            escHandler = (e) => {
+                if (e.key === 'Escape') {
+                    console.log('ESC pressed, closing modal');
+                    closeModal();
+                }
+            };
+            document.addEventListener('keydown', escHandler);
+
+            // Set current value and show modal
+            textarea.value = currentValue || '';
+            console.log('Removing hidden class from overlay and modal...');
+            overlay.classList.remove('hidden');
+            modal.classList.remove('hidden');
+            
+            updateStatus(`Modal opened with content: "${currentValue}"`);
+            
+            // Focus the textarea with a slight delay to ensure modal is visible
+            setTimeout(() => {
+                textarea.focus();
+                console.log('Textarea focused');
+            }, 100);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Change-Detection Validation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-title {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .console-output {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Change-Detection Validation Test</h1>
+        <p>This tool verifies that the form validation only checks fields that have been changed, not all required fields.</p>
+
+        <div class="test-section">
+            <div class="test-title">Test 1: Edit Status Field Only</div>
+            <p>This test simulates opening an edit modal and only changing the status field. It should NOT validate other required fields.</p>
+            <button onclick="testStatusOnlyChange()">Run Test</button>
+            <div id="test1-result"></div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">Test 2: Edit Multiple Fields</div>
+            <p>This test simulates changing multiple fields including required ones. It should only validate the changed fields.</p>
+            <button onclick="testMultipleFieldChange()">Run Test</button>
+            <div id="test2-result"></div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">Test 3: No Fields Changed</div>
+            <p>This test simulates submitting the form without changing any fields. It should close the modal without API call.</p>
+            <button onclick="testNoFieldsChanged()">Run Test</button>
+            <div id="test3-result"></div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">Test 4: Clear Required Changed Field</div>
+            <p>This test simulates changing a required field to an empty value. It should show validation error.</p>
+            <button onclick="testClearRequiredField()">Run Test</button>
+            <div id="test4-result"></div>
+        </div>
+
+        <div class="test-section">
+            <div class="test-title">Console Output</div>
+            <div id="console-output" class="console-output"></div>
+            <button onclick="clearConsole()">Clear Console</button>
+        </div>
+    </div>
+
+    <script>
+        // Mock console logging
+        let consoleOutput = '';
+        const originalConsoleLog = console.log;
+        console.log = function(...args) {
+            const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg, null, 2) : arg).join(' ');
+            consoleOutput += new Date().toLocaleTimeString() + ': ' + message + '\n';
+            document.getElementById('console-output').textContent = consoleOutput;
+            originalConsoleLog.apply(console, args);
+        };
+
+        // Mock validation function (simplified version of the actual logic)
+        function simulateChangeDetectionValidation(originalValues, currentValues) {
+            console.log('[TEST] Starting change-detection validation simulation...');
+            console.log('[TEST] Original values:', originalValues);
+            console.log('[TEST] Current values:', currentValues);
+
+            const changedFields = {};
+            
+            // Detect which fields have actually changed
+            for (const [fieldName, currentValue] of Object.entries(currentValues)) {
+                const originalValue = originalValues[fieldName] || '';
+                const normalizedCurrent = (currentValue || '').toString().trim();
+                const normalizedOriginal = (originalValue || '').toString().trim();
+                
+                if (normalizedCurrent !== normalizedOriginal) {
+                    changedFields[fieldName] = currentValue;
+                    console.log(`[TEST] Field "${fieldName}" changed: "${normalizedOriginal}" -> "${normalizedCurrent}"`);
+                }
+            }
+
+            console.log('[TEST] Changed fields:', changedFields);
+
+            // Check if no fields changed
+            if (Object.keys(changedFields).length === 0) {
+                console.log('[TEST] No fields changed - would close modal without API call');
+                return { hasError: false, changedFields, action: 'close_modal' };
+            }
+
+            // Only validate changed fields that are required
+            const requiredFieldPatterns = [
+                {
+                    pattern: /project.*name|name.*project|project_name|projectname/i,
+                    description: 'Project Name'
+                },
+                {
+                    pattern: /^status$|opp.*status|opportunity.*status/i,
+                    description: 'Status'
+                }
+            ];
+
+            let hasError = false;
+
+            // Check if any changed fields are required and empty
+            for (const [changedFieldName, changedValue] of Object.entries(changedFields)) {
+                for (const requiredPattern of requiredFieldPatterns) {
+                    if (requiredPattern.pattern.test(changedFieldName)) {
+                        console.log(`[TEST] Validating changed required field: ${changedFieldName}`);
+                        
+                        const isEmpty = !changedValue || (typeof changedValue === 'string' && changedValue.trim() === '');
+                        
+                        if (isEmpty) {
+                            hasError = true;
+                            console.log(`[TEST] Changed field "${changedFieldName}" is empty - marked as error`);
+                        } else {
+                            console.log(`[TEST] Changed field "${changedFieldName}" validation PASSED`);
+                        }
+                        break;
+                    }
+                }
+            }
+
+            console.log(`[TEST] Change-detection validation completed. hasError: ${hasError}`);
+            
+            return { 
+                hasError, 
+                changedFields, 
+                action: hasError ? 'show_error' : 'submit_changes' 
+            };
+        }
+
+        function showResult(testId, result, success) {
+            const resultDiv = document.getElementById(`${testId}-result`);
+            resultDiv.innerHTML = `
+                <div class="test-result ${success ? 'success' : 'error'}">
+                    ${success ? '✓ PASS' : '✗ FAIL'}: ${result}
+                </div>
+            `;
+        }
+
+        function testStatusOnlyChange() {
+            console.log('=== TEST 1: Status Only Change ===');
+            const originalValues = {
+                project_name: 'Test Project',
+                status: 'Active',
+                client: 'Test Client'
+            };
+            const currentValues = {
+                project_name: 'Test Project',
+                status: 'Inactive',  // Only this changed
+                client: 'Test Client'
+            };
+
+            const result = simulateChangeDetectionValidation(originalValues, currentValues);
+            const success = !result.hasError && Object.keys(result.changedFields).length === 1 && result.changedFields.status === 'Inactive';
+            
+            showResult('test1', 
+                success ? 'Only status field validated, other required fields ignored' : 'Validation failed or validated wrong fields',
+                success
+            );
+        }
+
+        function testMultipleFieldChange() {
+            console.log('=== TEST 2: Multiple Field Change ===');
+            const originalValues = {
+                project_name: 'Test Project',
+                status: 'Active',
+                client: 'Test Client',
+                remarks_comments: 'Old remarks'
+            };
+            const currentValues = {
+                project_name: 'Updated Project',  // Changed required field
+                status: 'Active',  // No change
+                client: 'New Client',  // Changed non-required field
+                remarks_comments: 'Updated remarks'  // Changed non-required field
+            };
+
+            const result = simulateChangeDetectionValidation(originalValues, currentValues);
+            const expectedChangedCount = 3;
+            const success = !result.hasError && Object.keys(result.changedFields).length === expectedChangedCount;
+            
+            showResult('test2', 
+                success ? 'Only changed fields validated, unchanged status field ignored' : 'Validation failed or validated wrong fields',
+                success
+            );
+        }
+
+        function testNoFieldsChanged() {
+            console.log('=== TEST 3: No Fields Changed ===');
+            const originalValues = {
+                project_name: 'Test Project',
+                status: 'Active',
+                client: 'Test Client'
+            };
+            const currentValues = {
+                project_name: 'Test Project',
+                status: 'Active',
+                client: 'Test Client'
+            };
+
+            const result = simulateChangeDetectionValidation(originalValues, currentValues);
+            const success = result.action === 'close_modal' && Object.keys(result.changedFields).length === 0;
+            
+            showResult('test3', 
+                success ? 'No validation performed, modal would close without API call' : 'Should have closed modal without validation',
+                success
+            );
+        }
+
+        function testClearRequiredField() {
+            console.log('=== TEST 4: Clear Required Field ===');
+            const originalValues = {
+                project_name: 'Test Project',
+                status: 'Active',
+                client: 'Test Client'
+            };
+            const currentValues = {
+                project_name: '',  // Cleared required field
+                status: 'Active',
+                client: 'Test Client'
+            };
+
+            const result = simulateChangeDetectionValidation(originalValues, currentValues);
+            const success = result.hasError && result.action === 'show_error';
+            
+            showResult('test4', 
+                success ? 'Validation error correctly shown for cleared required field' : 'Should have shown validation error',
+                success
+            );
+        }
+
+        function clearConsole() {
+            consoleOutput = '';
+            document.getElementById('console-output').textContent = '';
+        }
+
+        // Show initial message
+        console.log('Change-Detection Validation Test Tool Loaded');
+        console.log('Click the test buttons to simulate different scenarios');
+    </script>
+</body>
+</html>

@@ -1,0 +1,1334 @@
+/* --- Theme Variables --- */
+:root {
+    /* Light Theme Variables */
+    --bg-body: #f9fafb;
+    --text-body: #1f2937;
+    --bg-container: #ffffff;
+    --border-container: #e5e7eb;
+    --text-title: #111827;
+    --text-label: #4b5563;
+    --border-table: #e5e7eb;
+    --bg-header: #f3f4f6;
+    --text-header: #6b7280;
+    --bg-row: #ffffff;
+    --text-row: #374151;
+    --bg-row-hover: #f3f4f6;
+    --bg-op100: #dcfce7;
+    --text-op100: #166534;
+    --bg-op100-hover: #bbf7d0;
+    --bg-lost: #fee2e2;
+    --text-lost: #991b1b;
+    --bg-lost-hover: #fecaca;
+    --bg-declined: #e5e7eb;
+    --text-declined: #4b5563;
+    --bg-declined-hover: #d1d5db;
+    --border-urgent-soon: #f59e0b;
+    --border-urgent-past: #ef4444;
+    --bg-control: #ffffff;
+    --border-control: #d1d5db;
+    --text-control: #111827;
+    --placeholder-control: #9ca3af;
+    --bg-control-hover: #f9fafb;
+    --border-focus: #3b82f6;
+    --shadow-focus: rgba(59, 130, 246, 0.3);
+    --text-secondary: #6b7280;
+    --text-error: #dc2626;
+    --text-link: #3b82f6;
+    --text-link-hover: #2563eb;
+    --select-arrow-url: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    --bg-modal: #ffffff;
+    --border-modal: #e5e7eb;
+    --text-modal-title: #111827;
+    --bg-modal-close-hover: #e5e7eb;
+    --bg-modal-save: #0E639C; /* VS Code Blue */
+    --text-modal-save: #ffffff;
+    --bg-modal-save-hover: #0077CC; /* VS Code Blue Hover */
+    --bg-theme-button: #0E639C; /* VS Code Blue */
+    --text-theme-button: #ffffff;
+    --border-theme-button: #0077CC;
+    --bg-theme-button-hover: #0077CC; /* VS Code Blue Hover */
+    --bg-filter-button: #1877f2; /* Facebook Blue */
+    --text-filter-button: #ffffff;
+    --border-filter-button: #1877f2;
+    --bg-filter-button-hover: #166fe5; /* Facebook Blue Hover */
+    --bg-filter-button-active: #1565c0; /* Facebook Blue Active */
+    --text-filter-button-active: #ffffff;
+    --border-filter-button-active: #1565c0;
+
+    /* Chart Colors */
+    --color-win: #16a34a;
+    --color-win-bg: rgba(22, 163, 74, 0.2);
+    --color-win-dark: #15803d;
+    --color-loss: #dc2626;
+    --color-loss-bg: rgba(220, 38, 38, 0.2);
+    --color-loss-dark: #b91c1c;
+    --color-forecast: #8b5cf6;
+    --color-forecast-bg: rgba(139, 92, 246, 0.7);
+    --color-forecast-dark: #7c3aed;
+    --chart-grid-color: #e5e7eb;
+    --chart-tick-color: #6b7280;
+    --chart-title-color: #111827;
+    --chart-legend-color: #374151;
+    --chart-tooltip-bg: #ffffff;
+    --chart-tooltip-text: #111827;
+}
+
+/* Dark Theme Variables */
+.dark {
+    --bg-body: #1e1e1e;
+    --text-body: #e0e0e0;
+    --bg-container: #2d2d2d;
+    --border-container: #404040;
+    --text-title: #ffffff;
+    --text-label: #c0c0c0;
+    --border-table: #4a4a4a;
+    --bg-header: #1a1a1a;
+    --text-header: #a0a0a0;
+    --bg-row: #2d2d2d;
+    --text-row: #e0e0e0;
+    --bg-row-hover: #3c3c3c;
+    --bg-op100: #14532d;
+    --text-op100: #dcfce7;
+    --bg-op100-hover: #166534;
+    --bg-lost: #7f1d1d;
+    --text-lost: #fee2e2;
+    --bg-lost-hover: #991b1b;
+    --bg-declined: #4b5563;
+    --text-declined: #bdc3c7;
+    --bg-declined-hover: #525f70;
+    --border-urgent-soon: #f97316;
+    --border-urgent-past: #dc2626;
+    --bg-control: #3c3c3c;
+    --border-control: #5a5a5a;
+    --text-control: #e0e0e0;
+    --placeholder-control: #8e8e93;
+    --bg-control-hover: #4a4a4a;
+    --border-focus: #0a84ff;
+    --shadow-focus: rgba(10, 132, 255, 0.3);
+    --text-secondary: #a0a0a0;
+    --text-error: #ff8080;
+    --text-link: #8ab4f8;
+    --text-link-hover: #a7c7fa;
+    --select-arrow-url: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23a0a0a0' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    --bg-modal: #2d2d2d;
+    --border-modal: #404040;
+    --text-modal-title: #ffffff;
+    --bg-modal-close-hover: #6b6b6b;
+    --bg-modal-save: #6366f1;
+    --text-modal-save: #ffffff;
+    --bg-modal-save-hover: #4f46e5;
+    --bg-theme-button: #4b5563;
+    --text-theme-button: #f9fafb;
+    --border-theme-button: #6b7280;
+    --bg-theme-button-hover: #6b7280;
+    --bg-filter-button: #1877f2; /* Facebook Blue */
+    --text-filter-button: #ffffff;
+    --border-filter-button: #1877f2;
+    --bg-filter-button-hover: #166fe5; /* Facebook Blue Hover */
+    --bg-filter-button-active: #1565c0; /* Facebook Blue Active */
+    --text-filter-button-active: #ffffff;
+    --border-filter-button-active: #1565c0;
+
+    /* Chart Colors */
+    --color-win: #22c55e;
+    --color-win-bg: rgba(34, 197, 94, 0.2);
+    --color-win-dark: #16a34a;
+    --color-loss: #ef4444;
+    --color-loss-bg: rgba(239, 68, 68, 0.2);
+    --color-loss-dark: #dc2626;
+    --color-forecast: #a78bfa;
+    --color-forecast-bg: rgba(167, 139, 250, 0.7);
+    --color-forecast-dark: #8b5cf6;
+    --chart-grid-color: #404040;
+    --chart-tick-color: #a0a0a0;
+    --chart-title-color: #ffffff;
+    --chart-legend-color: #e0e0e0;
+    --chart-tooltip-bg: #2d2d2d;
+    --chart-tooltip-text: #ffffff;
+}
+
+/* Base Styles */
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background-color: var(--bg-body);
+    color: var(--text-body);
+    transition: background-color 0.3s ease, color 0.3s ease;
+    margin: 0;
+    padding: 0;
+}
+
+/* Container Styles */
+.container {
+    background-color: var(--bg-container);
+    border-color: var(--border-container);
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    margin: 1rem;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+    color: var(--text-title);
+    margin-top: 0;
+}
+
+label {
+    color: var(--text-label);
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+/* Table Styles */
+.table-container {
+    position: relative;
+    overflow-x: auto;
+    overflow-y: auto;
+    border-radius: 0.5rem;
+    margin-top: 1rem;
+    border: 1px solid var(--border-table);
+    max-height: 70vh;
+    -webkit-overflow-scrolling: touch;
+    background-color: var(--bg-container);
+    width: 100%;
+    scrollbar-width: thin;
+    scrollbar-color: var(--bg-filter-button-active) var(--bg-container);
+    display: block;
+    z-index: 1;
+}
+
+/* Table responsive wrapper for better scrolling experience */
+.table-responsive-wrapper {
+    position: relative;
+    width: 100%;
+    margin-bottom: 1.5rem;
+    border-radius: 0.5rem;
+    overflow: visible;
+    height: auto;
+    min-height: 60vh;
+}
+
+/* Scroll indicator styling */
+.scroll-indicator {
+    position: absolute;
+    bottom: -24px;
+    right: 0;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    padding: 4px 8px;
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    opacity: 0.8;
+    animation: pulsate 2s infinite;
+}
+
+@keyframes pulsate {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
+
+/* Enhanced table cell styling */
+.table-container tr {
+    height: 40px;
+    min-height: 40px;
+}
+
+.table-container td,
+.table-container th {
+    padding: 12px 14px;
+    height: 40px !important;
+    min-height: 40px !important;
+}
+
+/* Webkit scrollbar styles */
+.table-container::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+}
+
+.table-container::-webkit-scrollbar-track {
+    background: var(--bg-container);
+    border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+    background: var(--bg-filter-button-active);
+    border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+    background: var(--border-focus);
+}
+
+.table-container table,
+#opportunitiesTable {
+    border-collapse: separate;
+    border-spacing: 0;
+    min-width: 100%;
+    width: auto;
+    background-color: var(--bg-container);
+    table-layout: fixed;
+    margin: 0;
+    padding: 0;
+    display: table;
+}
+
+/* Prevent table from expanding columns beyond their set widths */
+#opportunitiesTable th,
+#opportunitiesTable td {
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+/* Enhanced styles for table headers and sticky column */
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+    color: #a0a0a0;
+}
+
+/* Improved sticky header (for vertical scroll) */
+.table-container th:not(.sticky-col) {
+    position: sticky !important;
+    top: 0 !important;
+    background-color: #1a1a1a !important;
+    z-index: 10 !important;
+    border-bottom: 1px solid #4a4a4a !important;
+}
+
+/* Enhanced sticky column styles with higher specificity */
+.table-container th.sticky-col,
+#opportunitiesTable th.sticky-col {
+    position: sticky !important;
+    top: 0 !important;
+    left: 0 !important;
+    z-index: 15 !important;
+    background: var(--bg-header) !important;
+    box-shadow: 2px 0 4px -2px rgba(0,0,0,0.1);
+}
+
+/* Enhanced sticky column cells */
+.table-container td.sticky-col,
+#opportunitiesTable td.sticky-col {
+    position: sticky !important;
+    left: 0 !important;
+    z-index: 5 !important;
+    background: var(--bg-container) !important;
+    box-shadow: 2px 0 4px -2px rgba(0,0,0,0.1);
+    border-right: 1px solid var(--border-color);
+}
+
+/* Dark mode support for sticky columns */
+.dark .table-container th.sticky-col,
+.dark #opportunitiesTable th.sticky-col {
+    background: var(--bg-header) !important;
+}
+
+.dark .table-container td.sticky-col,
+.dark #opportunitiesTable td.sticky-col {
+    background: var(--bg-container) !important;
+}
+
+/* Ensure table body cells don't overlap sticky header */
+#opportunitiesTable th, #opportunitiesTable td {
+  background-clip: padding-box;
+}
+
+/* Better sort indicator styling */
+.sort-indicator {
+    margin-left: 8px;
+    opacity: 0.7;
+    font-size: 12px;
+}
+
+/* Make sure the table scrolls properly */
+#opportunitiesTable {
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+/* Improved table header styling */
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Ensure borders are visible for all cells */
+.table-container th,
+.table-container td {
+    border-right: 1px solid var(--border-table);
+    border-bottom: 1px solid var(--border-table);
+}
+
+/* Adjust table layout for better display */
+#opportunitiesTable {
+    width: auto !important; /* Allow table to expand beyond container width */
+    table-layout: fixed !important; /* Fixed table layout for better column width control */
+}
+
+/* Improve header styling */
+.sticky-header th {
+    position: sticky;
+    top: 0;
+    background-color: var(--bg-header);
+    z-index: 10;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    font-weight: bold;
+}
+
+/* Enhanced table styles for better visibility */
+.table-container th {
+    background-color: var(--bg-header) !important;
+    color: var(--text-header) !important;
+    font-weight: 600 !important;
+    padding: 12px 16px !important;
+    border-bottom: 2px solid var(--border-table) !important;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+    position: sticky !important;
+    top: 0;
+    z-index: 10;
+}
+
+.table-container td {
+    padding: 10px 12px !important;
+    border-bottom: 1px solid var(--border-table) !important;
+    border-right: 1px solid var(--border-table) !important;
+    vertical-align: middle !important;
+}
+
+/* Table Headers */
+.table-container th {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0;
+    background-color: #1a1a1a;
+    z-index: 2;
+    font-weight: 600;
+    white-space: nowrap;
+    color: #a0a0a0;
+    cursor: pointer;
+    user-select: none;
+    border-bottom: 1px solid #4a4a4a;
+    padding: 12px;
+    text-align: left;
+    box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* Table Cells */
+.table-container th,
+.table-container td {
+    padding: 10px 12px;
+    text-align: left;
+    transition: border-color 0.3s ease, background-color 0.3s ease;
+    border-bottom: 1px solid #4a4a4a;
+    vertical-align: middle;
+    font-size: 0.75rem;
+    line-height: 1.5;
+    color: #e0e0e0;
+    height: auto !important;
+    max-height: none !important;
+}
+
+/* Row hover effect */
+.table-container tr:hover td {
+    background-color: #2d2d2d;
+}
+
+/* Status-based row colors */
+tr.bg-op100 {
+    background-color: var(--bg-op100);
+}
+
+tr.bg-lost {
+    background-color: var(--bg-lost);
+}
+
+tr.bg-declined {
+    background-color: var(--bg-declined);
+}
+
+/* Column Width Styles */
+.project-name-cell,
+.table-container td.project-name-cell {
+    max-width: 350px;
+    min-width: 250px;
+    width: 280px;
+    white-space: normal !important;
+    word-break: break-word !important;
+    word-wrap: break-word !important;
+    overflow: visible !important;
+    text-overflow: initial !important;
+    height: auto !important;
+    padding: 12px !important;
+}
+
+/* Sticky Column Styles */
+th.sticky-col {
+    position: -webkit-sticky;
+    position: sticky;
+    left: 0;
+    z-index: 10;
+    background-color: var(--bg-header);
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+}
+
+td.sticky-col {
+    position: -webkit-sticky !important;
+    position: sticky !important;
+    left: 0 !important;
+    z-index: 2 !important;
+    background-color: var(--bg-row);
+    border-right: 2px solid var(--border-table);
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+}
+
+/* Other column width adjustments */
+th, td {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 120px; /* Minimum width for all columns */
+}
+
+/* Override general rule for remarks cells to allow wrapping */
+th.remarks-cell, td.remarks-cell {
+    white-space: normal !important;
+}
+
+/* Column-specific widths */
+th:nth-child(1), td:nth-child(1) { /* Project Name */
+    min-width: 300px;
+    width: 300px;
+}
+th:nth-child(2), td:nth-child(2) { /* Rev */
+    min-width: 60px;
+    width: 60px;
+}
+th:nth-child(3), td:nth-child(3) { /* Client */
+    min-width: 190px;
+    width: 190px;
+}
+th:nth-child(4), td:nth-child(4) { /* Solution */
+    min-width: 160px;
+    width: 160px;
+}
+th:nth-child(5), td:nth-child(5) { /* Industry */
+    min-width: 160px;
+    width: 160px;
+}
+th:nth-child(6), td:nth-child(6),
+th:nth-child(7), td:nth-child(7) { /* Date columns */
+    min-width: 130px;
+    width: 130px;
+}
+th:nth-child(8), td:nth-child(8) { /* Decision */
+    min-width: 100px;
+    width: 100px;
+}
+th:nth-child(9), td:nth-child(9),
+th:nth-child(10), td:nth-child(10) { /* Account Mgr, PIC */
+    min-width: 120px;
+    width: 120px;
+}
+th:nth-child(11), td:nth-child(11) { /* BOM */
+    min-width: 100px;
+    width: 100px;
+}
+th:nth-child(12), td:nth-child(12) { /* Status */
+    min-width: 130px;
+    width: 130px;
+}
+th:nth-child(13), td:nth-child(13) { /* Submitted */
+    min-width: 130px;
+    width: 130px;
+}
+th:nth-child(14), td:nth-child(14) { /* Margin */
+    min-width: 90px;
+    width: 90px;
+    text-align: right;
+}
+th:nth-child(15), td:nth-child(15) { /* Final Amount */
+    min-width: 130px;
+    width: 130px;
+    text-align: right;
+}
+th:nth-child(16), td:nth-child(16) { /* OPp Status */
+    min-width: 100px;
+    width: 100px;
+}
+th:nth-child(17), td:nth-child(17) { /* Date Awarded */
+    min-width: 130px;
+    width: 130px;
+}
+/* Remarks column styling moved to .remarks-cell class for better flexibility */
+th:nth-child(19), td:nth-child(19) { /* Forecast */
+    min-width: 160px;
+    width: 160px;
+}
+th:nth-child(20), td:nth-child(20) { /* Actions */
+    min-width: 100px;
+    width: 100px;
+    text-align: center;
+}
+th.numeric-column, td.numeric-column { /* Numeric columns */
+    text-align: right;
+}
+
+/* Override for project name column - must come after general th, td styles */
+.table-container td.project-name-cell,
+td.project-name-cell,
+.table-container td:nth-child(1),
+td:nth-child(1),
+#opportunitiesTable td.project-name-cell,
+#opportunitiesTable td:nth-child(1) {
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    word-break: break-word !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
+    width: 280px !important;
+    min-width: 280px !important;
+}
+
+/* Special width adjustments for specific columns */
+th.numeric-column, td.numeric-column {
+    width: 120px;
+    min-width: 120px;
+    text-align: right;
+}
+
+/* Remove or comment out this block to prevent override of Remarks column width */
+/*
+th.remarks-cell, td.remarks-cell {
+    min-width: 300px;
+    max-width: 300px;
+    width: 300px;
+}
+*/
+
+/* Remarks cell styling with proper text wrapping */
+th.remarks-cell, td.remarks-cell {
+    min-width: 200px !important;
+    width: 200px !important;
+    max-width: 250px !important;
+    white-space: normal !important;
+    word-wrap: break-word !important;
+    word-break: break-word !important;
+    overflow: hidden !important;
+    text-overflow: clip !important;
+    padding: 8px !important;
+    height: auto !important;
+    vertical-align: top !important;
+}
+
+/* Ensure proper background colors for sticky columns in different states */
+tr:hover td.sticky-col {
+    background-color: var(--bg-row-hover) !important;
+}
+
+tr.bg-op100 td.sticky-col {
+    background-color: var(--bg-op100) !important;
+}
+
+tr.bg-op100:hover td.sticky-col {
+    background-color: var(--bg-op100-hover) !important;
+}
+
+tr.bg-lost td.sticky-col {
+    background-color: var(--bg-lost) !important;
+}
+
+tr.bg-lost:hover td.sticky-col {
+    background-color: var(--bg-lost-hover) !important;
+}
+
+tr.bg-declined td.sticky-col {
+    background-color: var(--bg-declined) !important;
+}
+
+tr.bg-declined:hover td.sticky-col {
+    background-color: var(--bg-declined-hover) !important;
+}
+
+/* Status-based background for sticky cells */
+td.sticky-col[data-row-status="op100"] {
+    background-color: var(--bg-op100) !important;
+}
+
+td.sticky-col[data-row-status="lost"] {
+    background-color: var(--bg-lost) !important;
+}
+
+td.sticky-col[data-row-status="declined"] {
+    background-color: var(--bg-declined) !important;
+}
+
+/* Hover states for different status cells */
+tr:hover td.sticky-col[data-row-status="op100"] {
+    background-color: var(--bg-op100-hover) !important;
+}
+
+tr:hover td.sticky-col[data-row-status="lost"] {
+    background-color: var(--bg-lost-hover) !important;
+}
+
+tr:hover td.sticky-col[data-row-status="declined"] {
+    background-color: var(--bg-declined-hover) !important;
+}
+
+/* Default dark background for sticky cells */
+td.sticky-col:not([data-row-status]) {
+    background-color: #2d2d2d !important;
+}
+
+tr:hover td.sticky-col:not([data-row-status]) {
+    background-color: #3c3c3c !important;
+}
+
+/* Form Controls */
+input[type="text"],
+input[type="password"],
+input[type="email"],
+select,
+textarea {
+    padding: 8px 12px;
+    border-radius: 0.375rem;
+    transition: border-color 0.2s, background-color 0.2s, color 0.2s;
+    border-width: 1px;
+    background-color: var(--bg-control);
+    border-color: var(--border-control);
+    color: var(--text-control);
+    width: 100%;
+    box-sizing: border-box;
+}
+
+select {
+    appearance: none;
+    background-image: var(--select-arrow-url);
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus,
+input[type="email"]:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px var(--shadow-focus);
+}
+
+/* Buttons */
+.btn {
+    padding: 8px 16px;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.btn-primary {
+    background-color: var(--bg-modal-save);
+    color: var(--text-modal-save);
+}
+
+.btn-primary:hover {
+    background-color: var(--bg-modal-save-hover);
+}
+
+.btn-secondary {
+    background-color: var(--bg-theme-button);
+    color: var(--text-theme-button);
+    border-color: var(--border-theme-button);
+}
+
+.btn-secondary:hover {
+    background-color: var(--bg-theme-button-hover);
+}
+
+/* Navigation Button Styles - Clean Minimal Theme */
+.nav-square-btn {
+    background: transparent;
+    color: var(--text-body);
+    border: none;
+    border-radius: 0.5rem;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    font-size: 1.2rem;
+}
+
+.nav-square-btn:hover, .nav-square-btn:focus {
+    background: var(--bg-row-hover);
+    color: var(--text-body);
+    transform: none;
+    box-shadow: none;
+    outline: none;
+}
+
+.nav-square-btn.active {
+    background: var(--bg-row-hover);
+    color: var(--text-body);
+    border: none;
+    box-shadow: none;
+}
+
+/* Filter Buttons */
+.filter-button {
+    background: var(--bg-filter-button);
+    color: var(--text-filter-button);
+    border: 1px solid var(--border-filter-button);
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.filter-button:hover {
+    background: var(--bg-filter-button-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(24, 119, 242, 0.2);
+}
+
+.filter-button.active {
+    background: var(--bg-filter-button-active);
+    color: var(--text-filter-button-active);
+    border-color: var(--border-filter-button-active);
+    font-weight: 600;
+    box-shadow: 0 2px 4px rgba(24, 119, 242, 0.3);
+}
+
+/* Action and Theme Buttons */
+.action-button, .theme-button {
+    background: var(--bg-theme-button);
+    color: var(--text-theme-button);
+    border: 1px solid var(--border-theme-button);
+    border-radius: 0.375rem;
+    padding: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.5rem;
+    height: 2.5rem;
+}
+
+.action-button:hover, .theme-button:hover {
+    background: var(--bg-theme-button-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(14, 99, 156, 0.2);
+}
+
+/* Auth Modal Submit Button */
+#authSubmitBtn.theme-button {
+    background: var(--bg-theme-button);
+    color: var(--text-theme-button);
+    border: 1px solid var(--border-theme-button);
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 0.375rem;
+    font-weight: 600;
+}
+
+#authSubmitBtn.theme-button:hover {
+    background: var(--bg-theme-button-hover);
+}
+
+/* Auth Modal Logo */
+.auth-modal-logo {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.modal-logo {
+    height: 60px;
+    width: auto;
+    max-width: 200px;
+    object-fit: contain;
+}
+
+/* Fix auth modal sizing to be a compact window */
+.auth-modal {
+    background: var(--bg-modal);
+    border: 1px solid var(--border-modal);
+    border-radius: 1rem;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    padding: 2rem 1.75rem;
+    width: 420px !important; /* Ensure fixed width */
+    min-width: auto !important; /* Override previous min-width */
+    max-width: 90vw !important; /* Responsive max-width */
+    max-height: 90vh;
+    overflow-y: auto;
+    position: absolute; /* Changed from relative to absolute */
+    top: 50%; /* New: for centering */
+    left: 50%; /* New: for centering */
+    transform: translate(-50%, -50%); /* New: for centering */
+    animation: slideInModal 0.3s ease-out;
+    z-index: 10000;
+    margin: 0; 
+}
+
+/* Layout Styles for Navigation Structure */
+.sidebar {
+    /* Empty sidebar for now - can be used for future navigation expansion */
+    display: none; /* Hidden for now since it's empty */
+}
+
+.main-content {
+    width: 100%;
+    min-height: 100vh;
+}
+
+.simple-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.5rem 1.5rem;
+    background-color: var(--bg-container);
+    border-bottom: 1px solid var(--border-container);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.title-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.subtitle {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-title);
+    margin: 0;
+}
+
+/* Dashboard Card Styles */
+.dashboard-card {
+    background: var(--bg-container);
+    border: 1px solid var(--border-container);
+    border-radius: 0.75rem;
+    padding: 1.5rem 1.25rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    cursor: default;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-height: 120px; /* Ensure consistent minimum height */
+    text-align: center; /* Center align all content */
+}
+
+.dashboard-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    border-color: var(--border-focus);
+}
+
+.dashboard-card.cursor-pointer {
+    cursor: pointer;
+}
+
+.dashboard-card.cursor-pointer:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    background: var(--bg-row-hover);
+}
+
+.dashboard-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    line-height: 1.4;
+    margin-bottom: auto; /* Push value to bottom */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 2.5rem; /* Reserve space for title regardless of length */
+    text-align: center;
+}
+
+.dashboard-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--text-title);
+    line-height: 1.2;
+    margin: 0;
+    margin-top: auto; /* Always position at bottom of card */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+/* Dashboard grid responsive adjustments */
+.grid.grid-cols-1.sm\\:grid-cols-2.md\\:grid-cols-3.lg\\:grid-cols-6 {
+    gap: 1rem;
+}
+
+/* Dashboard card responsive improvements */
+@media (max-width: 768px) {
+    .dashboard-card {
+        padding: 1.25rem 1rem;
+        min-height: 110px; /* Slightly smaller for tablets */
+    }
+    
+    .dashboard-title {
+        font-size: 0.8rem;
+        min-height: 2.2rem; /* Adjust for smaller screens */
+    }
+    
+    .dashboard-value {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .dashboard-card {
+        padding: 1rem 0.875rem;
+        min-height: 100px; /* Even smaller for mobile */
+    }
+    
+    .dashboard-title {
+        min-height: 2rem; /* Compact for mobile */
+    }
+    
+    .dashboard-value {
+        font-size: 1.375rem;
+    }
+}
+
+/* Auth Modal Styles */
+.auth-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 9999;
+    /* display: flex; */ /* Flexbox centering removed */
+    /* align-items: center; */ /* Flexbox centering removed */
+    /* justify-content: center; */ /* Flexbox centering removed */
+    animation: fadeInOverlay 0.3s ease-out;
+}
+
+.auth-modal {
+    background: var(--bg-modal);
+    border: 1px solid var(--border-modal);
+    border-radius: 1rem;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    padding: 2rem 1.75rem;
+    width: 420px !important;
+    min-width: auto !important;
+    max-width: 90vw !important;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: absolute; /* Changed from relative to absolute */
+    top: 50%; /* New: for centering */
+    left: 50%; /* New: for centering */
+    transform: translate(-50%, -50%); /* New: for centering */
+    animation: slideInModal 0.3s ease-out;
+    z-index: 10000;
+    margin: 0; 
+}
+
+.auth-modal form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+    position: relative; /* Keep for z-index stacking context if needed */
+    z-index: 1; /* Lower z-index within the modal, inputs will be higher */
+}
+
+.auth-modal input[type="email"],
+.auth-modal input[type="password"],
+.auth-modal input[type="text"] {
+    /* ... existing input styles ... */
+    position: relative;
+    z-index: 2; /* Higher than form, lower than focus */
+    outline: none;
+}
+
+.auth-modal input:focus {
+    /* ... existing input focus styles ... */
+    z-index: 3; /* Highest z-index when focused */
+}
+
+/* Dark mode logo support */
+.dark .modal-logo {
+    filter: none; /* Keep the dark logo visible in dark mode */
+}
+
+/* Light mode - use light logo */
+body:not(.dark) .modal-logo {
+    content: url("Logo/CMRP Logo Light.svg");
+}
+
+/* Dark mode - use light logo */
+.dark .modal-logo {
+    content: url("Logo/CMRP Logo Light.svg");
+    filter: none; /* Ensure no unintended filters are applied in dark mode */
+}
+
+/* Fallback styling for modal logo */
+.modal-logo {
+    height: 60px;
+    width: auto;
+    max-width: 200px;
+    object-fit: contain;
+}
+
+/* Generic Modal Overlay and Modal Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeInOverlay 0.3s ease-out;
+}
+
+.modal-overlay.hidden {
+    display: none;
+}
+
+.modal {
+    background: var(--bg-modal);
+    border: 1px solid var(--border-modal);
+    border-radius: 1rem;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    padding: 2rem;
+    width: 90vw;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    animation: slideInModal 0.3s ease-out;
+    z-index: 10000;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+/* Modal Header */
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-modal);
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-title);
+}
+
+.modal-close-x {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 1.5rem;
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.modal-close-x:hover {
+    background: var(--bg-row-hover);
+    color: var(--text-body);
+}
+
+/* Modal Body */
+.modal-body {
+    margin-bottom: 1.5rem;
+}
+
+.modal-body .form-group {
+    margin-bottom: 1rem;
+}
+
+.modal-body label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--text-body);
+}
+
+.modal-body input,
+.modal-body select,
+.modal-body textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border-control);
+    border-radius: 0.375rem;
+    background: var(--bg-control);
+    color: var(--text-control);
+    font-size: 0.875rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.modal-body input:focus,
+.modal-body select:focus,
+.modal-body textarea:focus {
+    outline: none;
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 3px var(--shadow-focus);
+}
+
+/* Modal Actions */
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-modal);
+}
+
+.modal-close-btn,
+.modal-save-btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+
+.modal-close-btn {
+    background: var(--bg-container);
+    color: var(--text-secondary);
+    border-color: var(--border-container);
+}
+
+.modal-close-btn:hover {
+    background: var(--bg-row-hover);
+    color: var(--text-body);
+}
+
+.modal-save-btn {
+    background: var(--bg-theme-button);
+    color: var(--text-theme-button);
+    border-color: var(--border-theme-button);
+}
+
+.modal-save-btn:hover {
+    background: var(--bg-theme-button-hover);
+}
+
+/* Animation keyframes */
+@keyframes fadeInOverlay {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideInModal {
+    from { 
+        opacity: 0; 
+        transform: scale(0.9) translateY(-20px);
+    }
+    to { 
+        opacity: 1; 
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* Form Validation Error Styles */
+.error {
+    border-color: var(--text-error) !important;
+    border-width: 2px !important;
+    box-shadow: 0 0 0 1px var(--text-error) !important;
+    background-color: rgba(220, 38, 38, 0.05) !important;
+}
+
+.error:focus {
+    border-color: var(--text-error) !important;
+    box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.3) !important;
+}
+
+/* Chart.js canvas font size overrides */
+canvas {
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif !important;
+}
+
+/* Ensure Chart.js x-axis labels are properly sized */
+#forecastWeeklyChart {
+    font-size: 16px !important;
+}
+
+/* Force Chart.js text rendering at proper size */
+.chart-wrapper canvas {
+    font-size: 16px !important;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif !important;
+}
+
+/* Specific override for weekly forecast chart labels */
+#forecastWeeklyChart text {
+    font-size: 16px !important;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif !important;
+}
+
+/* Alternative approach: Style the Chart.js canvas container */
+#weeklyChartFlex .chart-wrapper {
+    font-size: 16px !important;
+    font-family: system-ui !important;
+}
+
+/* Force Chart.js to use correct font through canvas styling */
+#forecastWeeklyChart,
+#forecastWeeklyChart * {
+    font-size: 16px !important;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif !important;
+}

@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Status Filters</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .filter-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        .result { margin: 10px 0; padding: 10px; background: #f5f5f5; }
+        button { margin: 5px; padding: 8px 12px; }
+        .active { background: #007bff; color: white; }
+    </style>
+</head>
+<body>
+    <h1>Status Filter Test</h1>
+    
+    <div class="filter-section">
+        <h3>Test Filter Mappings</h3>
+        <button onclick="testFilter('ongoing')">Test On-Going</button>
+        <button onclick="testFilter('not_yet_started')">Test Not Yet Started</button>
+        <button onclick="testFilter('no_decision')">Test No Decision Yet</button>
+        
+        <div id="results"></div>
+    </div>
+    
+    <div class="filter-section">
+        <h3>Dashboard Cards Test</h3>
+        <p>Dashboard cards should show total counts regardless of filter:</p>
+        <div id="dashboard-info">
+            <div>Total OP100: <span id="op100-count">--</span></div>
+            <div>Total OP90: <span id="op90-count">--</span></div>
+            <div>Total Opportunities: <span id="total-count">--</span></div>
+        </div>
+    </div>
+
+    <script>
+        // Simulate the filter logic from app.js
+        function testFilterLogic(filterValue, currentStatus, decision, oppStatus) {
+            switch (filterValue) {
+                case 'ongoing':
+                    return currentStatus.toLowerCase() === 'on-going';
+                case 'not_yet_started':
+                    return currentStatus.toLowerCase() === 'not yet started';
+                case 'no_decision':
+                    return decision.toLowerCase() === 'pending';
+                default:
+                    return false;
+            }
+        }
+        
+        function testFilter(filterValue) {
+            const results = document.getElementById('results');
+            results.innerHTML = '<h4>Testing filter: ' + filterValue + '</h4>';
+            
+            // Test data samples
+            const testData = [
+                { status: 'On-Going', decision: 'GO', opp_status: 'OP30' },
+                { status: 'Not Yet Started', decision: 'PENDING', opp_status: 'OP30' },
+                { status: 'Submitted', decision: 'PENDING', opp_status: 'OP60' },
+                { status: 'On-Going', decision: 'GO', opp_status: 'OP100' }
+            ];
+            
+            testData.forEach((data, index) => {
+                const shouldMatch = testFilterLogic(filterValue, data.status, data.decision, data.opp_status);
+                const div = document.createElement('div');
+                div.className = 'result';
+                div.innerHTML = `
+                    Test ${index + 1}: Status="${data.status}", Decision="${data.decision}" 
+                    → ${shouldMatch ? '✅ MATCH' : '❌ NO MATCH'}
+                `;
+                results.appendChild(div);
+            });
+        }
+        
+        // Test dashboard calculation logic
+        async function loadDashboardTest() {
+            try {
+                const response = await fetch('/api/opportunities');
+                const data = await response.json();
+                
+                // Calculate total counts (should be unfiltered)
+                const totalCount = data.length;
+                const op100Count = data.filter(opp => opp.opp_status?.toLowerCase() === 'op100').length;
+                const op90Count = data.filter(opp => opp.opp_status?.toLowerCase() === 'op90').length;
+                
+                document.getElementById('total-count').textContent = totalCount;
+                document.getElementById('op100-count').textContent = op100Count;
+                document.getElementById('op90-count').textContent = op90Count;
+                
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+        
+        // Load dashboard test on page load
+        window.addEventListener('load', loadDashboardTest);
+    </script>
+</body>
+</html>

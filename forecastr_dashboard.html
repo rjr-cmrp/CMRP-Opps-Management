@@ -6,317 +6,32 @@
     <title>CMRP Forecast Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <style>
-        /* --- Theme Variables (Copied from index.html for consistency) --- */
-        :root {
-            /* Light Theme Variables */
-            --bg-body: #f9fafb; --text-body: #1f2937; --bg-container: #ffffff; --border-container: #e5e7eb; --text-title: #111827; --text-label: #4b5563; --border-table: #e5e7eb; --bg-header: #f3f4f6; --text-header: #6b7280; --bg-row: #ffffff; --text-row: #374151; --bg-row-hover: #f3f4f6; --bg-op100: #dcfce7; --text-op100: #166534; --bg-op100-hover: #bbf7d0; --bg-lost: #fee2e2; --text-lost: #991b1b; --bg-lost-hover: #fecaca; --bg-declined: #e5e7eb; --text-declined: #4b5563; --bg-declined-hover: #d1d5db; --border-urgent-soon: #f59e0b; --border-urgent-past: #ef4444; --bg-control: #ffffff; --border-control: #d1d5db; --text-control: #111827; --placeholder-control: #9ca3af; --bg-control-hover: #f9fafb; --border-focus: #3b82f6; --shadow-focus: rgba(59, 130, 246, 0.3); --text-secondary: #6b7280; --text-error: #dc2626; --text-link: #3b82f6; --text-link-hover: #2563eb;
-            --select-arrow-url: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-            --bg-modal: #ffffff; --border-modal: #e5e7eb; --text-modal-title: #111827; --bg-modal-close-hover: #e5e7eb; --bg-modal-save: #3b82f6; --text-modal-save: #ffffff; --bg-modal-save-hover: #2563eb; --bg-theme-button: #e5e7eb; --text-theme-button: #1f2937; --border-theme-button: #d1d5db; --bg-theme-button-hover: #d1d5db; --bg-filter-button: #e5e7eb; --text-filter-button: #374151; --border-filter-button: #d1d5db; --bg-filter-button-hover: #d1d5db; --bg-filter-button-active: #4f46e5; --text-filter-button-active: #ffffff; --border-filter-button-active: #4f46e5;
-             /* Chart specific */
-            --chart-grid-color: rgba(0, 0, 0, 0.1); --chart-tick-color: #666; --chart-title-color: #333; --chart-legend-color: #333; --chart-tooltip-bg: rgba(0, 0, 0, 0.8); --chart-tooltip-text: #fff;
-             /* Colors for Forecast */
-            --color-forecast: #8b5cf6; /* Violet */
-            --color-forecast-bg: rgba(139, 92, 246, 0.7);
-            /* Colors for OP Statuses */
-            --color-op90: #f59e0b; /* Amber */
-            --color-op90-bg: rgba(245, 158, 11, 0.7);
-            --color-op60: #3b82f6; /* Blue */
-            --color-op60-bg: rgba(59, 130, 246, 0.7);
-            --color-op30: #10b981; /* Emerald */
-            --color-op30-bg: rgba(16, 185, 129, 0.7);
-        }
-        .dark {
-            /* Dark Theme Variables */
-             --bg-body: #1e1e1e; --text-body: #e0e0e0; --bg-container: #2d2d2d; --border-container: #404040; --text-title: #ffffff; --text-label: #c0c0c0; --border-table: #4a4a4a; --bg-header: #1a1a1a; --text-header: #a0a0a0; --bg-row: #2d2d2d; --text-row: #e0e0e0; --bg-row-hover: #3c3c3c; --bg-op100: #14532d; --text-op100: #dcfce7; --bg-op100-hover: #166534; --bg-lost: #7f1d1d; --text-lost: #fee2e2; --bg-lost-hover: #991b1b; --bg-declined: #4b5563; --text-declined: #bdc3c7; --bg-declined-hover: #525f70; --border-urgent-soon: #f97316; --border-urgent-past: #dc2626; --bg-control: #3c3c3c; --border-control: #5a5a5a; --text-control: #e0e0e0; --placeholder-control: #8e8e93; --bg-control-hover: #4a4a4a; --border-focus: #0a84ff; --shadow-focus: rgba(10, 132, 255, 0.3); --text-secondary: #a0a0a0; --text-error: #ff8080; --text-link: #8ab4f8; --text-link-hover: #a7c7fa;
-             --select-arrow-url: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23a0a0a0' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-             --bg-modal: #2d2d2d; --border-modal: #404040; --text-modal-title: #ffffff; --bg-modal-close-hover: #6b6b6b; --bg-modal-save: #4f46e5; --text-modal-save: #ffffff; --bg-modal-save-hover: #4338ca; --bg-theme-button: #4b5563; --text-theme-button: #f9fafb; --border-theme-button: #6b7280; --bg-theme-button-hover: #6b7280; --bg-filter-button: #374151; --text-filter-button: #d1d5db; --border-filter-button: #4b5563; --bg-filter-button-hover: #4b5563; --bg-filter-button-active: #6366f1; --text-filter-button-active: #ffffff; --border-filter-button-active: #6366f1;
-             /* Chart specific */
-            --chart-grid-color: rgba(255, 255, 255, 0.2); --chart-tick-color: #9ca3af; --chart-title-color: #f9fafb; --chart-legend-color: #f9fafb; --chart-tooltip-bg: rgba(255, 255, 255, 0.9); --chart-tooltip-text: #1f2937;
-             /* Colors for Forecast */
-            --color-forecast: #a78bfa; /* Lighter Violet */
-            --color-forecast-bg: rgba(167, 139, 250, 0.7);
-             /* Colors for OP Statuses */
-            --color-op90: #fbbf24; /* Lighter Amber */
-            --color-op90-bg: rgba(251, 191, 36, 0.7);
-            --color-op60: #60a5fa; /* Lighter Blue */
-            --color-op60-bg: rgba(96, 165, 250, 0.7);
-            --color-op30: #34d399; /* Lighter Emerald */
-            --color-op30-bg: rgba(52, 211, 153, 0.7);
-        }
-
-        /* Base Styles */
-        body { background-color: var(--bg-body); color: var(--text-body); transition: background-color 0.3s, color 0.3s; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"; }
-        .main-container { background-color: var(--bg-container); border-color: var(--border-container); }
-        h1, h3 { color: var(--text-title); }
-        .dashboard-card { background-color: var(--bg-container); border: 1px solid var(--border-container); border-radius: 0.5rem; padding: 1rem 1.5rem; text-align: center; box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px 0 rgba(0,0,0,0.06); flex: 1; min-width: 150px; }
-        .dashboard-title { color: var(--text-secondary); font-size: 0.75rem; margin-bottom: 0.25rem; text-transform: uppercase; letter-spacing: 0.05em; }
-        .dashboard-value { color: var(--text-title); font-size: 1.875rem; font-weight: 600; line-height: 1.3; }
-        .dashboard-table th, .dashboard-table td { border-bottom-color: var(--border-table); padding: 12px 16px; font-size: 1rem; font-weight: 500; }
-        .dashboard-table th { background-color: var(--bg-header); color: var(--text-header); border-top-color: var(--border-table); }
-        .dashboard-table tr { background-color: var(--bg-row); color: var(--text-row); }
-        .dashboard-table tr:hover { background-color: var(--bg-row-hover); }
-        .dashboard-table { width: 100%; background: var(--bg-container); border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.07); overflow: hidden; border-collapse: separate; border-spacing: 0; }
-        .chart-section-container { background-color: var(--bg-container); border-radius: 0.5rem; box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px 0 rgba(0,0,0,0.06); }
-        .table-section-container { background-color: var(--bg-container); border-radius: 0.5rem; box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px 0 rgba(0,0,0,0.06); }
-        /* Ensure buttons use theme colors */
-        .theme-button { background-color: var(--bg-theme-button); color: var(--text-theme-button); border: 1px solid var(--border-theme-button); transition: background-color 0.2s; }
-        .theme-button:hover { background-color: var(--bg-theme-button-hover); }
-        .link-button { background-color: var(--bg-modal-save); color: var (--text-modal-save); transition: filter 0.2s; }
-        /* Filter button styles */
-        .filter-button { background-color: var(--bg-filter-button); color: var (--text-filter-button); border: 1px solid var(--border-filter-button); transition: background-color 0.2s, color 0.2s, border-color 0.2s; }
-        .filter-button:hover { background-color: var(--bg-filter-button-hover); }
-        .filter-button.active { background-color: var(--bg-filter-button-active); color: var (--text-filter-button-active); border-color: var(--border-filter-button-active); font-weight: 600; }
-         /* Explicit height for chart wrapper */
-         .chart-wrapper { position: relative; height: 400px; width: 100%; }
-        /* Custom scrollbar for chart-wrapper (horizontal only) */
-        .chart-wrapper {
-          scrollbar-width: thin;
-          scrollbar-color: #8b5cf6 #e5e7eb;
-        }
-        .chart-wrapper::-webkit-scrollbar {
-          height: 10px;
-          background: var(--bg-container);
-        }
-        .chart-wrapper::-webkit-scrollbar-thumb {
-          background: #8b5cf6;
-          border-radius: 6px;
-        }
-        .chart-wrapper::-webkit-scrollbar-track {
-          background: var(--bg-container);
-          border-radius: 6px;
-        }
-        .dark .chart-wrapper {
-          scrollbar-color: #a78bfa #2d2d2d;
-        }
-        .dark .chart-wrapper::-webkit-scrollbar {
-          background: #2d2d2d;
-        }
-        .dark .chart-wrapper::-webkit-scrollbar-thumb {
-          background: #a78bfa;
-        }
-        .dark .chart-wrapper::-webkit-scrollbar-track {
-          background: #2d2d2d;
-        }
-        /* --- Simple Header for unified look (copied from index.html) --- */
-        .simple-header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            width: 100%;
-            z-index: 100;
-            box-shadow: 0 2px 8px 0 rgba(0,0,0,0.08);
-            background: var(--bg-header);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 2rem;
-            min-height: 3.5rem;
-            gap: 1.5rem;
-        }
-        .main-content {
-            margin-top: 4.5rem; /* Height of nav bar + a bit of spacing */
-        }
-        /* Remove old header styles if present */
-        .top-nav, .content-header, .page-header-placeholder { display: none !important; }
-        .nav-square-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 44px;
-            height: 44px;
-            border-radius: 0.75rem;
-            background: var(--bg-theme-button);
-            color: var(--text-theme-button);
-            border: 1.5px solid var(--border-theme-button);
-            font-size: 1.6rem;
-            transition: background 0.18s, color 0.18s, border-color 0.18s, box-shadow 0.18s;
-            box-shadow: 0 2px 8px 0 rgba(59,130,246,0.06);
-            margin: 0;
-            padding: 0;
-        }
-        .nav-square-btn:hover, .nav-square-btn:focus {
-            background: var(--bg-theme-button-hover);
-            color: var(--text-theme-button);
-            box-shadow: 0 4px 16px 0 rgba(59,130,246,0.10);
-            outline: none;
-        }
-        .nav-square-btn.active, .nav-square-btn.bg-blue-600 {
-            background: #6366f1;
-            color: #fff !important;
-            border-color: #6366f1;
-            cursor: default;
-            pointer-events: none;
-        }
-        .nav-square-btn .material-icons {
-            font-size: 1.7rem;
-        }
-        .dark .nav-square-btn.active {
-            background: #6366f1;
-            color: #fff !important;
-            border-color: #6366f1;
-        }
-        .dark .nav-square-btn:hover:not(.active) {
-            background: #6b7280;
-            color: #fff;
-        }
-        .dashboard-table th.sortable-header {
-            cursor: pointer;
-            position: relative;
-        }
-        .dashboard-table th.sortable-header .sort-indicator {
-            position: absolute;
-            right: 8px;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 0.8em;
-            color: var(--text-header);
-        }
-        .dark .dashboard-table th.sortable-header .sort-indicator {
-            color: var(--text-header);
-        }
-        /* Ensure the chart container has enough space for labels */
-        #weeklyForecastChartContainer {
-            /* Increased bottom margin and padding significantly */
-            margin-bottom: 100px !important; 
-            padding-bottom: 70px !important;
-            overflow-x: auto; /* Keep horizontal scroll if needed */
-            position: relative; /* Needed for potential absolute positioning of labels if library does that */
-        }
-
-        /* Assuming the chart is a canvas element directly inside the container or one level down */
-        #weeklyForecastChartContainer canvas,
-        #weeklyForecastChartContainer > div > canvas {
-            display: block;
-            /* Add some margin to the canvas itself to push scrollbar down */
-            margin-bottom: 50px !important; 
-            box-sizing: border-box; /* Ensure padding/border don't add to width/height issues */
-        }
-
-        /* If the chart library creates a specific div for the chart rendering area */
-        .chartjs-render-monitor,
-        .apexcharts-canvas { /* Common classes for Chart.js and ApexCharts */
-            margin-bottom: 50px !important;
-        }
-
-        /* Remove the spacer div if it was added, as we're trying a pure CSS approach now */
-        .chart-x-label-spacer {
-            display: none; 
-        }
-        .modal.hidden { display: none !important; }
-        .modal-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.5); /* Darker overlay for better contrast */
-            z-index: 1040; /* Ensure it's above other content but below modal */
-        }
-        .modal {
-            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            z-index: 1050; /* Higher than overlay */
-            background-color: var(--bg-modal, #fff); /* Theme variable for background */
-            color: var(--text-body, #000); /* Theme variable for text */
-            border: 1px solid var(--border-modal, #ccc); /* Theme variable for border */
-            border-radius: 0.5rem;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
-            min-width: 320px; max-width: 500px; /* Adjusted max-width */
-            width: 90%;
-        }
-        .modal-content { padding: 1.5rem; }
-        .modal-header {
-            display: flex; justify-content: space-between; align-items: center;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid var(--border-modal, #ccc);
-            color: var(--text-modal-title, #000);
-        }
-        .modal-header .modal-title { margin: 0; font-size: 1.25rem; }
-        .modal-body { padding-top: 1rem; padding-bottom: 1rem; }
-        .modal-footer {
-            display: flex; justify-content: flex-end; gap: 0.75rem; /* Increased gap */
-            padding-top: 1rem;
-            border-top: 1px solid var(--border-modal, #ccc);
-        }
-        .modal .close {
-            background: transparent; border: none; font-size: 1.75rem; /* Larger close button */
-            color: var(--text-body, #000); opacity: 0.7;
-            cursor: pointer; padding: 0.5rem; line-height: 1;
-        }
-        .modal .close:hover { opacity: 1; }
-
-        /* Form elements within modal */
-        .modal .form-group { margin-bottom: 1rem; }
-        .modal .form-control {
-            width: 100%;
-            padding: 0.5rem 0.75rem;
-            font-size: 1rem;
-            line-height: 1.5;
-            color: var(--text-body);
-            background-color: var(--bg-container); /* Use a theme-aware background for input */
-            background-clip: padding-box;
-            border: 1px solid var(--border-modal);
-            border-radius: 0.25rem;
-            transition: border-color .15s ease-in-out,box-shadow .15s ease-in-out;
-        }
-        .modal .form-control:focus {
-            border-color: var(--bg-modal-save); /* Highlight with save button color */
-            outline: 0;
-            box-shadow: 0 0 0 0.2rem rgba(var(--bg-modal-save-rgb), 0.25); /* Use RGB for box-shadow */
-        }
-        .modal .invalid-feedback, .modal .text-danger {
-            color: var(--text-error, #dc3545);
-            font-size: 0.875em;
-            margin-top: 0.25rem;
-        }
-
-        /* Modal Buttons using theme variables */
-        .modal .btn {
-            display: inline-block; font-weight: 400; text-align: center;
-            vertical-align: middle; user-select: none; border: 1px solid transparent;
-            padding: 0.375rem 0.75rem; font-size: 1rem; line-height: 1.5; border-radius: 0.25rem;
-            transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
-        }
-        .modal .btn-secondary {
-            color: var(--text-theme-button, #fff);
-            background-color: var(--bg-theme-button, #6c757d);
-            border-color: var(--border-theme-button, #6c757d);
-        }
-        .modal .btn-secondary:hover {
-            background-color: var(--bg-theme-button-hover, #5a6268);
-            border-color: var(--bg-theme-button-hover, #545b62);
-        }
-        .modal .btn-primary {
-            color: var(--text-modal-save, #fff);
-            background-color: var(--bg-modal-save, #007bff);
-            border-color: var(--bg-modal-save, #007bff);
-        }
-        .modal .btn-primary:hover {
-            background-color: var(--bg-modal-save-hover, #0069d9);
-            border-color: var(--bg-modal-save-hover, #0062cc);
-        }
-        .modal .btn-primary:disabled {
-            background-color: var(--bg-modal-save, #007bff);
-            border-color: var(--bg-modal-save, #007bff);
-            opacity: 0.65;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body class="min-h-screen">
-    <div class="simple-header">
-        <div class="title-group">
-            <img id="cmrpLogo" src="Logo/CMRP Logo Light.svg" alt="CMRP Logo" style="height:2.2rem;width:auto;display:inline-block;vertical-align:middle;transition:filter 0.2s;" />
-            <span class="subtitle">Forecast Dashboard</span>
-        </div>
-        <div class="flex items-center gap-2">
-            <nav class="flex gap-2" id="mainNav">
-                <a href="index.html" class="nav-square-btn" title="Opportunities"><span class="material-icons">dashboard</span></a>
-                <a href="win-loss_dashboard.html" class="nav-square-btn" title="Win-Loss Dashboard"><span class="material-icons">line_axis</span></a>
-                <a href="forecastr_dashboard.html" class="nav-square-btn active" title="Forecast Dashboard"><span class="material-icons">insights</span></a>
-                <a href="user_management.html" class="nav-square-btn" id="userMgmtNavBtn" title="User Management"><span class="material-icons">group</span></a>
-            </nav>
-            <button id="themeToggle" class="nav-square-btn" title="Toggle Theme"><span class="material-icons">light_mode</span></button>
-            <button id="logoutBtn" class="nav-square-btn" title="Logout"><span class="material-icons">logout</span></button>
-        </div>
-    </div>
+    <nav class="sidebar">
+        <!-- Sidebar content -->
+    </nav>
     <div class="main-content">
+        <div class="simple-header">
+            <div class="title-group">
+                <a href="index.html" title="Go to Home" style="text-decoration: none; color: inherit;">
+                    <img id="cmrpLogo" src="Logo/CMRP Logo Light.svg" alt="CMRP Logo" style="height:2.2rem;width:auto;display:inline-block;vertical-align:middle;transition:filter 0.2s;cursor:pointer;" />
+                </a>
+                <span class="subtitle">Forecast Dashboard</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <nav class="flex gap-2" id="mainNav">
+                    <a href="index.html" class="nav-square-btn" title="Opportunities Management - View and manage all opportunities"><span class="material-icons">dashboard</span></a>
+                    <a href="win-loss_dashboard.html" class="nav-square-btn" title="Win-Loss Dashboard - Analyze won and lost opportunities"><span class="material-icons">line_axis</span></a>
+                    <a href="forecastr_dashboard.html" class="nav-square-btn active" title="Forecast Dashboard - View revenue forecasts and trends"><span class="material-icons">insights</span></a>
+                    <a href="user_management.html" class="nav-square-btn" id="userMgmtNavBtn" title="User Management - Manage users and permissions (Admin only)"><span class="material-icons">group</span></a>
+                </nav>
+                <button id="themeToggle" class="nav-square-btn" title="Toggle between light and dark theme"><span class="material-icons">light_mode</span></button>
+                <button id="changePasswordBtn" class="nav-square-btn" title="Change your account password"><span class="material-icons">lock</span></button>
+                <button id="logoutBtn" class="nav-square-btn" title="Sign out of your account"><span class="material-icons">logout</span></button>
+            </div>
+        </div>
     <div class="main-container container mx-auto p-6 rounded-lg shadow-md">
         <!-- ...existing code... -->
 
@@ -358,8 +73,8 @@
         <div id="monthlyChartSection" class="chart-section-container mb-8 p-6">
             <h3 id="chart-title" class="text-lg font-semibold mb-4">Monthly Forecast (Amount vs Count) - All</h3>
             <div id="forecastMonthlyLegend" style="position:sticky; top:0; left:0; right:0; z-index:20; background:var(--bg-container); text-align:center; width:100%; padding-bottom:8px;"></div>
-            <div class="chart-wrapper">
-                <canvas id="forecastMonthlyChart"></canvas>
+            <div class="chart-wrapper" style="height:400px; max-height:400px; position:relative;">
+                <canvas id="forecastMonthlyChart" style="height:400px;"></canvas>
             </div>
         </div>
 
@@ -382,7 +97,7 @@
 
         <div id="monthlyBreakdownTableContainer" class="table-section-container p-6">
             <h3 id="table-title" class="text-lg font-semibold mb-4">Monthly Forecast Breakdown - All</h3>
-            <div class="overflow-x-auto">
+            <div class="table-container">
                 <table class="dashboard-table">
                     <thead>
                         <tr>
@@ -399,7 +114,7 @@
         <!-- New: Project-level Forecast Table -->
         <div id="projectDetailsTableContainer" class="table-section-container p-6 mt-8" style="display:none;">
             <h3 class="text-lg font-semibold mb-4">Project Forecast Details</h3>
-            <div class="overflow-x-auto">
+            <div class="table-container">
                 <table class="dashboard-table" id="projectForecastTable">
                     <thead>
                         <tr>
@@ -444,7 +159,7 @@
 
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
     <script src="forecastr_dashboard.js" defer></script>
 
@@ -454,3 +169,29 @@
         <h2 id="authModalTitle">Login</h2>
         <form id="authForm">
             <div class="error-text
+<script>
+    const changePasswordBtn = document.getElementById('changePasswordBtn');
+    if (changePasswordBtn) {
+        changePasswordBtn.addEventListener('click', function() {
+            window.location.href = 'update_password.html';
+        });
+    }
+    // Hide Change Password button if not authenticated
+    function updateChangePasswordBtnVisibility() {
+        const token = localStorage.getItem('authToken');
+        if (!token) {
+            changePasswordBtn.style.display = 'none';
+        } else {
+            changePasswordBtn.style.display = '';
+        }
+    }
+        document.addEventListener('DOMContentLoaded', updateChangePasswordBtnVisibility);
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'authToken' || e.key === 'authEvent') {
+            updateChangePasswordBtnVisibility();
+        }
+    });
+</script>
+</div>
+</body>
+</html>

@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix Verification Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            background: #f9fafb;
+        }
+        .test-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+        }
+        button {
+            background: #0E639C;
+            color: white;
+            border: 1px solid #0077CC;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            cursor: pointer;
+            margin: 0.5rem 0.5rem 0.5rem 0;
+            transition: all 0.2s ease;
+        }
+        button:hover {
+            background: #0077CC;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(14, 99, 156, 0.2);
+        }
+        .status {
+            padding: 1rem;
+            border-radius: 0.375rem;
+            margin: 1rem 0;
+        }
+        .success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+        .error { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; }
+        .info { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
+        code {
+            background: #f3f4f6;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.25rem;
+            font-family: 'Monaco', 'Consolas', monospace;
+            font-size: 0.875rem;
+        }
+        .test-result {
+            margin: 0.5rem 0;
+            padding: 0.5rem;
+            border-left: 4px solid #0E639C;
+            background: #f8fafc;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>Column Visibility & Button Styling Fix Verification</h1>
+        
+        <div class="status info">
+            <strong>Test Instructions:</strong>
+            <ol>
+                <li>Click "Clear All Storage" to reset localStorage</li>
+                <li>Click "Open Main App" to test with fresh defaults</li>
+                <li>Verify that specific columns are hidden by default</li>
+                <li>Verify all buttons have VS Code blue styling</li>
+            </ol>
+        </div>
+
+        <h2>Storage Management</h2>
+        <button onclick="clearStorage()">Clear All Storage</button>
+        <button onclick="showStorageInfo()">Show Current Storage</button>
+        
+        <h2>Test Navigation</h2>
+        <button onclick="openMainApp()">Open Main App</button>
+        <button onclick="testColumnDefaults()">Test Column Defaults Logic</button>
+        
+        <div id="results"></div>
+        
+        <h2>Expected Default Hidden Columns</h2>
+        <div class="status info">
+            <p>These columns should be <strong>hidden by default</strong> on fresh load:</p>
+            <code>rev, project_code, sol_particulars, ind_particulars, lost_rca, l_particulars, client_deadline, submitted_date, date_awarded_lost, forecast_date, A, C, R, U, D, uid, created_at, updated_at, encoded_date</code>
+        </div>
+        
+        <h2>Expected Visible Columns</h2>
+        <div class="status success">
+            <p>These columns should be <strong>visible by default</strong>:</p>
+            <code>project_name, client, solutions, industries, date_received, decision, account_mgr, pic, bom, status, margin, final_amt, opp_status, remarks_comments</code>
+        </div>
+    </div>
+
+    <script>
+        function addResult(message, type = 'info') {
+            const results = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.innerHTML = message;
+            results.appendChild(div);
+        }
+
+        function clearStorage() {
+            try {
+                localStorage.clear();
+                sessionStorage.clear();
+                addResult('✅ All localStorage and sessionStorage cleared successfully', 'success');
+                addResult('📝 You can now test fresh defaults by opening the main app', 'info');
+            } catch (error) {
+                addResult('❌ Error clearing storage: ' + error.message, 'error');
+            }
+        }
+
+        function showStorageInfo() {
+            const columnVisibility = localStorage.getItem('columnVisibility');
+            const theme = localStorage.getItem('theme');
+            const authToken = localStorage.getItem('authToken');
+            
+            addResult(`<strong>localStorage Contents:</strong><br>
+                - columnVisibility: ${columnVisibility ? 'Present' : 'Not set'}<br>
+                - theme: ${theme || 'Not set'}<br>
+                - authToken: ${authToken ? 'Present' : 'Not set'}`, 'info');
+            
+            if (columnVisibility) {
+                try {
+                    const parsed = JSON.parse(columnVisibility);
+                    const visible = Object.entries(parsed).filter(([k,v]) => v).map(([k,v]) => k);
+                    const hidden = Object.entries(parsed).filter(([k,v]) => !v).map(([k,v]) => k);
+                    
+                    addResult(`<strong>Currently Visible Columns (${visible.length}):</strong><br><code>${visible.join(', ')}</code>`, 'success');
+                    addResult(`<strong>Currently Hidden Columns (${hidden.length}):</strong><br><code>${hidden.join(', ')}</code>`, 'error');
+                } catch (e) {
+                    addResult('❌ Error parsing columnVisibility: ' + e.message, 'error');
+                }
+            }
+        }
+
+        function openMainApp() {
+            window.open('http://localhost:8000/index.html', '_blank');
+            addResult('🚀 Main app opened in new tab. Check the column visibility and button styling!', 'info');
+        }
+
+        function testColumnDefaults() {
+            // Test the logic that would be used in the main app
+            const defaultHiddenColumns = [
+                'description', 'comments', 'uid', 'created_at', 'updated_at', 
+                'encoded_date', 'A', 'C', 'R', 'U', 'D', 'rev', 'project_code',
+                'sol_particulars', 'ind_particulars', 'lost_rca', 'l_particulars',
+                'client_deadline', 'submitted_date', 'date_awarded_lost', 'forecast_date'
+            ];
+            
+            // Simulate some headers (these would come from CSV in real app)
+            const testHeaders = [
+                'project_name', 'project_code', 'rev', 'client', 'solutions', 
+                'sol_particulars', 'industries', 'ind_particulars', 'date_received',
+                'client_deadline', 'decision', 'account_mgr', 'pic', 'bom', 'status',
+                'submitted_date', 'margin', 'final_amt', 'opp_status', 'date_awarded_lost',
+                'lost_rca', 'l_particulars', 'A', 'C', 'R', 'U', 'D', 'remarks_comments',
+                'uid', 'forecast_date'
+            ];
+            
+            const visibilitySettings = {};
+            testHeaders.forEach(header => {
+                const shouldHide = defaultHiddenColumns.some(col => 
+                    header.toLowerCase().includes(col.toLowerCase())
+                );
+                visibilitySettings[header] = !shouldHide;
+            });
+            
+            const visible = Object.entries(visibilitySettings).filter(([k,v]) => v).map(([k,v]) => k);
+            const hidden = Object.entries(visibilitySettings).filter(([k,v]) => !v).map(([k,v]) => k);
+            
+            addResult(`<strong>✅ Default Logic Test Results:</strong><br>
+                - Visible (${visible.length}): <code>${visible.join(', ')}</code><br>
+                - Hidden (${hidden.length}): <code>${hidden.join(', ')}</code>`, 'success');
+        }
+
+        // Clear results on page load
+        document.getElementById('results').innerHTML = '';
+        
+        // Show initial storage state
+        showStorageInfo();
+    </script>
+</body>
+</html>

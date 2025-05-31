@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Sticky Columns</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #1e1e1e;
+            color: white;
+        }
+        
+        .debug-panel {
+            background: #2d2d2d;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .debug-section {
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #3c3c3c;
+            border-radius: 4px;
+        }
+        
+        .debug-title {
+            font-weight: bold;
+            color: #4CAF50;
+            margin-bottom: 10px;
+        }
+        
+        .test-button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .test-button:hover {
+            background: #45a049;
+        }
+        
+        .status {
+            font-family: monospace;
+            background: #1a1a1a;
+            padding: 10px;
+            border-radius: 4px;
+            white-space: pre-line;
+        }
+        
+        .error { color: #ff6b6b; }
+        .success { color: #4CAF50; }
+        .warning { color: #ffa500; }
+        .info { color: #64b5f6; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Sticky Column Debug Tool</h1>
+    
+    <div class="debug-panel">
+        <div class="debug-title">Test Controls</div>
+        <button class="test-button" onclick="openMainApp()">🚀 Open Main App</button>
+        <button class="test-button" onclick="runStickyTest()">🧪 Run Sticky Column Test</button>
+        <button class="test-button" onclick="inspectCSS()">🎨 Inspect CSS Rules</button>
+        <button class="test-button" onclick="simulateColumnToggle()">🔄 Simulate Column Toggle</button>
+        <button class="test-button" onclick="clearLog()">🧹 Clear Log</button>
+    </div>
+    
+    <div class="debug-panel">
+        <div class="debug-title">📊 Real-time Status</div>
+        <div id="status" class="status">Ready to debug sticky columns...</div>
+    </div>
+    
+    <div class="debug-panel">
+        <div class="debug-title">🔬 Expected vs Actual State</div>
+        <div id="comparison" class="status">Click "Run Sticky Column Test" to compare expected vs actual state</div>
+    </div>
+
+    <script>
+        let logBuffer = [];
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const classMap = {
+                'error': 'error',
+                'success': 'success', 
+                'warning': 'warning',
+                'info': 'info'
+            };
+            
+            logBuffer.push(`[${timestamp}] ${message}`);
+            
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = logBuffer.map(msg => {
+                if (msg.includes('ERROR') || msg.includes('❌')) return `<span class="error">${msg}</span>`;
+                if (msg.includes('SUCCESS') || msg.includes('✅')) return `<span class="success">${msg}</span>`;
+                if (msg.includes('WARNING') || msg.includes('⚠️')) return `<span class="warning">${msg}</span>`;
+                return `<span class="info">${msg}</span>`;
+            }).join('\n');
+            statusDiv.scrollTop = statusDiv.scrollHeight;
+        }
+        
+        function clearLog() {
+            logBuffer = [];
+            document.getElementById('status').innerHTML = 'Log cleared...';
+            document.getElementById('comparison').innerHTML = 'Ready for new test...';
+        }
+        
+        function openMainApp() {
+            log('🚀 Opening main app in new tab...');
+            window.open('http://localhost:3000', '_blank');
+        }
+        
+        async function runStickyTest() {
+            log('🧪 Starting sticky column test...');
+            
+            try {
+                // Test if server is running
+                const response = await fetch('http://localhost:3000/api/test', {
+                    method: 'GET',
+                    mode: 'no-cors'
+                });
+                log('✅ Server is accessible');
+            } catch (error) {
+                log('❌ ERROR: Cannot connect to server at localhost:3000');
+                log('Please make sure the Node.js server is running');
+                return;
+            }
+            
+            // Test sticky column CSS rules
+            const testResults = await testStickyColumnCSS();
+            displayComparison(testResults);
+        }
+        
+        async function testStickyColumnCSS() {
+            log('🔍 Testing sticky column CSS application...');
+            
+            const results = {
+                expectedHeaders: [],
+                actualHeaders: [],
+                expectedCells: [],
+                actualCells: [],
+                cssRules: [],
+                issues: []
+            };
+            
+            // Get main app window if it exists
+            const mainWindow = window.open('', '_blank');
+            if (mainWindow && mainWindow.location.href.includes('localhost:3000')) {
+                log('📱 Found main app window, analyzing...');
+                
+                try {
+                    const table = mainWindow.document.getElementById('opportunitiesTable');
+                    if (table) {
+                        const headers = table.querySelectorAll('thead th');
+                        const firstRowCells = table.querySelector('tbody tr')?.querySelectorAll('td');
+                        
+                        log(`📋 Found ${headers.length} headers, ${firstRowCells?.length || 0} cells`);
+                        
+                        // Check headers
+                        headers.forEach((header, index) => {
+                            const hasSticky = header.classList.contains('sticky-col');
+                            const computedStyle = mainWindow.getComputedStyle(header);
+                            const position = computedStyle.position;
+                            const left = computedStyle.left;
+                            const zIndex = computedStyle.zIndex;
+                            
+                            results.actualHeaders.push({
+                                index,
+                                text: header.textContent.trim(),
+                                hasSticky,
+                                position,
+                                left,
+                                zIndex,
+                                classes: Array.from(header.classList)
+                            });
+                            
+                            if (index === 0) {
+                                results.expectedHeaders.push({
+                                    index,
+                                    text: header.textContent.trim(),
+                                    shouldHaveSticky: true,
+                                    expectedPosition: 'sticky',
+                                    expectedLeft: '0px'
+                                });
+                                
+                                if (!hasSticky) {
+                                    results.issues.push(`❌ First header missing sticky-col class`);
+                                }
+                                if (position !== 'sticky') {
+                                    results.issues.push(`❌ First header position is ${position}, should be sticky`);
+                                }
+                            }
+                        });
+                        
+                        // Check first row cells
+                        if (firstRowCells) {
+                            firstRowCells.forEach((cell, index) => {
+                                const hasSticky = cell.classList.contains('sticky-col');
+                                const computedStyle = mainWindow.getComputedStyle(cell);
+                                const position = computedStyle.position;
+                                const left = computedStyle.left;
+                                const zIndex = computedStyle.zIndex;
+                                
+                                results.actualCells.push({
+                                    index,
+                                    text: cell.textContent.trim().substring(0, 20) + '...',
+                                    hasSticky,
+                                    position,
+                                    left,
+                                    zIndex,
+                                    classes: Array.from(cell.classList)
+                                });
+                                
+                                if (index === 0) {
+                                    results.expectedCells.push({
+                                        index,
+                                        text: cell.textContent.trim().substring(0, 20) + '...',
+                                        shouldHaveSticky: true,
+                                        expectedPosition: 'sticky',
+                                        expectedLeft: '0px'
+                                    });
+                                    
+                                    if (!hasSticky) {
+                                        results.issues.push(`❌ First cell missing sticky-col class`);
+                                    }
+                                    if (position !== 'sticky') {
+                                        results.issues.push(`❌ First cell position is ${position}, should be sticky`);
+                                    }
+                                }
+                            });
+                        }
+                        
+                        log(`✅ Analysis complete. Found ${results.issues.length} issues`);
+                        
+                    } else {
+                        results.issues.push('❌ Could not find opportunitiesTable');
+                    }
+                } catch (error) {
+                    results.issues.push(`❌ Error analyzing main window: ${error.message}`);
+                }
+            } else {
+                log('⚠️ Main app window not found. Please open it first.');
+                results.issues.push('Main app window not accessible');
+            }
+            
+            return results;
+        }
+        
+        function displayComparison(results) {
+            const comparisonDiv = document.getElementById('comparison');
+            
+            let html = '<div class="debug-title">🔬 Sticky Column Analysis Results</div>';
+            
+            if (results.issues.length === 0) {
+                html += '<div class="success">✅ All sticky column checks passed!</div>';
+            } else {
+                html += '<div class="error">❌ Issues Found:</div>';
+                results.issues.forEach(issue => {
+                    html += `<div class="error">${issue}</div>`;
+                });
+            }
+            
+            html += '<br><div class="debug-title">📋 Header Analysis</div>';
+            if (results.actualHeaders.length > 0) {
+                html += '<table style="width: 100%; border-collapse: collapse; margin: 10px 0;">';
+                html += '<tr style="background: #4a4a4a;"><th>Index</th><th>Text</th><th>Has Sticky</th><th>Position</th><th>Left</th><th>Z-Index</th><th>Classes</th></tr>';
+                results.actualHeaders.forEach(header => {
+                    const bgColor = header.index === 0 ? (header.hasSticky ? '#2d5a2d' : '#5a2d2d') : '#3c3c3c';
+                    html += `<tr style="background: ${bgColor};">`;
+                    html += `<td>${header.index}</td>`;
+                    html += `<td>${header.text}</td>`;
+                    html += `<td>${header.hasSticky ? '✅' : '❌'}</td>`;
+                    html += `<td>${header.position}</td>`;
+                    html += `<td>${header.left}</td>`;
+                    html += `<td>${header.zIndex}</td>`;
+                    html += `<td>${header.classes.join(', ')}</td>`;
+                    html += '</tr>';
+                });
+                html += '</table>';
+            } else {
+                html += '<div class="warning">⚠️ No headers found to analyze</div>';
+            }
+            
+            html += '<br><div class="debug-title">📄 Cell Analysis (First Row)</div>';
+            if (results.actualCells.length > 0) {
+                html += '<table style="width: 100%; border-collapse: collapse; margin: 10px 0;">';
+                html += '<tr style="background: #4a4a4a;"><th>Index</th><th>Text</th><th>Has Sticky</th><th>Position</th><th>Left</th><th>Z-Index</th><th>Classes</th></tr>';
+                results.actualCells.forEach(cell => {
+                    const bgColor = cell.index === 0 ? (cell.hasSticky ? '#2d5a2d' : '#5a2d2d') : '#3c3c3c';
+                    html += `<tr style="background: ${bgColor};">`;
+                    html += `<td>${cell.index}</td>`;
+                    html += `<td>${cell.text}</td>`;
+                    html += `<td>${cell.hasSticky ? '✅' : '❌'}</td>`;
+                    html += `<td>${cell.position}</td>`;
+                    html += `<td>${cell.left}</td>`;
+                    html += `<td>${cell.zIndex}</td>`;
+                    html += `<td>${cell.classes.join(', ')}</td>`;
+                    html += '</tr>';
+                });
+                html += '</table>';
+            } else {
+                html += '<div class="warning">⚠️ No cells found to analyze</div>';
+            }
+            
+            comparisonDiv.innerHTML = html;
+        }
+        
+        function inspectCSS() {
+            log('🎨 Inspecting CSS rules for sticky columns...');
+            
+            // Open main app and inject CSS inspection script
+            const mainWindow = window.open('http://localhost:3000', '_blank');
+            
+            setTimeout(() => {
+                if (mainWindow && mainWindow.document) {
+                    try {
+                        // Inject CSS inspection script
+                        const script = mainWindow.document.createElement('script');
+                        script.textContent = `
+                            console.log('🔍 CSS INSPECTION STARTING...');
+                            
+                            // Find all CSS rules related to sticky
+                            const styleSheets = Array.from(document.styleSheets);
+                            const stickyRules = [];
+                            
+                            styleSheets.forEach(sheet => {
+                                try {
+                                    const rules = Array.from(sheet.cssRules || []);
+                                    rules.forEach(rule => {
+                                        if (rule.selectorText && rule.selectorText.includes('sticky')) {
+                                            stickyRules.push({
+                                                selector: rule.selectorText,
+                                                cssText: rule.cssText
+                                            });
+                                        }
+                                    });
+                                } catch (e) {
+                                    console.log('Cannot access stylesheet:', sheet.href);
+                                }
+                            });
+                            
+                            console.log('📋 Found sticky CSS rules:', stickyRules);
+                            
+                            // Test first header element
+                            const firstHeader = document.querySelector('#opportunitiesTable thead th:first-child');
+                            if (firstHeader) {
+                                const computed = getComputedStyle(firstHeader);
+                                console.log('🎯 First header computed styles:');
+                                console.log('- position:', computed.position);
+                                console.log('- left:', computed.left);
+                                console.log('- z-index:', computed.zIndex);
+                                console.log('- classes:', Array.from(firstHeader.classList));
+                            }
+                            
+                            // Test first cell element
+                            const firstCell = document.querySelector('#opportunitiesTable tbody tr:first-child td:first-child');
+                            if (firstCell) {
+                                const computed = getComputedStyle(firstCell);
+                                console.log('🎯 First cell computed styles:');
+                                console.log('- position:', computed.position);
+                                console.log('- left:', computed.left);
+                                console.log('- z-index:', computed.zIndex);
+                                console.log('- classes:', Array.from(firstCell.classList));
+                            }
+                        `;
+                        mainWindow.document.head.appendChild(script);
+                        
+                        log('✅ CSS inspection script injected. Check browser console in main app for details.');
+                        
+                    } catch (error) {
+                        log(`❌ ERROR injecting CSS inspection: ${error.message}`);
+                    }
+                } else {
+                    log('❌ ERROR: Cannot access main app window');
+                }
+            }, 2000);
+        }
+        
+        function simulateColumnToggle() {
+            log('🔄 Simulating column toggle...');
+            
+            const mainWindow = window.open('http://localhost:3000', '_blank');
+            
+            setTimeout(() => {
+                if (mainWindow && mainWindow.document) {
+                    try {
+                        // Find and click a column checkbox
+                        const checkboxes = mainWindow.document.querySelectorAll('#columnToggleContainer input[type="checkbox"]');
+                        
+                        if (checkboxes.length > 1) {
+                            const secondCheckbox = checkboxes[1]; // Don't toggle first column
+                            const columnName = secondCheckbox.dataset.columnName;
+                            
+                            log(`🎯 Toggling column: ${columnName}`);
+                            
+                            // Add event listener to monitor changes
+                            const script = mainWindow.document.createElement('script');
+                            script.textContent = `
+                                console.log('🔄 COLUMN TOGGLE SIMULATION STARTING...');
+                                
+                                // Monitor header changes
+                                const observer = new MutationObserver(mutations => {
+                                    mutations.forEach(mutation => {
+                                        if (mutation.target.tagName === 'THEAD' || mutation.target.tagName === 'TBODY') {
+                                            console.log('📋 Table structure changed:', mutation.type);
+                                            
+                                            // Check first header after change
+                                            setTimeout(() => {
+                                                const firstHeader = document.querySelector('#opportunitiesTable thead th:first-child');
+                                                if (firstHeader) {
+                                                    console.log('🎯 First header after toggle:');
+                                                    console.log('- classes:', Array.from(firstHeader.classList));
+                                                    console.log('- position:', getComputedStyle(firstHeader).position);
+                                                }
+                                                
+                                                const firstCell = document.querySelector('#opportunitiesTable tbody tr:first-child td:first-child');
+                                                if (firstCell) {
+                                                    console.log('🎯 First cell after toggle:');
+                                                    console.log('- classes:', Array.from(firstCell.classList));
+                                                    console.log('- position:', getComputedStyle(firstCell).position);
+                                                }
+                                            }, 100);
+                                        }
+                                    });
+                                });
+                                
+                                observer.observe(document.querySelector('#opportunitiesTable'), {
+                                    childList: true,
+                                    subtree: true
+                                });
+                            `;
+                            mainWindow.document.head.appendChild(script);
+                            
+                            // Toggle the checkbox
+                            secondCheckbox.click();
+                            
+                            log(`✅ Toggled ${columnName}. Check browser console for real-time updates.`);
+                            
+                        } else {
+                            log('❌ ERROR: Could not find column checkboxes');
+                        }
+                        
+                    } catch (error) {
+                        log(`❌ ERROR simulating toggle: ${error.message}`);
+                    }
+                } else {
+                    log('❌ ERROR: Cannot access main app window');
+                }
+            }, 2000);
+        }
+        
+        // Auto-refresh status
+        log('🔍 Sticky Column Debug Tool Ready');
+        log('📝 Instructions:');
+        log('1. Click "Open Main App" to launch the application');
+        log('2. Click "Run Sticky Column Test" to analyze current state');
+        log('3. Use "Simulate Column Toggle" to test column hiding/showing');
+        log('4. Check browser console in main app for detailed logs');
+    </script>
+</body>
+</html>

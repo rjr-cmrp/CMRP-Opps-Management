@@ -16,11 +16,13 @@ const port = 3000; // You can change the port if needed
 
 // PostgreSQL connection pool
 const pool = new Pool({
-  user: process.env.PGUSER || 'reuelrivera',
-  host: process.env.PGHOST || 'localhost',
-  database: process.env.PGDATABASE || 'opps_management',
-  password: process.env.PGPASSWORD || '',
-  port: process.env.PGPORT ? parseInt(process.env.PGPORT) : 5432,
+  connectionString: 'postgresql://opps_management_owner:npg_Br9RoWqlTPZ0@ep-quiet-dawn-a1jwkxgx-pooler.ap-southeast-1.aws.neon.tech/opps_management?sslmode=require',
+  ssl: { rejectUnauthorized: false }
+});
+
+// Set search path for all new connections
+pool.on('connect', (client) => {
+  client.query('SET search_path TO public');
 });
 
 // --- Helper Functions ---
@@ -262,15 +264,30 @@ function getCMRPWeeksForMonth(year, month) {
     const weeks = [];
     let weekStart = new Date(firstWeekStart);
     let weekNumber = 1;
-    // Include all weeks whose start date is in the month, even if the end date is in the next month
+    
     while (weekStart.getUTCMonth() === month && weekStart <= lastOfMonth) {
         const weekEnd = new Date(weekStart);
         weekEnd.setUTCDate(weekEnd.getUTCDate() + 6);
-        weeks.push({
-            weekNumber,
-            startDate: new Date(weekStart),
-            endDate: new Date(weekEnd)
-        });
+        
+        // Count how many days of this week are in the current month
+        let daysInCurrentMonth = 0;
+        let dateCounter = new Date(weekStart);
+        for (let i = 0; i < 7; i++) {
+            if (dateCounter.getUTCMonth() === month) {
+                daysInCurrentMonth++;
+            }
+            dateCounter.setUTCDate(dateCounter.getUTCDate() + 1);
+        }
+        
+        // Only include the week if at least 4 days (more than half) are in the current month
+        if (daysInCurrentMonth >= 4) {
+            weeks.push({
+                weekNumber,
+                startDate: new Date(weekStart),
+                endDate: new Date(weekEnd)
+            });
+        }
+        
         weekNumber++;
         weekStart.setUTCDate(weekStart.getUTCDate() + 7);
     }
@@ -337,7 +354,61 @@ const authLimiter = rateLimit({
 });
 
 // --- API Endpoints ---
-app.get('/api/opportunities', async (req, res) => {
+
+// Endpoint for users to update their own password
+app.post('/api/update-password', authenticateToken, authLimiter, [
+    body('currentPassword').isLength({ min: 1 }).withMessage('Current password is required.'),
+    body('newPassword').isLength({ min: 8 }).withMessage('New password must be at least 8 characters long.')
+        .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/)
+        .withMessage('New password must contain at least one uppercase letter, one lowercase letter, one number, and one special character.')
+], async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { currentPassword, newPassword } = req.body;
+    const userId = req.user.id; // User ID from JWT
+    const userEmail = req.user.email;
+
+    if (!userId) {
+        return res.status(400).json({ message: 'User ID not found in token.' });
+    }
+
+    try {
+        const userResult = await pool.query('SELECT * FROM users WHERE id = $1', [userId]);
+        if (userResult.rows.length === 0) {
+            return res.status(404).json({ message: 'User not found.' });
+        }
+        const user = userResult.rows[0];
+
+        const isMatch = await bcrypt.compare(currentPassword, user.password_hash);
+        if (!isMatch) {
+            return res.status(401).json({ message: 'Incorrect current password.' });
+        }
+
+        const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+        await pool.query('UPDATE users SET password_hash = $1 WHERE id = $2', [hashedNewPassword, userId]);
+
+        // Log password change
+        const now = new Date().toISOString();
+        const logMsg = `[${now}] User password updated by user: ${userEmail} (ID: ${userId})`;
+        console.log(logMsg);
+        fs.appendFileSync(path.join(__dirname, 'audit.log'), logMsg + '\n');
+
+        res.json({ message: 'Password updated successfully.' });
+
+    } catch (error) {
+        console.error('Error updating password:', error);
+        // Log detailed error for admin, generic for user
+        const now = new Date().toISOString();
+        const errorLogMsg = `[${now}] Error updating password for user ${userEmail} (ID: ${userId}): ${error.message}`;
+        fs.appendFileSync(path.join(__dirname, 'audit.log'), errorLogMsg + '\n');
+        res.status(500).json({ message: 'An internal error occurred. Please try again later.' });
+    }
+});
+
+app.get('/api/opportunities', authenticateToken, async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM opps_monitoring');
     res.json(result.rows);
@@ -1040,6 +1111,91 @@ app.get('/api/opportunities/:uid/forecast-revisions', async (req, res) => {
   }
 });
 
+// API endpoint to update forecast date for a project
+app.post('/api/update-forecast-date', authenticateToken, [
+  body('projectUid').isString().notEmpty().withMessage('Project UID is required'),
+  body('forecastDate').isISO8601().toDate().withMessage('Valid forecast date is required')
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ 
+      success: false, 
+      message: 'Invalid input',
+      errors: errors.array() 
+    });
+  }
+
+  const { projectUid, forecastDate } = req.body;
+  const changedBy = req.user.email; // Get user from JWT token
+
+  try {
+    const client = await pool.connect();
+    
+    try {
+      await client.query('BEGIN');
+
+      // Get current forecast_date for revision tracking
+      const currentResult = await client.query(
+        'SELECT forecast_date, project_name FROM opps_monitoring WHERE uid = $1',
+        [projectUid]
+      );
+
+      if (currentResult.rows.length === 0) {
+        await client.query('ROLLBACK');
+        return res.status(404).json({ 
+          success: false, 
+          message: 'Project not found' 
+        });
+      }
+
+      const currentProject = currentResult.rows[0];
+      const oldForecastDate = currentProject.forecast_date;
+
+      // Update the forecast_date in opps_monitoring
+      await client.query(
+        'UPDATE opps_monitoring SET forecast_date = $1 WHERE uid = $2',
+        [forecastDate, projectUid]
+      );
+
+      // Insert a record in forecast_revisions for audit trail
+      await client.query(
+        `INSERT INTO forecast_revisions (opportunity_uid, old_forecast_date, new_forecast_date, changed_by, changed_at, comment)
+         VALUES ($1, $2, $3, $4, NOW(), $5)`,
+        [
+          projectUid, 
+          oldForecastDate, 
+          forecastDate, 
+          changedBy, 
+          `Forecast date updated via dashboard from ${oldForecastDate || 'null'} to ${forecastDate}`
+        ]
+      );
+
+      await client.query('COMMIT');
+
+      res.json({ 
+        success: true, 
+        message: 'Forecast date updated successfully',
+        projectName: currentProject.project_name,
+        oldDate: oldForecastDate,
+        newDate: forecastDate
+      });
+
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+
+  } catch (error) {
+    console.error('Error updating forecast date:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Failed to update forecast date' 
+    });
+  }
+});
+
 // --- AUTH: Register ---
 app.post('/api/register', authLimiter,
   [
@@ -1154,6 +1310,9 @@ app.get('/forecast_dashboard.html', (req, res) => {
 });
 app.get('/forecastr_dashboard.html', (req, res) => {
     res.sendFile(path.join(__dirname, 'forecastr_dashboard.html'));
+});
+app.get('/update_password.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'update_password.html'));
 });
 
 // --- User Management API (PostgreSQL-backed, schema-aligned) ---
@@ -1276,6 +1435,331 @@ app.delete('/api/users/:id', authenticateToken, requireAdmin, async (req, res) =
   } catch (err) {
     console.error('Error deleting user:', err);
     res.status(500).json({ error: 'Failed to delete user.' });
+  }
+});
+
+// --- AUTH: Register ---
+app.post('/api/register', authLimiter,
+  [
+    body('email').isEmail().normalizeEmail(),
+    body('password').isLength({ min: 8, max: 100 }).withMessage('Password must be 8-100 chars.'),
+    body('name').trim().isLength({ min: 2, max: 100 }).escape(),
+    body('roles').isArray({ min: 1 }),
+    body('roles.*').isString().trim().escape(),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ error: 'Invalid input', details: errors.array() });
+    }
+    try {
+        const { email, password, name, roles } = req.body;
+        if (!email || !password || !name || !Array.isArray(roles) || roles.length === 0) {
+            return res.status(400).json({ error: 'All fields and at least one role are required.' });
+        }
+        // Check if user exists
+        const userCheck = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
+        if (userCheck.rows.length > 0) {
+            return res.status(409).json({ error: 'Email already registered.' });
+        }
+        const password_hash = await bcrypt.hash(password, 10);
+        const userId = uuidv4();
+        // Determine accountType: if roles includes 'Admin', set 'Admin', else 'User'
+        const accountType = roles.includes('Admin') ? 'Admin' : 'User';
+        await pool.query('INSERT INTO users (id, email, password_hash, name, is_verified, roles, account_type) VALUES ($1, $2, $3, $4, $5, $6, $7)', [userId, email, password_hash, name, true, roles, accountType]);
+        // Assign roles (legacy, if needed)
+        for (const roleName of roles) {
+            const roleRes = await pool.query('SELECT id FROM roles WHERE name = $1', [roleName]);
+            if (roleRes.rows.length > 0) {
+                await pool.query('INSERT INTO user_roles (user_id, role_id) VALUES ($1, $2) ON CONFLICT DO NOTHING', [userId, roleRes.rows[0].id]);
+            }
+        }
+        return res.json({ success: true });
+    } catch (err) {
+        console.error('/api/register error:', err);
+        return res.status(500).json({ error: 'Registration failed.' });
+    }
+});
+
+// --- AUTH: Login ---
+app.post('/api/login', authLimiter,
+  [
+    body('email').isEmail().normalizeEmail(),
+    body('password').isLength({ min: 8, max: 100 })
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ error: 'Invalid input', details: errors.array() });
+    }
+    try {
+        const { email, password } = req.body;
+        if (!email || !password) return res.status(400).json({ error: 'Email and password required.' });
+        const userRes = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        if (userRes.rows.length === 0) {
+          console.error(`[LOGIN] No user found for email: ${email}`);
+          return res.status(401).json({ error: 'Invalid credentials.' });
+        }
+        const user = userRes.rows[0];
+        console.log('[LOGIN] User record:', user);
+        if (!user.password_hash) {
+          console.error(`[LOGIN] No password_hash for user: ${email}`);
+          return res.status(500).json({ error: 'User record missing password hash.' });
+        }
+        let valid = false;
+        try {
+          valid = await bcrypt.compare(password, user.password_hash);
+        } catch (bcryptErr) {
+          console.error('[LOGIN] bcrypt.compare error:', bcryptErr);
+          return res.status(500).json({ error: 'Password hash comparison failed.' });
+        }
+        console.log(`[LOGIN] Password valid: ${valid}`);
+        if (!valid) return res.status(401).json({ error: 'Invalid credentials.' });
+        // Get roles
+        const rolesRes = await pool.query('SELECT r.name FROM roles r JOIN user_roles ur ON r.id = ur.role_id WHERE ur.user_id = $1', [user.id]);
+        const roles = rolesRes.rows.map(r => r.name);
+        // Determine accountType: if user.account_type exists, use it; else if roles includes 'Admin', set 'Admin', else 'User'
+        const accountType = user.account_type ? user.account_type : (roles.includes('Admin') ? 'Admin' : 'User');
+        const token = jwt.sign({ id: user.id, email: user.email, name: user.name, roles, accountType }, JWT_SECRET, { expiresIn: '2d' });
+        return res.json({ token });
+    } catch (err) {
+        console.error('/api/login error:', err);
+        if (err && err.stack) console.error(err.stack);
+        return res.status(500).json({ error: 'Login failed.' });
+    }
+  }
+);
+
+// --- One-time endpoint to fix test user password hash ---
+app.get('/api/fix-test-user-password', async (req, res) => {
+  const bcrypt = require('bcrypt');
+  const email = 'reuelrivera@gmail.com';
+  const password = 'testpassword';
+  const hash = await bcrypt.hash(password, 10);
+  await pool.query('UPDATE users SET password_hash=$1 WHERE email=$2', [hash, email]);
+  res.send('Test user password hash updated.');
+});
+
+// --- Static File Serving & Server Start ---
+app.use(express.static(__dirname));
+
+app.get('/', (req, res) => { res.sendFile(path.join(__dirname, 'index.html')); });
+app.get('/dashboard.html', (req, res) => { res.sendFile(path.join(__dirname, 'dashboard.html')); }); // Keep old dashboard route if needed
+app.get('/win-loss_dashboard.html', (req, res) => { res.sendFile(path.join(__dirname, 'win-loss_dashboard.html')); });
+// *** UPDATED: Route for the new forecast dashboard page (matching case) ***
+app.get('/forecast_dashboard.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'forecast_dashboard.html'));
+});
+app.get('/forecastr_dashboard.html', (req, res) => {
+    res.sendFile(path.join(__dirname, 'forecastr_dashboard.html'));
+});
+app.get('/update_password.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'update_password.html'));
+});
+
+// --- User Management API (PostgreSQL-backed, schema-aligned) ---
+
+// GET all users
+app.get('/api/users', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const result = await pool.query('SELECT id, email, name, is_verified, roles, account_type FROM users ORDER BY email ASC');
+    const users = result.rows.map(u => ({
+      _id: u.id,
+      username: u.name, // Map 'name' to 'username' for frontend compatibility
+      email: u.email,
+      role: Array.isArray(u.roles) ? u.roles : [], // Multi-role support
+      accountType: u.account_type || 'User',
+      is_verified: u.is_verified
+    }));
+    res.json(users);
+  } catch (err) {
+    console.error('Error fetching users:', err);
+    res.status(500).json({ error: 'Failed to fetch users.' });
+  }
+});
+
+// GET a single user by ID
+app.get('/api/users/:id', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const result = await pool.query('SELECT id, email, name, is_verified, roles, account_type FROM users WHERE id = $1', [req.params.id]);
+    if (result.rows.length === 0) return res.status(404).json({ error: 'User not found' });
+    const u = result.rows[0];
+    res.json({ _id: u.id, username: u.name, email: u.email, role: Array.isArray(u.roles) ? u.roles : [], accountType: u.account_type || 'User', is_verified: u.is_verified });
+  } catch (err) {
+    console.error('Error fetching user:', err);
+    res.status(500).json({ error: 'Failed to fetch user.' });
+  }
+});
+
+// POST (create) a new user
+app.post('/api/users', authenticateToken, requireAdmin,
+  [
+    body('username').trim().isLength({ min: 2, max: 100 }).escape(),
+    body('email').isEmail().normalizeEmail(),
+    body('password').optional().isLength({ min: 8, max: 100 }),
+    body('role').isArray({ min: 1 }),
+    body('role.*').isString().trim().escape(),
+    body('accountType').optional().isIn(['Admin', 'User'])
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ error: 'Invalid input', details: errors.array() });
+    }
+    try {
+      const { username, email, password, role, accountType } = req.body;
+      if (!username || !email || !password) {
+        return res.status(400).json({ message: 'Name, email, and password are required.' });
+      }
+      // Check for duplicate email
+      const check = await pool.query('SELECT id FROM users WHERE email = $1', [email]);
+      if (check.rows.length > 0) {
+        return res.status(409).json({ message: 'Email already registered.' });
+      }
+      const password_hash = await bcrypt.hash(password, 10);
+      const id = uuidv4();
+      await pool.query(
+        'INSERT INTO users (id, email, password_hash, name, is_verified, roles, account_type) VALUES ($1, $2, $3, $4, $5, $6, $7)',
+        [id, email, password_hash, username, true, Array.isArray(role) ? role : (role ? [role] : []), accountType || 'User']
+      );
+      res.status(201).json({ _id: id, username, email, role: Array.isArray(role) ? role : (role ? [role] : []), accountType: accountType || 'User', is_verified: true });
+    } catch (err) {
+      console.error('Error creating user:', err);
+      res.status(500).json({ error: 'Failed to create user.' });
+    }
+  }
+);
+
+// PUT (update) an existing user
+app.put('/api/users/:id', authenticateToken, requireAdmin,
+  [
+    body('username').trim().isLength({ min: 2, max: 100 }).escape(),
+    body('email').isEmail().normalizeEmail(),
+    body('password').optional().isLength({ min: 8, max: 100 }),
+    body('role').isArray({ min: 1 }),
+    body('role.*').isString().trim().escape(),
+    body('accountType').optional().isIn(['Admin', 'User'])
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ error: 'Invalid input', details: errors.array() });
+    }
+    try {
+      const { username, email, password, role, accountType } = req.body;
+      const id = req.params.id;
+      let updateSql = 'UPDATE users SET name=$1, email=$2, roles=$3, account_type=$4';
+      let params = [username, email, Array.isArray(role) ? role : (role ? [role] : []), accountType || 'User', id];
+      if (password) {
+        const password_hash = await bcrypt.hash(password, 10);
+        updateSql = 'UPDATE users SET name=$1, email=$2, password_hash=$3, roles=$4, account_type=$5 WHERE id=$6';
+        params = [username, email, password_hash, Array.isArray(role) ? role : (role ? [role] : []), accountType || 'User', id];
+      } else {
+        updateSql += ' WHERE id=$5';
+      }
+      const result = await pool.query(updateSql, params);
+      if (result.rowCount === 0) return res.status(404).json({ message: 'User not found' });
+      res.json({ _id: id, username, email, role: Array.isArray(role) ? role : (role ? [role] : []), accountType: accountType || 'User' });
+    } catch (err) {
+      console.error('Error updating user:', err);
+      res.status(500).json({ error: 'Failed to update user.' });
+    }
+  }
+);
+
+// DELETE a user
+app.delete('/api/users/:id', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const id = req.params.id;
+    const result = await pool.query('DELETE FROM users WHERE id = $1', [id]);
+    if (result.rowCount === 0) return res.status(404).json({ message: 'User not found' });
+    res.status(204).send();
+  } catch (err) {
+    console.error('Error deleting user:', err);
+    res.status(500).json({ error: 'Failed to delete user.' });
+  }
+});
+
+// --- User Column Preferences API ---
+
+// GET user's column preferences for a specific page
+app.get('/api/user-column-preferences/:pageName', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const pageName = req.params.pageName;
+    
+    const result = await pool.query(
+      'SELECT column_settings FROM user_column_preferences WHERE user_id = $1 AND page_name = $2',
+      [userId, pageName]
+    );
+    
+    if (result.rows.length === 0) {
+      // No preferences found, return null to indicate defaults should be used
+      return res.json({ columnSettings: null });
+    }
+    
+    res.json({ columnSettings: result.rows[0].column_settings });
+  } catch (err) {
+    console.error('Error fetching user column preferences:', err);
+    res.status(500).json({ error: 'Failed to fetch column preferences.' });
+  }
+});
+
+// POST/PUT user's column preferences for a specific page
+app.post('/api/user-column-preferences/:pageName', authenticateToken, [
+  body('columnSettings').isObject().withMessage('Column settings must be an object')
+], async (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ error: 'Invalid input', details: errors.array() });
+  }
+  
+  try {
+    const userId = req.user.id;
+    const pageName = req.params.pageName;
+    const { columnSettings } = req.body;
+    
+    // Upsert operation - update if exists, insert if not
+    const result = await pool.query(`
+      INSERT INTO user_column_preferences (user_id, page_name, column_settings, updated_at)
+      VALUES ($1, $2, $3, NOW())
+      ON CONFLICT (user_id, page_name)
+      DO UPDATE SET 
+        column_settings = EXCLUDED.column_settings,
+        updated_at = NOW()
+      RETURNING id
+    `, [userId, pageName, JSON.stringify(columnSettings)]);
+    
+    res.json({ 
+      success: true, 
+      message: 'Column preferences saved successfully',
+      id: result.rows[0].id 
+    });
+  } catch (err) {
+    console.error('Error saving user column preferences:', err);
+    res.status(500).json({ error: 'Failed to save column preferences.' });
+  }
+});
+
+// DELETE user's column preferences for a specific page (reset to defaults)
+app.delete('/api/user-column-preferences/:pageName', authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const pageName = req.params.pageName;
+    
+    const result = await pool.query(
+      'DELETE FROM user_column_preferences WHERE user_id = $1 AND page_name = $2',
+      [userId, pageName]
+    );
+    
+    res.json({ 
+      success: true, 
+      message: 'Column preferences reset to defaults',
+      deletedRows: result.rowCount 
+    });
+  } catch (err) {
+    console.error('Error deleting user column preferences:', err);
+    res.status(500).json({ error: 'Failed to reset column preferences.' });
   }
 });
 

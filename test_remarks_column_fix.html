@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Remarks Column Fix</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: var(--bg-body);
+            color: var(--text-body);
+        }
+        .test-container {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: var(--bg-container);
+            border: 1px solid var(--border-container);
+            border-radius: 8px;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 4px;
+        }
+        .success { background-color: #dcfce7; color: #166534; }
+        .error { background-color: #fee2e2; color: #991b1b; }
+        .info { background-color: #dbeafe; color: #1e40af; }
+    </style>
+</head>
+<body>
+    <h1>Remarks Column Fix Verification</h1>
+    
+    <div class="test-container">
+        <h2>Test Table with Sample Remarks Data</h2>
+        <div style="overflow-x: auto; max-width: 100%;">
+            <table id="testTable" style="width: auto; table-layout: fixed; border-collapse: collapse;">
+                <thead>
+                    <tr>
+                        <th>Project</th>
+                        <th class="remarks-cell">Remarks</th>
+                        <th>Status</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Project Alpha</td>
+                        <td class="remarks-cell">This is a very long remark that should wrap properly within the column without overflowing or being cut off. It contains multiple sentences and should demonstrate proper text wrapping behavior.</td>
+                        <td>Active</td>
+                        <td>$50,000</td>
+                    </tr>
+                    <tr>
+                        <td>Project Beta</td>
+                        <td class="remarks-cell">Short remark</td>
+                        <td>Pending</td>
+                        <td>$25,000</td>
+                    </tr>
+                    <tr>
+                        <td>Project Gamma</td>
+                        <td class="remarks-cell">Another lengthy comment that includes technical details, requirements, specifications, and various notes that need to be displayed in a readable format with proper line breaks and spacing.</td>
+                        <td>Completed</td>
+                        <td>$75,000</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h2>CSS Analysis Results</h2>
+        <div id="cssAnalysis"></div>
+    </div>
+
+    <script>
+        // Test the CSS properties of remarks cells
+        function analyzeCSSProperties() {
+            const remarksHeader = document.querySelector('th.remarks-cell');
+            const remarksCell = document.querySelector('td.remarks-cell');
+            const results = [];
+
+            if (remarksHeader) {
+                const headerStyles = window.getComputedStyle(remarksHeader);
+                results.push({
+                    type: 'info',
+                    message: `Header min-width: ${headerStyles.minWidth}`
+                });
+                results.push({
+                    type: 'info',
+                    message: `Header width: ${headerStyles.width}`
+                });
+                results.push({
+                    type: 'info',
+                    message: `Header max-width: ${headerStyles.maxWidth}`
+                });
+            }
+
+            if (remarksCell) {
+                const cellStyles = window.getComputedStyle(remarksCell);
+                results.push({
+                    type: 'info',
+                    message: `Cell min-width: ${cellStyles.minWidth}`
+                });
+                results.push({
+                    type: 'info',
+                    message: `Cell width: ${cellStyles.width}`
+                });
+                results.push({
+                    type: 'info',
+                    message: `Cell max-width: ${cellStyles.maxWidth}`
+                });
+                results.push({
+                    type: 'info',
+                    message: `White-space: ${cellStyles.whiteSpace}`
+                });
+                results.push({
+                    type: 'info',
+                    message: `Word-wrap: ${cellStyles.wordWrap}`
+                });
+                results.push({
+                    type: 'info',
+                    message: `Word-break: ${cellStyles.wordBreak}`
+                });
+                results.push({
+                    type: 'info',
+                    message: `Overflow: ${cellStyles.overflow}`
+                });
+
+                // Check if width matches expected values
+                const expectedMinWidth = '200px';
+                const actualMinWidth = cellStyles.minWidth;
+                if (actualMinWidth === expectedMinWidth) {
+                    results.push({
+                        type: 'success',
+                        message: `✓ Min-width is correctly set to ${expectedMinWidth}`
+                    });
+                } else {
+                    results.push({
+                        type: 'error',
+                        message: `✗ Min-width mismatch: expected ${expectedMinWidth}, got ${actualMinWidth}`
+                    });
+                }
+
+                // Check text wrapping
+                if (cellStyles.whiteSpace === 'normal' && cellStyles.wordWrap === 'break-word') {
+                    results.push({
+                        type: 'success',
+                        message: '✓ Text wrapping is properly configured'
+                    });
+                } else {
+                    results.push({
+                        type: 'error',
+                        message: '✗ Text wrapping configuration issue'
+                    });
+                }
+            }
+
+            return results;
+        }
+
+        // Display results
+        function displayResults() {
+            const container = document.getElementById('cssAnalysis');
+            const results = analyzeCSSProperties();
+            
+            container.innerHTML = results.map(result => 
+                `<div class="test-result ${result.type}">${result.message}</div>`
+            ).join('');
+        }
+
+        // Run tests when page loads
+        window.addEventListener('load', displayResults);
+    </script>
+</body>
+</html>

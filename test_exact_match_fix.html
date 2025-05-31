@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Exact Match Fix</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .button {
+            background: #007cba;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .button:hover {
+            background: #005a87;
+        }
+        .result {
+            margin: 15px 0;
+            padding: 15px;
+            border-radius: 5px;
+            border-left: 4px solid #007cba;
+        }
+        .success {
+            background-color: #d4edda;
+            border-left-color: #28a745;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border-left-color: #dc3545;
+            color: #721c24;
+        }
+        .info {
+            background-color: #d1ecf1;
+            border-left-color: #17a2b8;
+            color: #0c5460;
+        }
+        .warning {
+            background-color: #fff3cd;
+            border-left-color: #ffc107;
+            color: #856404;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        .hidden-col {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+        .visible-col {
+            background-color: #e8f5e8;
+            color: #2e7d32;
+        }
+        .log-output {
+            background: #1e1e1e;
+            color: #f0f0f0;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Test Exact Match Fix</h1>
+        <p><strong>Purpose:</strong> Verify that changing from <code>includes()</code> to exact match (<code>===</code>) fixes the column visibility issue.</p>
+        
+        <div class="test-section">
+            <h3>Problem Analysis</h3>
+            <p>The issue was that <code>header.toLowerCase().includes(col.toLowerCase())</code> was doing <strong>partial matches</strong>:</p>
+            <ul>
+                <li><code>'a'</code> matched columns like '<strong>a</strong>ccount_mgr', 'fin<strong>a</strong>l_amt', 'd<strong>a</strong>te_received'</li>
+                <li><code>'c'</code> matched columns like '<strong>c</strong>lient', 'pi<strong>c</strong>', 'de<strong>c</strong>ision'</li>
+                <li><code>'r'</code> matched columns like '<strong>r</strong>ev', 'p<strong>r</strong>oject_name', 'date_<strong>r</strong>eceived'</li>
+                <li><code>'u'</code> matched columns like '<strong>u</strong>id', 'sol<strong>u</strong>tions'</li>
+                <li><code>'d'</code> matched columns like '<strong>d</strong>ecision', '<strong>d</strong>ate_received'</li>
+            </ul>
+            <p>This meant almost every column was being hidden except for columns like 'bom' that don't contain these letters!</p>
+        </div>
+
+        <div class="test-section">
+            <h3>Test Before vs After Fix</h3>
+            <button class="button" onclick="testIncludesLogic()">Test OLD Logic (includes)</button>
+            <button class="button" onclick="testExactMatchLogic()">Test NEW Logic (exact match)</button>
+            <button class="button" onclick="clearResults()">Clear Results</button>
+            
+            <div id="test-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Debug Log</h3>
+            <button class="button" onclick="clearLog()">Clear Log</button>
+            <div class="log-output" id="debug-log"></div>
+        </div>
+    </div>
+
+    <script>
+        // Actual database schema columns based on our analysis
+        const actualHeaders = [
+            'encoded_date', 'project_name', 'project_code', 'rev', 'client', 'solutions',
+            'sol_particulars', 'industries', 'ind_particulars', 'date_received', 'client_deadline',
+            'decision', 'account_mgr', 'pic', 'bom', 'status', 'submitted_date', 'margin',
+            'final_amt', 'opp_status', 'date_awarded_lost', 'lost_rca', 'l_particulars',
+            'a', 'c', 'r', 'u', 'd', 'remarks_comments', 'uid', 'forecast_date'
+        ];
+
+        const defaultHiddenColumns = [
+            'description', 'comments', 'uid', 'created_at', 'updated_at', 
+            'encoded_date', 'a', 'c', 'r', 'u', 'd', 'rev', 'project_code',
+            'sol_particulars', 'ind_particulars', 'lost_rca', 'l_particulars',
+            'client_deadline', 'submitted_date', 'date_awarded_lost', 'forecast_date'
+        ];
+
+        function log(message) {
+            const logElement = document.getElementById('debug-log');
+            const timestamp = new Date().toLocaleTimeString();
+            logElement.textContent += `[${timestamp}] ${message}\n`;
+            logElement.scrollTop = logElement.scrollHeight;
+            console.log(message);
+        }
+
+        function clearLog() {
+            document.getElementById('debug-log').textContent = '';
+        }
+
+        function clearResults() {
+            document.getElementById('test-results').innerHTML = '';
+            clearLog();
+        }
+
+        function testIncludesLogic() {
+            log('🔍 Testing OLD logic with includes()...');
+            log('==========================================');
+            
+            let visibilitySettings = {};
+            let hiddenCount = 0;
+            let visibleCount = 0;
+            
+            actualHeaders.forEach(header => {
+                const shouldHide = defaultHiddenColumns.some(col => 
+                    header.toLowerCase().includes(col.toLowerCase())
+                );
+                visibilitySettings[header] = !shouldHide;
+                
+                if (shouldHide) {
+                    hiddenCount++;
+                    const matchedCol = defaultHiddenColumns.find(col => 
+                        header.toLowerCase().includes(col.toLowerCase())
+                    );
+                    log(`❌ ${header} -> HIDDEN (matched: ${matchedCol})`);
+                } else {
+                    visibleCount++;
+                    log(`✅ ${header} -> VISIBLE`);
+                }
+            });
+            
+            log(`\n📊 OLD Logic Summary:`);
+            log(`   Total columns: ${actualHeaders.length}`);
+            log(`   Hidden: ${hiddenCount}`);
+            log(`   Visible: ${visibleCount}`);
+            
+            // Check specifically for the columns we want hidden
+            const targetColumns = ['a', 'c', 'r', 'u', 'd', 'encoded_date'];
+            const correctlyHidden = targetColumns.filter(col => !visibilitySettings[col]);
+            
+            log(`\n🎯 Target columns check:`);
+            targetColumns.forEach(col => {
+                const isHidden = !visibilitySettings[col];
+                log(`   ${col}: ${isHidden ? 'HIDDEN ✅' : 'VISIBLE ❌'}`);
+            });
+            
+            displayResults('OLD Logic (includes)', visibilitySettings, 'error');
+        }
+
+        function testExactMatchLogic() {
+            log('\n🎯 Testing NEW logic with exact match...');
+            log('==========================================');
+            
+            let visibilitySettings = {};
+            let hiddenCount = 0;
+            let visibleCount = 0;
+            
+            actualHeaders.forEach(header => {
+                const shouldHide = defaultHiddenColumns.some(col => 
+                    header.toLowerCase() === col.toLowerCase()
+                );
+                visibilitySettings[header] = !shouldHide;
+                
+                if (shouldHide) {
+                    hiddenCount++;
+                    const matchedCol = defaultHiddenColumns.find(col => 
+                        header.toLowerCase() === col.toLowerCase()
+                    );
+                    log(`❌ ${header} -> HIDDEN (exact match: ${matchedCol})`);
+                } else {
+                    visibleCount++;
+                    log(`✅ ${header} -> VISIBLE`);
+                }
+            });
+            
+            log(`\n📊 NEW Logic Summary:`);
+            log(`   Total columns: ${actualHeaders.length}`);
+            log(`   Hidden: ${hiddenCount}`);
+            log(`   Visible: ${visibleCount}`);
+            
+            // Check specifically for the columns we want hidden
+            const targetColumns = ['a', 'c', 'r', 'u', 'd', 'encoded_date'];
+            const correctlyHidden = targetColumns.filter(col => !visibilitySettings[col]);
+            
+            log(`\n🎯 Target columns check:`);
+            targetColumns.forEach(col => {
+                const isHidden = !visibilitySettings[col];
+                log(`   ${col}: ${isHidden ? 'HIDDEN ✅' : 'VISIBLE ❌'}`);
+            });
+            
+            const isFixed = correctlyHidden.length === targetColumns.length;
+            log(`\n${isFixed ? '🎉 FIX SUCCESSFUL!' : '❌ FIX INCOMPLETE'}`);
+            
+            displayResults('NEW Logic (exact match)', visibilitySettings, isFixed ? 'success' : 'warning');
+        }
+
+        function displayResults(title, visibilitySettings, type) {
+            const resultsContainer = document.getElementById('test-results');
+            
+            const visibleColumns = Object.entries(visibilitySettings)
+                .filter(([col, visible]) => visible)
+                .map(([col, visible]) => col);
+            
+            const hiddenColumns = Object.entries(visibilitySettings)
+                .filter(([col, visible]) => !visible)
+                .map(([col, visible]) => col);
+            
+            let html = `<div class="result ${type}">`;
+            html += `<h4>${title}</h4>`;
+            html += `<p><strong>Hidden:</strong> ${hiddenColumns.length} columns</p>`;
+            html += `<p><strong>Visible:</strong> ${visibleColumns.length} columns</p>`;
+            
+            // Show specifically the target columns
+            const targetColumns = ['a', 'c', 'r', 'u', 'd', 'encoded_date'];
+            html += '<h5>Target Columns Status:</h5>';
+            html += '<table>';
+            html += '<tr><th>Column</th><th>Status</th><th>Correct?</th></tr>';
+            
+            targetColumns.forEach(col => {
+                const isHidden = !visibilitySettings[col];
+                const isCorrect = isHidden;
+                const rowClass = isCorrect ? 'visible-col' : 'hidden-col';
+                
+                html += `<tr class="${rowClass}">`;
+                html += `<td>${col}</td>`;
+                html += `<td>${isHidden ? 'HIDDEN' : 'VISIBLE'}</td>`;
+                html += `<td>${isCorrect ? '✅' : '❌'}</td>`;
+                html += '</tr>';
+            });
+            
+            html += '</table>';
+            html += '</div>';
+            
+            resultsContainer.innerHTML += html;
+        }
+    </script>
+</body>
+</html>

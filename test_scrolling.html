@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Table Scrolling Test</title>
+    <style>
+        body { margin: 20px; font-family: Arial, sans-serif; }
+        .test-info { background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 5px; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        #results { background: #e7f3ff; padding: 10px; margin: 10px 0; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Table Scrolling & Sticky Column Test</h1>
+    
+    <div class="test-info">
+        <p>This page will test the main application's table functionality by:</p>
+        <ul>
+            <li>Opening the main application in a new window</li>
+            <li>Checking if sticky columns are applied</li>
+            <li>Testing horizontal and vertical scrolling</li>
+        </ul>
+    </div>
+    
+    <button onclick="openMainApp()">Open Main App & Test</button>
+    <button onclick="checkScrolling()">Check Scrolling Behavior</button>
+    <button onclick="checkStickyColumns()">Check Sticky Columns</button>
+    
+    <div id="results"></div>
+    
+    <script>
+        let mainWindow = null;
+        
+        function openMainApp() {
+            mainWindow = window.open('http://localhost:8000', 'mainApp', 'width=1200,height=800');
+            document.getElementById('results').innerHTML = '<p>✅ Main application opened. Wait for it to load completely, then use other test buttons.</p>';
+        }
+        
+        function checkScrolling() {
+            if (!mainWindow) {
+                document.getElementById('results').innerHTML = '<p>❌ Please open the main app first.</p>';
+                return;
+            }
+            
+            try {
+                const tableContainer = mainWindow.document.querySelector('.table-container');
+                if (!tableContainer) {
+                    document.getElementById('results').innerHTML = '<p>❌ Table container not found.</p>';
+                    return;
+                }
+                
+                const results = [];
+                results.push(`📊 Table container found`);
+                results.push(`📏 Container dimensions: ${tableContainer.offsetWidth}x${tableContainer.offsetHeight}`);
+                results.push(`📜 Scroll dimensions: ${tableContainer.scrollWidth}x${tableContainer.scrollHeight}`);
+                results.push(`🔄 Current scroll position: ${tableContainer.scrollLeft}, ${tableContainer.scrollTop}`);
+                results.push(`🎯 Overflow settings: X=${getComputedStyle(tableContainer).overflowX}, Y=${getComputedStyle(tableContainer).overflowY}`);
+                
+                // Test scrolling
+                tableContainer.scrollLeft = 100;
+                tableContainer.scrollTop = 50;
+                setTimeout(() => {
+                    results.push(`✅ After scroll test: ${tableContainer.scrollLeft}, ${tableContainer.scrollTop}`);
+                    document.getElementById('results').innerHTML = '<p>' + results.join('</p><p>') + '</p>';
+                }, 100);
+                
+            } catch (error) {
+                document.getElementById('results').innerHTML = '<p>❌ Error accessing main window: ' + error.message + '</p>';
+            }
+        }
+        
+        function checkStickyColumns() {
+            if (!mainWindow) {
+                document.getElementById('results').innerHTML = '<p>❌ Please open the main app first.</p>';
+                return;
+            }
+            
+            try {
+                const table = mainWindow.document.getElementById('opportunitiesTable');
+                if (!table) {
+                    document.getElementById('results').innerHTML = '<p>❌ Table not found.</p>';
+                    return;
+                }
+                
+                const results = [];
+                const stickyHeaders = table.querySelectorAll('thead th.sticky-col');
+                const stickyCells = table.querySelectorAll('tbody td.sticky-col');
+                
+                results.push(`🏷️ Sticky headers found: ${stickyHeaders.length}`);
+                results.push(`📱 Sticky cells found: ${stickyCells.length}`);
+                
+                if (stickyHeaders.length > 0) {
+                    const firstHeader = stickyHeaders[0];
+                    const styles = getComputedStyle(firstHeader);
+                    results.push(`🎨 Header position: ${styles.position}`);
+                    results.push(`🎨 Header left: ${styles.left}`);
+                    results.push(`🎨 Header z-index: ${styles.zIndex}`);
+                }
+                
+                if (stickyCells.length > 0) {
+                    const firstCell = stickyCells[0];
+                    const styles = getComputedStyle(firstCell);
+                    results.push(`🎨 Cell position: ${styles.position}`);
+                    results.push(`🎨 Cell left: ${styles.left}`);
+                    results.push(`🎨 Cell z-index: ${styles.zIndex}`);
+                }
+                
+                document.getElementById('results').innerHTML = '<p>' + results.join('</p><p>') + '</p>';
+                
+            } catch (error) {
+                document.getElementById('results').innerHTML = '<p>❌ Error accessing main window: ' + error.message + '</p>';
+            }
+        }
+    </script>
+</body>
+</html>

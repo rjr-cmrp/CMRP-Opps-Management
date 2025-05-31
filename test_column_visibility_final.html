@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Final Column Visibility Fix Verification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .success { background: #d4edda; color: #155724; border-color: #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border-color: #f5c6cb; }
+        .warning { background: #fff3cd; color: #856404; border-color: #ffeaa7; }
+        .info { background: #d1ecf1; color: #0c5460; border-color: #bee5eb; }
+        
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover { background: #0056b3; }
+        
+        .log-area {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            margin: 10px 0;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+            white-space: pre-wrap;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 12px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 6px;
+            text-align: left;
+        }
+        th { background: #f2f2f2; }
+        
+        .comparison-table {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .old-logic { background: #ffebee; }
+        .new-logic { background: #e8f5e8; }
+        
+        .hidden-col { background: #ffcdd2; }
+        .visible-col { background: #c8e6c8; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Final Column Visibility Fix Verification</h1>
+        
+        <div class="test-section info">
+            <h2>📋 Fix Summary</h2>
+            <p><strong>Problem:</strong> The default column visibility logic was using <code>includes()</code> for partial string matching, causing single-letter columns (A, C, R, U, D) to incorrectly match other column names.</p>
+            <p><strong>Solution:</strong> Changed to exact matching using <code>===</code> in the <code>initializeColumnVisibility()</code> function.</p>
+            <p><strong>Files Modified:</strong> <code>app.js</code> (lines ~1757 and ~1780)</p>
+        </div>
+
+        <div class="test-section">
+            <h3>🧪 Test 1: Logic Comparison</h3>
+            <button onclick="testLogicComparison()">Compare Old vs New Logic</button>
+            <div id="logic-comparison-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📊 Test 2: Default Settings Verification</h3>
+            <button onclick="testDefaultSettings()">Test Default Column Visibility</button>
+            <div id="default-settings-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>🔍 Test 3: Live Application Test</h3>
+            <button onclick="clearStorageAndTest()">Clear Storage & Test Live App</button>
+            <button onclick="openMainApp()">Open Main Application</button>
+            <div id="live-test-result"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>📝 Test Log</h3>
+            <button onclick="clearLog()">Clear Log</button>
+            <div id="test-log" class="log-area"></div>
+        </div>
+    </div>
+
+    <script>
+        // Sample column headers from the actual database schema
+        const sampleHeaders = [
+            'encoded_date', 'project_name', 'project_code', 'rev', 'client', 'solutions', 
+            'sol_particulars', 'industries', 'ind_particulars', 'date_received', 'client_deadline', 
+            'decision', 'account_mgr', 'pic', 'bom', 'status', 'submitted_date', 'margin', 
+            'final_amt', 'opp_status', 'date_awarded_lost', 'lost_rca', 'l_particulars', 
+            'a', 'c', 'r', 'u', 'd', 'remarks_comments', 'uid', 'forecast_date'
+        ];
+
+        const defaultHiddenColumns = [
+            'description', 'comments', 'uid', 'created_at', 'updated_at', 
+            'encoded_date', 'a', 'c', 'r', 'u', 'd', 'rev', 'project_code',
+            'sol_particulars', 'ind_particulars', 'lost_rca', 'l_particulars',
+            'client_deadline', 'submitted_date', 'date_awarded_lost', 'forecast_date'
+        ];
+
+        const targetHiddenColumns = ['a', 'c', 'r', 'u', 'd', 'encoded_date'];
+
+        function log(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            const logArea = document.getElementById('test-log');
+            logArea.textContent += `[${timestamp}] ${message}\n`;
+            logArea.scrollTop = logArea.scrollHeight;
+            console.log(message);
+        }
+
+        function clearLog() {
+            document.getElementById('test-log').textContent = '';
+        }
+
+        function testLogicComparison() {
+            log('🔍 Comparing old vs new column matching logic...');
+
+            // Test old logic (BROKEN - includes)
+            const oldResults = {};
+            const newResults = {};
+
+            sampleHeaders.forEach(header => {
+                // Old logic (BROKEN)
+                const oldShouldHide = defaultHiddenColumns.some(col => 
+                    header.toLowerCase().includes(col.toLowerCase())
+                );
+                oldResults[header] = !oldShouldHide;
+
+                // New logic (FIXED)
+                const newShouldHide = defaultHiddenColumns.some(col => 
+                    header.toLowerCase() === col.toLowerCase()
+                );
+                newResults[header] = !newShouldHide;
+            });
+
+            // Generate comparison table
+            let html = '<div class="comparison-table">';
+            
+            // Old logic results
+            html += '<div class="old-logic">';
+            html += '<h4>❌ Old Logic (includes - BROKEN)</h4>';
+            html += '<table><tr><th>Column</th><th>Visible</th></tr>';
+            
+            let oldVisible = 0, oldHidden = 0;
+            Object.entries(oldResults).forEach(([col, visible]) => {
+                if (visible) oldVisible++; else oldHidden++;
+                const rowClass = visible ? 'visible-col' : 'hidden-col';
+                html += `<tr class="${rowClass}"><td>${col}</td><td>${visible ? 'YES' : 'NO'}</td></tr>`;
+            });
+            html += `</table><p><strong>Summary:</strong> ${oldVisible} visible, ${oldHidden} hidden</p></div>`;
+
+            // New logic results
+            html += '<div class="new-logic">';
+            html += '<h4>✅ New Logic (exact match - FIXED)</h4>';
+            html += '<table><tr><th>Column</th><th>Visible</th></tr>';
+            
+            let newVisible = 0, newHidden = 0;
+            Object.entries(newResults).forEach(([col, visible]) => {
+                if (visible) newVisible++; else newHidden++;
+                const rowClass = visible ? 'visible-col' : 'hidden-col';
+                html += `<tr class="${rowClass}"><td>${col}</td><td>${visible ? 'YES' : 'NO'}</td></tr>`;
+            });
+            html += `</table><p><strong>Summary:</strong> ${newVisible} visible, ${newHidden} hidden</p></div>`;
+            
+            html += '</div>';
+
+            // Target columns verification
+            html += '<div class="test-section success">';
+            html += '<h4>🎯 Target Columns Verification</h4>';
+            html += '<table><tr><th>Column</th><th>Old Logic</th><th>New Logic</th><th>Status</th></tr>';
+            
+            let allTargetsCorrect = true;
+            targetHiddenColumns.forEach(col => {
+                const oldVisible = oldResults[col];
+                const newVisible = newResults[col];
+                const correct = !newVisible; // Should be hidden (not visible)
+                
+                if (!correct) allTargetsCorrect = false;
+                
+                const statusIcon = correct ? '✅' : '❌';
+                html += `<tr>
+                    <td><strong>${col}</strong></td>
+                    <td>${oldVisible ? 'Visible' : 'Hidden'}</td>
+                    <td>${newVisible ? 'Visible' : 'Hidden'}</td>
+                    <td>${statusIcon} ${correct ? 'CORRECT' : 'INCORRECT'}</td>
+                </tr>`;
+            });
+            
+            html += '</table>';
+            html += `<p><strong>Result:</strong> ${allTargetsCorrect ? '🎉 All target columns correctly hidden!' : '⚠️ Some target columns still have issues'}</p>`;
+            html += '</div>';
+
+            document.getElementById('logic-comparison-result').innerHTML = html;
+            
+            log(`📊 Old logic: ${oldVisible} visible, ${oldHidden} hidden`);
+            log(`📊 New logic: ${newVisible} visible, ${newHidden} hidden`);
+            log(`🎯 Target verification: ${allTargetsCorrect ? 'PASSED' : 'FAILED'}`);
+        }
+
+        function testDefaultSettings() {
+            log('📋 Testing default column visibility settings...');
+
+            // Apply the FIXED logic (exact match)
+            let visibilitySettings = {};
+            sampleHeaders.forEach(header => {
+                const shouldHide = defaultHiddenColumns.some(col => 
+                    header.toLowerCase() === col.toLowerCase()
+                );
+                visibilitySettings[header] = !shouldHide;
+            });
+
+            // Generate results table
+            let html = '<div class="test-section info">';
+            html += '<h4>📊 Default Column Visibility Results</h4>';
+            html += '<table><tr><th>Column</th><th>Status</th><th>Reason</th></tr>';
+
+            let visibleCount = 0, hiddenCount = 0;
+            Object.entries(visibilitySettings).forEach(([col, visible]) => {
+                if (visible) visibleCount++; else hiddenCount++;
+                
+                const status = visible ? 'VISIBLE' : 'HIDDEN';
+                const rowClass = visible ? 'visible-col' : 'hidden-col';
+                const reason = visible ? 'Not in default hidden list' : 'In default hidden list';
+                
+                html += `<tr class="${rowClass}">
+                    <td><strong>${col}</strong></td>
+                    <td>${status}</td>
+                    <td>${reason}</td>
+                </tr>`;
+            });
+
+            html += '</table>';
+            html += `<p><strong>Summary:</strong> ${visibleCount} visible columns, ${hiddenCount} hidden columns</p>`;
+
+            // Check target columns specifically
+            html += '<h4>🎯 Target Columns Check</h4>';
+            html += '<ul>';
+            let allCorrect = true;
+            targetHiddenColumns.forEach(col => {
+                const isHidden = !visibilitySettings[col];
+                if (!isHidden) allCorrect = false;
+                const icon = isHidden ? '✅' : '❌';
+                html += `<li>${icon} <strong>${col}</strong>: ${isHidden ? 'Hidden (correct)' : 'Visible (incorrect)'}</li>`;
+            });
+            html += '</ul>';
+            
+            html += `<p class="${allCorrect ? 'success' : 'error'}"><strong>Overall Result:</strong> ${allCorrect ? '🎉 SUCCESS - All target columns hidden correctly!' : '❌ FAILED - Some target columns not hidden'}</p>`;
+            html += '</div>';
+
+            document.getElementById('default-settings-result').innerHTML = html;
+            
+            log(`📊 Default settings: ${visibleCount} visible, ${hiddenCount} hidden`);
+            log(`🎯 Target check: ${allCorrect ? 'ALL CORRECT' : 'SOME INCORRECT'}`);
+        }
+
+        function clearStorageAndTest() {
+            log('🧹 Clearing localStorage and testing fresh defaults...');
+            
+            try {
+                // Clear all storage
+                localStorage.clear();
+                sessionStorage.clear();
+                
+                // Show cleared status
+                let html = '<div class="test-section success">';
+                html += '<h4>✅ Storage Cleared Successfully</h4>';
+                html += '<p>All localStorage and sessionStorage have been cleared.</p>';
+                html += '<p><strong>Next steps:</strong></p>';
+                html += '<ol>';
+                html += '<li>Open the main application (click "Open Main Application" button)</li>';
+                html += '<li>Login with your credentials</li>';
+                html += '<li>Check the column visibility toggle (grid icon) to verify default settings</li>';
+                html += '<li>Verify that columns A, C, R, U, D, and encoded_date are hidden by default</li>';
+                html += '<li>Verify that important columns like project_name, client, solutions are visible</li>';
+                html += '</ol>';
+                html += '</div>';
+                
+                document.getElementById('live-test-result').innerHTML = html;
+                log('✅ Storage cleared successfully');
+                log('📋 Ready for fresh default test in main application');
+                
+            } catch (error) {
+                document.getElementById('live-test-result').innerHTML = 
+                    `<div class="test-section error"><h4>❌ Storage Clear Failed</h4><p>Error: ${error.message}</p></div>`;
+                log(`❌ Storage clear failed: ${error.message}`);
+            }
+        }
+
+        function openMainApp() {
+            window.open('http://localhost:3000', '_blank');
+            log('🚀 Main application opened in new tab');
+        }
+
+        // Run initial tests when page loads
+        window.addEventListener('load', () => {
+            log('🔄 Final Column Visibility Fix Verification loaded');
+            log('📋 Ready to test the exact match fix');
+            
+            // Auto-run the logic comparison
+            setTimeout(() => {
+                testLogicComparison();
+                testDefaultSettings();
+            }, 500);
+        });
+    </script>
+</body>
+</html>

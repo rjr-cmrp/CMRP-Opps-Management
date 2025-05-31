@@ -1,0 +1,958 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 14.17 (Homebrew)
+-- Dumped by pg_dump version 14.17 (Homebrew)
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Name: pgcrypto; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION pgcrypto; Type: COMMENT; Schema: -; Owner: 
+--
+
+COMMENT ON EXTENSION pgcrypto IS 'cryptographic functions';
+
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- Name: forecast_revisions; Type: TABLE; Schema: public; Owner: reuelrivera
+--
+
+CREATE TABLE public.forecast_revisions (
+    id integer NOT NULL,
+    opportunity_uid text NOT NULL,
+    old_forecast_date text,
+    new_forecast_date text NOT NULL,
+    changed_by text,
+    changed_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    comment text
+);
+
+
+ALTER TABLE public.forecast_revisions OWNER TO reuelrivera;
+
+--
+-- Name: forecast_revisions_id_seq; Type: SEQUENCE; Schema: public; Owner: reuelrivera
+--
+
+CREATE SEQUENCE public.forecast_revisions_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.forecast_revisions_id_seq OWNER TO reuelrivera;
+
+--
+-- Name: forecast_revisions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: reuelrivera
+--
+
+ALTER SEQUENCE public.forecast_revisions_id_seq OWNED BY public.forecast_revisions.id;
+
+
+--
+-- Name: opportunity_revisions; Type: TABLE; Schema: public; Owner: reuelrivera
+--
+
+CREATE TABLE public.opportunity_revisions (
+    id integer NOT NULL,
+    opportunity_uid uuid,
+    revision_number integer NOT NULL,
+    changed_by character varying(255),
+    changed_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    changed_fields jsonb,
+    full_snapshot jsonb,
+    forecast_date date
+);
+
+
+ALTER TABLE public.opportunity_revisions OWNER TO reuelrivera;
+
+--
+-- Name: opportunity_revisions_id_seq; Type: SEQUENCE; Schema: public; Owner: reuelrivera
+--
+
+CREATE SEQUENCE public.opportunity_revisions_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.opportunity_revisions_id_seq OWNER TO reuelrivera;
+
+--
+-- Name: opportunity_revisions_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: reuelrivera
+--
+
+ALTER SEQUENCE public.opportunity_revisions_id_seq OWNED BY public.opportunity_revisions.id;
+
+
+--
+-- Name: opps_monitoring; Type: TABLE; Schema: public; Owner: reuelrivera
+--
+
+CREATE TABLE public.opps_monitoring (
+    encoded_date date,
+    project_name text,
+    project_code text,
+    rev integer,
+    client text,
+    solutions text,
+    sol_particulars text,
+    industries text,
+    ind_particulars text,
+    date_received date,
+    client_deadline date,
+    decision text,
+    account_mgr text,
+    pic text,
+    bom text,
+    status text,
+    submitted_date date,
+    margin numeric,
+    final_amt numeric,
+    opp_status text,
+    date_awarded_lost date,
+    lost_rca text,
+    l_particulars text,
+    a text,
+    c text,
+    r text,
+    u text,
+    d text,
+    remarks_comments text,
+    uid uuid DEFAULT gen_random_uuid() NOT NULL,
+    forecast_date date
+);
+
+
+ALTER TABLE public.opps_monitoring OWNER TO reuelrivera;
+
+--
+-- Name: roles; Type: TABLE; Schema: public; Owner: reuelrivera
+--
+
+CREATE TABLE public.roles (
+    id integer NOT NULL,
+    name text NOT NULL
+);
+
+
+ALTER TABLE public.roles OWNER TO reuelrivera;
+
+--
+-- Name: roles_id_seq; Type: SEQUENCE; Schema: public; Owner: reuelrivera
+--
+
+CREATE SEQUENCE public.roles_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.roles_id_seq OWNER TO reuelrivera;
+
+--
+-- Name: roles_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: reuelrivera
+--
+
+ALTER SEQUENCE public.roles_id_seq OWNED BY public.roles.id;
+
+
+--
+-- Name: user_column_preferences; Type: TABLE; Schema: public; Owner: reuelrivera
+--
+
+CREATE TABLE public.user_column_preferences (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    user_id uuid,
+    page_name text NOT NULL,
+    column_settings jsonb NOT NULL,
+    created_at timestamp without time zone DEFAULT now(),
+    updated_at timestamp without time zone DEFAULT now()
+);
+
+
+ALTER TABLE public.user_column_preferences OWNER TO reuelrivera;
+
+--
+-- Name: user_roles; Type: TABLE; Schema: public; Owner: reuelrivera
+--
+
+CREATE TABLE public.user_roles (
+    user_id uuid NOT NULL,
+    role_id integer NOT NULL
+);
+
+
+ALTER TABLE public.user_roles OWNER TO reuelrivera;
+
+--
+-- Name: users; Type: TABLE; Schema: public; Owner: reuelrivera
+--
+
+CREATE TABLE public.users (
+    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    email text NOT NULL,
+    password_hash text NOT NULL,
+    name text,
+    is_verified boolean DEFAULT false,
+    created_at timestamp without time zone DEFAULT now(),
+    updated_at timestamp without time zone DEFAULT now(),
+    roles text[] DEFAULT ARRAY[]::text[],
+    account_type text DEFAULT 'User'::text
+);
+
+
+ALTER TABLE public.users OWNER TO reuelrivera;
+
+--
+-- Name: forecast_revisions id; Type: DEFAULT; Schema: public; Owner: reuelrivera
+--
+
+ALTER TABLE ONLY public.forecast_revisions ALTER COLUMN id SET DEFAULT nextval('public.forecast_revisions_id_seq'::regclass);
+
+
+--
+-- Name: opportunity_revisions id; Type: DEFAULT; Schema: public; Owner: reuelrivera
+--
+
+ALTER TABLE ONLY public.opportunity_revisions ALTER COLUMN id SET DEFAULT nextval('public.opportunity_revisions_id_seq'::regclass);
+
+
+--
+-- Name: roles id; Type: DEFAULT; Schema: public; Owner: reuelrivera
+--
+
+ALTER TABLE ONLY public.roles ALTER COLUMN id SET DEFAULT nextval('public.roles_id_seq'::regclass);
+
+
+--
+-- Data for Name: forecast_revisions; Type: TABLE DATA; Schema: public; Owner: reuelrivera
+--
+
+COPY public.forecast_revisions (id, opportunity_uid, old_forecast_date, new_forecast_date, changed_by, changed_at, comment) FROM stdin;
+5	33a3cf8c-bc39-426d-ab89-8205213c8db9	\N	2025-12-01	RJR	2025-05-09 15:07:47.860943	\N
+6	1674d4c9-1e58-40c1-9a4b-baf887bcf9f6	\N	2025-09-02	RJR	2025-05-09 15:08:31.970213	\N
+7	1dccb6a6-a254-4309-b886-a526a3ec3d9e	\N	2025-05-19	RJR	2025-05-09 15:09:31.241752	\N
+8	719d637d-c09a-4c11-93be-ad493f5350e2	\N	2025-05-19	RJR	2025-05-09 15:09:42.808024	\N
+9	5f0b7338-2d77-4542-8e39-46f75f381f5d	\N	2025-05-19	RJR	2025-05-09 15:09:50.466945	\N
+10	eada792d-d7a9-470b-b6f3-9ab9bada06fd	\N	2025-05-19	RJR	2025-05-09 15:09:54.484406	\N
+11	13597778-d5db-4225-83fa-89651e9e3996	\N	2025-05-19	RJR	2025-05-09 15:10:00.682202	\N
+12	d6b097b9-4d54-4c30-9f06-5ffa774a64cd	\N	2025-05-19	RJR	2025-05-09 15:10:08.7676	\N
+13	2c16e9fa-aaba-4836-a102-896c2598e9bc	\N	2025-05-19	RJR	2025-05-09 15:10:15.101735	\N
+14	ff41790b-b6e5-4388-b20e-b9c4873c23f8	\N	2025-05-19	RJR	2025-05-09 15:10:23.214816	\N
+15	a1392db9-86fd-41a8-b9c7-0485d4a11c13	\N	2025-05-19	RJR	2025-05-09 15:10:37.241435	\N
+16	d28b114e-a984-4557-b0ff-1c77f4562d82	\N	2025-05-19	RJR	2025-05-09 15:10:41.431192	\N
+17	bc117670-7e46-47f1-a95e-3557dc80e20e	\N	2025-05-19	RJR	2025-05-09 15:10:45.916623	\N
+18	168e4b63-3aef-4f9d-899b-90f03a724eba	\N	2025-06-09	RJR	2025-05-09 15:11:08.422306	\N
+19	05231dda-a576-424a-a082-84e2af4c9702	\N	2025-06-16	RJR	2025-05-09 15:11:26.373075	\N
+20	f6d233da-53e7-4d13-a931-1d8a883f90f0	\N	2025-06-23	RJR	2025-05-09 15:11:46.98897	\N
+21	6990f368-806a-46a4-8c0f-19b703688ce8	\N	2025-06-16	RJR	2025-05-09 15:12:05.923649	\N
+22	86ec867b-9ba4-4939-9294-12d014ea6a00	\N	2025-04-29	RJR	2025-05-09 15:30:20.538024	\N
+23	33a3cf8c-bc39-426d-ab89-8205213c8db9	2025-12-01T00:00:00.000+08:00	2025-11-29	RJR	2025-05-20 09:50:04.811956	\N
+24	33a3cf8c-bc39-426d-ab89-8205213c8db9	2025-11-29T00:00:00.000+08:00	2025-11-29	RJR	2025-05-20 09:50:15.247835	\N
+25	33a3cf8c-bc39-426d-ab89-8205213c8db9	2025-11-29T00:00:00.000+08:00	2025-11-30	RJR	2025-05-20 09:50:21.194719	\N
+26	33a3cf8c-bc39-426d-ab89-8205213c8db9	2025-11-30T00:00:00.000+08:00	2025-11-22	RJR	2025-05-20 09:59:15.765156	\N
+27	33a3cf8c-bc39-426d-ab89-8205213c8db9	2025-11-22T00:00:00.000+08:00	2025-11-29	RJR	2025-05-20 09:59:26.506471	\N
+28	33a3cf8c-bc39-426d-ab89-8205213c8db9	2025-11-29T00:00:00.000+08:00	2025-11-21	RJR	2025-05-20 10:03:01.668081	\N
+29	33a3cf8c-bc39-426d-ab89-8205213c8db9	2025-11-21T00:00:00.000+08:00	2025-11-29	RJR	2025-05-20 10:03:07.250373	\N
+30	33a3cf8c-bc39-426d-ab89-8205213c8db9	2025-11-29T00:00:00.000+08:00	2025-11-21	RJR	2025-05-20 10:06:34.074326	\N
+31	33a3cf8c-bc39-426d-ab89-8205213c8db9	2025-11-21T00:00:00.000+08:00	2025-11-21	RJR	2025-05-20 10:06:43.372645	\N
+32	33a3cf8c-bc39-426d-ab89-8205213c8db9	2025-11-21T00:00:00.000+08:00	2025-11-22	RJR	2025-05-20 10:06:49.152774	\N
+33	33a3cf8c-bc39-426d-ab89-8205213c8db9	2025-11-22T00:00:00.000+08:00	2025-11-29	RJR	2025-05-20 10:06:56.318638	\N
+34	33a3cf8c-bc39-426d-ab89-8205213c8db9	2025-11-29T00:00:00.000+08:00	2025-11-29	RJR	2025-05-20 10:14:40.165219	\N
+35	33a3cf8c-bc39-426d-ab89-8205213c8db9	2025-11-29T00:00:00.000+08:00	2025-11-22	RJR	2025-05-20 10:14:44.05738	\N
+36	33a3cf8c-bc39-426d-ab89-8205213c8db9	2025-11-22T00:00:00.000+08:00	2025-11-29	RJR	2025-05-20 10:14:49.156322	\N
+37	33a3cf8c-bc39-426d-ab89-8205213c8db9	2025-11-29T00:00:00.000+08:00	2025-11-28	RJR	2025-05-20 10:15:55.448396	\N
+38	33a3cf8c-bc39-426d-ab89-8205213c8db9	2025-11-28T00:00:00.000+08:00	2025-11-29	RJR	2025-05-20 10:16:00.694306	\N
+39	33a3cf8c-bc39-426d-ab89-8205213c8db9	2025-11-29T00:00:00.000+08:00	2025-11-21	RJR	2025-05-20 10:16:05.075309	\N
+40	33a3cf8c-bc39-426d-ab89-8205213c8db9	2025-11-21T00:00:00.000+08:00	2025-11-29	RJR	2025-05-20 10:16:09.057521	\N
+41	8e23b753-b22a-4a54-a080-bb03e6e4478d	\N	2025-06-20	RJR	2025-05-21 08:21:08.498967	\N
+42	ee62b7c3-6882-45ec-9645-a5d120724200	\N	2025-06-20	RJR	2025-05-21 08:27:04.46109	\N
+43	8e23b753-b22a-4a54-a080-bb03e6e4478d	2025-06-20T00:00:00.000+08:00	2025-06-20	RJR	2025-05-21 08:27:50.60273	\N
+44	47a80e8f-e3b3-495c-9eb8-d804719cba0a	\N	2025-07-07	RJR	2025-05-21 08:46:56.238722	\N
+45	ca0ccde0-1163-416c-890c-d45589b7efff	\N	2025-07-07	RJR	2025-05-21 08:47:03.712708	\N
+46	48d90abe-25c0-4749-bea9-283cec724bd2	\N	2025-06-06	RJR	2025-05-21 08:47:32.761129	\N
+47	ef4b943e-c2fe-4dd2-ad99-7eb9346abdf8	\N	2025-06-06	RJR	2025-05-21 08:47:46.69391	\N
+48	4b8cae34-e8ba-40cd-9f78-54032bb02888	\N	2025-06-06	RJR	2025-05-21 08:48:37.477094	\N
+49	22c468c8-2408-4d42-92bb-84c356d2e26e	\N	2025-06-06	RJR	2025-05-21 08:49:01.755862	\N
+50	928e529b-907f-4e00-b59b-b2d9d3552df1	\N	2025-09-12	RJR	2025-05-21 08:49:29.203683	\N
+51	190b7d02-b47e-4105-8c39-94fb8669e5a1	\N	2025-06-06	RJR	2025-05-21 08:49:48.580257	\N
+52	be7df28e-2ba6-4582-9fad-0c638aff62f6	\N	2025-06-06	RJR	2025-05-21 08:50:31.721947	\N
+53	4a338ec7-9489-41dd-b7cf-7abb180a6cdf	\N	2025-06-06	RJR	2025-05-21 08:52:23.82256	\N
+\.
+
+
+--
+-- Data for Name: opportunity_revisions; Type: TABLE DATA; Schema: public; Owner: reuelrivera
+--
+
+COPY public.opportunity_revisions (id, opportunity_uid, revision_number, changed_by, changed_at, changed_fields, full_snapshot, forecast_date) FROM stdin;
+215	8b9f3cb1-86cd-45ff-acd5-2ac1fa1b2c7e	2	RJR	2025-05-28 12:09:50.476487	{"rev": 2, "Margin": null, "final_amt": "643200.00", "forecast_date": null, "Submitted Date": null, "Client Deadline": null}	{"rev": 2, "Margin": null, "final_amt": "643200.00", "forecast_date": null, "Submitted Date": null, "Client Deadline": null}	\N
+216	52fa4bf4-08f7-4748-805e-658e3a15a80e	2	RJR	2025-05-29 08:38:41.158364	{"rev": 2, "Margin": "17", "final_amt": "1963392.85", "forecast_date": null, "Submitted Date": null, "Client Deadline": "2025-03-20T16:00:00.000Z"}	{"rev": 2, "Margin": "17", "final_amt": "1963392.85", "forecast_date": null, "Submitted Date": null, "Client Deadline": "2025-03-20T16:00:00.000Z"}	\N
+\.
+
+
+--
+-- Data for Name: opps_monitoring; Type: TABLE DATA; Schema: public; Owner: reuelrivera
+--
+
+COPY public.opps_monitoring (encoded_date, project_name, project_code, rev, client, solutions, sol_particulars, industries, ind_particulars, date_received, client_deadline, decision, account_mgr, pic, bom, status, submitted_date, margin, final_amt, opp_status, date_awarded_lost, lost_rca, l_particulars, a, c, r, u, d, remarks_comments, uid, forecast_date) FROM stdin;
+2024-07-24	URC ESMO Marlen Extruder PLC Upgrade (PR#1200009601)	CMRP24070290	2	URC BCFG	Automation	PLC / SCADA	Manufacturing	F&B	2025-06-06	2025-02-18	GO	JMO	RJR	Partner	Submitted	2025-03-21	15	842273.16	LOST	2025-03-01	\N	\N	10-Existing	10 -Existing Solution	10 -Focus Business	10 -Reasonable Time	10 -Complete	SSW18Feb2025, HOLD BY END_USER	353bb248-ee65-43da-b0c5-f9787fad19cd	\N
+2024-09-06	Kingsford Hotel Bacolod CCTV	CMRP24090382	6	Megaworld	Electrification	CCTV	Buildings	CONSTRUCTION	2025-09-04	2025-09-17	GO	CBD	AVR	AVR	Submitted	2025-03-26	20	3748214.29	OP30	\N	\N	\N	\N	\N	\N	\N	\N	internal of Meg	839fa282-f0ea-499d-9a0e-7321505eb9fd	\N
+2024-09-16	Kingsford Hotel Structured Cabling	CMRP24090412	8	Megaworld	Electrification	SCS	Buildings	CONSTRUCTION	2025-09-10	2025-09-25	GO	CBD	MMR	MMR	Submitted	2025-02-04	17	22321428.57	OP100	2025-02-25	\N	\N	10-Existing	10 -Existing Solution	8 -Strategic Business	10 -Reasonable Time	10 -Complete	Jan13: \n- waiting for Megaworld feedback	95169a52-8673-4304-b131-ed4a69d1ef57	\N
+2024-11-05	Kingsford Hotel ACS & Traffic Management System	CMRP24110469	7	Megaworld	Electrification	ACS	Buildings	CONSTRUCTION	2025-10-30	2025-11-08	GO	CBD	RJR	SubCon	Submitted	2025-05-15	24	2977006.41	OP30	\N	\N	\N	10-Existing	10 -Existing Solution	8 -Strategic Business	10 -Reasonable Time	10 -Complete	Jan13: \n- waiting for Megaworld feedback	d4e06203-4a19-40cf-8c37-f3bb7b3945d3	\N
+2024-11-08	Jazeera Paints PCS7 Servers and Clients Upgrade	CMRP24110472	3	Jazeera Paints	Automation	PLC / SCADA	Manufacturing	MANUFACTURING	2025-11-11	\N	GO	ISP	ISP	SubCon	Submitted	2025-01-24	55	3796118.61	OP60	\N	\N	\N	5-New Account, No Champion	10 -Existing Solution	8 -Strategic Business	10 -Reasonable Time	10 -Complete	\N	092975e5-da61-42d8-b235-9f74e69204d5	\N
+2024-11-11	JX Metals Slitting Machine Panel Rehab	CMRP24120518	0	JX Metals Philippines, Inc.	Automation	ELECTRICAL	Manufacturing	SEMICON	2025-11-08	\N	GO	RTR	MMR	MMR	Submitted	2025-12-12	\N	340000.00	OP100	2025-01-25	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	WO 256012146	b6ea1d40-daa8-4d50-83e9-05b5a3d77081	\N
+2024-11-11	Jazeera Paints HLRA Cybersecurity Consultancy (Remote KSA)	CMRP24110470	1	Jazeera Paints	Digitalization	IT	Manufacturing	MANUFACTURING	2025-11-11	\N	GO	ISP	ISP	SubCon	Submitted	2025-01-24	23	405901.80	OP100	2025-05-25	\N	\N	5-New Account, No Champion	10 -Existing Solution	8 -Strategic Business	10 -Reasonable Time	10 -Complete	\N	2809a902-10a4-49c3-b08d-741e68607229	\N
+2024-11-19	URC Pamp 2 MVSG	CMRP24120532	0	URC BCFG	Electrification	ELECTRICAL	Manufacturing	F&B	2025-01-19	\N	GO	JMO	JMO	SubCon	For Revision	2025-01-16	19	8202545.21	OP30	\N	\N	\N	10-Existing	10 -Existing Solution	8 -Strategic Business	10 -Reasonable Time	10 -Complete	End-user looking for MVSG new location, 15Apr	c2acf048-3d61-4a1f-bb59-c6bf65d96ce8	\N
+2024-11-19	URC Pamp 2 Packaging Cooling Tunnel Controller & HMI Upgarde for L1 & L2	CMRP24120531	2	URC BCFG	Automation	PLC / SCADA	Manufacturing	F&B	2025-03-07	2025-03-14	GO	JMO	RJR	VIB	Submitted	2025-04-10	15	5904833.39	LOST	2025-04-01	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	Lost to JAM by 12.55% (5.164M VAT EX)	2703f50f-9ce2-46ce-96e0-298eb1e6c5ec	\N
+2024-11-21	NGC Main Street CCTV	CMRP24120519	1	Megaworld	Electrification	CCTV	Manufacturing	MANUFACTURING	2025-11-21	2025-03-26	GO	CBD	AVR	AVR	Submitted	2025-01-17	30	5338507.60	LOST	2025-05-25	\N	\N	\N	\N	\N	\N	\N	Awarded to Mighty Lynx	511052ee-5906-4691-8ae4-9c34a04710ab	\N
+2024-11-28	Pam 2 New Pampanga Warehouse CCTV requirements	CMRP24120535	0	URC BCFG	Electrification	CCTV	Manufacturing	F&B	2025-01-14	2025-01-21	GO	JMO	RJR	AVR	Submitted	2025-02-21	20	3916082.48	OP30	\N	\N	\N	10-Existing	5 -Need External Resource	8 -Strategic Business	5 -Budgetary	10 -Complete	Under Technical & Commercial Evaluation	030899c3-34b8-4782-b122-7bea2479593b	\N
+2025-01-03	Pam 1 Jaguar Plant PM of MVSG, Transformer  & Accessories	CMRP25010014	0	URC BCFG	Electrification	ELECTRICAL	Manufacturing	F&B	2025-01-03	\N	GO	JMO	JMO	SubCon	Submitted	2025-01-21	17	1249775.15	LOST	2025-04-01	\N	\N	10-Existing	5 -Need External Resource	5 -Peripheral Scope	5 -Budgetary	5 -Limited	Lost Bid to Tan Delta	8e5a1bd2-ba9a-4ebb-8d15-c7f38e27aa49	\N
+2025-01-06	URC SURE Supply of Vibration Transmitter	\N	\N	URC SURE	Automation	INSTRUMENTATION	Manufacturing	F&B	2025-01-02	2025-01-09	DECLINE	NSG	NSG	NSG	\N	\N	\N	\N	\N	\N	\N	\N	2-Existing account with No Orders	3 -No Previous Experience	2 -Non Core for Subcon	5 -Budgetary	2 -No Data	\N	c3cc3a1d-ae62-46db-81fc-1cbc4270ed62	\N
+2025-01-06	URC SURE Supply of Smart Positioner	\N	\N	URC SURE	Automation	INSTRUMENTATION	Manufacturing	F&B	2025-01-02	2025-01-09	DECLINE	NSG	NSG	NSG	\N	\N	\N	\N	\N	\N	\N	\N	2-Existing account with No Orders	3 -No Previous Experience	2 -Non Core for Subcon	5 -Budgetary	2 -No Data	\N	a70d229d-c58f-40d1-8012-a210a9451154	\N
+2025-01-06	Additional Scope for NCC FDAS - Option 1	CMRP25010004	0	​Northern Cement ​Corporation	Electrification	FDAS	Manufacturing	CEMENT	2025-01-03	2025-01-09	GO	LOS	NSG	SubCon	Submitted	2025-01-09	35	\N	\N	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	For Subcon - Difsys	08d24795-e8e5-4da3-9e48-68c38b607ad0	\N
+2025-01-06	NCC Maintenance of Line A Fire Detection Alarm System	CMRP25010004	0	​Northern Cement ​Corporation	Electrification	FDAS	Manufacturing	CEMENT	2025-01-03	2025-01-09	GO	NSG	NSG	SubCon	Submitted	2025-01-09	\N	\N	\N	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	For Subcon - Difsys	fa300ee0-854b-4f08-944c-514665928297	\N
+2025-01-06	Warehouse Freezer Additional Temp	CMRP24120528	1	ST Microelectronics	Automation	PLC / SCADA	Manufacturing	SEMICON	\N	\N	GO	CBD	RJR	DS	Submitted	2025-01-06	25	179670.21	OP90	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	Apr07:\n- Rayzen updated BOM last Apr 4, for revision\nApr24:\n-Final bom from Rayzen, to submit Apr25	049db1d2-0169-49ed-8344-7b133e946b7e	\N
+2025-01-07	URC SURE Supply of Tachometer	\N	\N	URC SURE	Automation	INSTRUMENTATION	Manufacturing	F&B	2025-01-06	\N	DECLINE	NSG	NSG	NSG	\N	\N	\N	\N	\N	\N	\N	\N	2-Existing account with No Orders	3 -No Previous Experience	2 -Non Core for Subcon	5 -Budgetary	2 -No Data	\N	ee7ec421-0b59-4bf9-ad75-643858cf9f58	\N
+2025-01-07	URC La Carlota Repair of 2 Units Soft Starter	\N	\N	URC SURE	Electrification	ELECTRICAL	Manufacturing	F&B	2025-01-07	\N	DECLINE	NSG	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	2-Existing account with No Orders	3 -No Previous Experience	2 -Non Core for Subcon	5 -Budgetary	10 -Complete	\N	80fdd9e4-c9af-463e-a328-370a19f782be	\N
+2025-01-07	Petron Pandacan Manual Filling B PLC and HMI Upgrade	CMRP25010001	0	Petron	Automation	PLC / SCADA	Power	OIL & GAS	2025-01-07	2025-01-07	GO	RTR	VIB	SubCon	Submitted	2025-01-07	15	491071.09	OP60	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	For Subcon DotX	ea28cc69-459e-4a6e-8595-5748c7393edf	\N
+2025-01-08	URC Pamp 2 Boiler Support	CMRP25020062	0	URC BCFG	Digitalization	PLC / SCADA	Manufacturing	F&B	2025-02-21	\N	GO	JMO	RJR	DS	For Revision	2025-02-25	\N	113770.45	Inactive	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	7 -Urgent	10 -Complete	Completed 21-Feb; Justified 400k Instead	e49e7d0e-9e88-45b9-86d0-6e79da220723	\N
+2025-01-24	FBI Servequest Office Project CCTV	CMRP25010022	0	Forthright Builders Inc.	Electrification	EE & AUX	Buildings	OTHERS	2025-01-24	\N	GO	LOS	CBG	Partner	Submitted	2025-02-13	25	1187333.06	OP30	\N	\N	\N	5-New Account, No Champion	10 -Existing Solution	10 -Core Business	7 -Urgent	5 -Limited	Need site survey ASAP	2617b2b8-4293-4a0a-acd7-0607f77b933f	\N
+2024-07-24	URC ESMO Piatto's Mixer PLC Controls (PR# 1200008744)	CMRP24070287	2	URC BCFG	Automation	PLC / SCADA	Manufacturing	F&B	2025-03-18	2025-03-21	GO	JMO	RJR	RJR	Submitted	\N	17	1963392.85	OP100	2025-04-25	\N	\N	10-Existing	10 -Existing Solution	10 -Focus Business	10 -Reasonable Time	10 -Complete	PO# 400142053 10-Apr-2025	52fa4bf4-08f7-4748-805e-658e3a15a80e	\N
+2025-01-08	MRT7 Station 1 ACS	CMRP25010002	3	T&D Power Systems	Electrification	ACS	Buildings	CONSTRUCTION	2025-01-07	\N	GO	CBD	MMR	SubCon	Submitted	2025-02-13	26	6696428.57	OP100	2025-02-25	\N	\N	5-New Account, No Champion	10 -Existing Solution	10 -Core Business	7 -Urgent	5 -Limited	Quote to IoT\nJan13: \n- Due to unavailability of documents and BOQ, quotation is based on assumptions\n- Client deadline ASAP\n- SE Team to set meeting with T&D and finalize BOQ(with buffer). Proposal will proceed with costing works	356671ab-2aaf-4fe8-9ae0-c50b8747f949	\N
+2025-01-09	MRT7 Station 12 ACS	CMRP25010003	6	Monocrete Inc.	Electrification	ACS	Buildings	CONSTRUCTION	2025-01-08	2025-01-15	GO	CBD	ASB	ASB	Submitted	2025-05-19	27	9628673.71	OP60	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Focus Business	7 -Urgent	10 -Complete	ACS only; to remove wires, conduits, hangers, and support	b1e0ada1-9f39-4363-9fb6-5fe1f8117a11	\N
+2025-01-09	MRT7 Station 12 Depot ACS	CMRP25010010	4	Monocrete Inc.	Electrification	ACS	Buildings	CONSTRUCTION	2025-01-08	2025-01-15	GO	CBD	ASB	ASB	Submitted	2025-05-19	27	5397689.89	OP60	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Focus Business	7 -Urgent	10 -Complete	ACS only; to remove wires, conduits, hangers, and support	25bcf9be-2270-4ab6-b8de-14b294a7c37e	\N
+2025-01-10	Installation of 2 sets Lightning Arrester_PR#1200014782	\N	\N	URC SURE	Electrification	CCTV	Manufacturing	F&B	2025-01-10	2025-01-17	DECLINE	JMO	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	10-Existing	5 -Need External Resource	2 -Non Core for Subcon	7 -Urgent	5 -Limited	\N	e5b9c481-5e78-4ae6-b1cb-a990467dc998	\N
+2025-01-10	S&I Auxiliary Works (FDAS & Tel) @ Mandaluyong Legislative Works	CMRP25010031	0	WHITEPORT, Inc.	Electrification	FDAS	Buildings	CONSTRUCTION	2025-01-10	2025-02-07	DECLINE	JMO	CBG	CBG	\N	\N	\N	\N	\N	\N	\N	\N	5-New Account, No Champion	10 -Existing Solution	2 -Non Core for Subcon	10 -Reasonable Time	10 -Complete	Apr 10: -ACS to input QTN from -PABGM - no quote	d414c48a-2237-40cd-b5dc-80a318064ec2	\N
+2025-01-13	RCBC Chiller #4 and #5 ACB Replacement	CMRP25010006	2	Applied Thermal Technology Solution Corporation	Electrification	ELECTRICAL	Buildings	CONSTRUCTION	2025-01-10	2025-01-21	GO	CBD	NSG	MMR	Submitted	2025-02-05	27	1250000.00	OP100	2025-02-25	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	Jan13:\nFor Site Inspection: SE & MMR\nJan20:\n-waiting for DAHUA\n-Mechanical Contractor (subcon: Jays from URC, sir Jun from Unilab)\n-need reference from the subcon, and detailed limitation/exclusions of their offers	165d83ad-bf49-41eb-ab40-4c8840931c96	\N
+2025-01-13	URC SURE PR#100012098 - Current Transducer	\N	\N	URC SURE	Automation	INSTRUMENTATION	Manufacturing	F&B	2025-01-10	\N	DECLINE	NSG	NSG	NSG	\N	\N	\N	\N	\N	\N	\N	\N	2-Existing account with No Orders	3 -No Previous Experience	2 -Non Core for Subcon	5 -Budgetary	2 -No Data	\N	e219d33c-e682-4734-9b81-60f56e8662c7	\N
+2025-01-13	URC SURE PR#1000115647 - Solenoid Valve	\N	\N	URC SURE	Automation	INSTRUMENTATION	Manufacturing	F&B	2025-01-13	\N	DECLINE	NSG	NSG	NSG	\N	\N	\N	\N	\N	\N	\N	\N	2-Existing account with No Orders	3 -No Previous Experience	2 -Non Core for Subcon	5 -Budgetary	2 -No Data	\N	1c1c476f-d7d6-44b2-8d0c-ebbca67757c4	\N
+2025-01-13	ADI B1 Existing BMS Migration and Integration	CMRP25010005	2	Analog Devices Inc.	Automation	BMS	Manufacturing	SEMICON	2025-01-08	\N	GO	LOS	RJR	RJR	Submitted	2025-02-17	27	435131.28	OP90	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	5 -Limited	Waiting for Client's IO List\nJan13:\n- CMRP has 1 spare of PLC, but no IO Modules\n- if not sufficient, request from partners/supplier for service units\n- Mtech, Iaworx, Difsys\nMar31:\n- ADI focuses on Bldg 3	6a62914a-58d5-4458-a21f-147cac60eba8	\N
+2025-01-13	Intellismart Manila Water PLC and Instrumentation	CMRP25010007	1	Intellismart	Automation	PLC / SCADA	Buildings	CONSTRUCTION	2025-01-10	\N	GO	RTR	RJR	VIB	Submitted	2025-03-13	22	1280230.34	OP60	\N	\N	\N	2-Existing account with No Orders	10 -Existing Solution	7 -Core + Peripheral	5 -Budgetary	5 -Limited	\N	c3452ad1-2acd-4595-8560-39e790fd5aa2	\N
+2025-01-14	Steelworld Digital Modules/PLC Troubleshooting	\N	\N	Steelworld Manufacturing Corporation	Automation	PLC / SCADA	Manufacturing	MANUFACTURING	2025-01-14	\N	DECLINE	RTR	VIB	SubCon	\N	\N	\N	\N	\N	\N	\N	\N	5-New Account, No Champion	10 -Existing Solution	8 -Strategic Business	5 -Budgetary	5 -Limited	For Subcon to DotX,waiting for client to send password of machines, dotx offered upgrade	e176c3f6-c066-4211-8f5b-3dfccbd60117	\N
+2025-01-14	Room Temp Monitoring	\N	\N	Grand Apex Construction Inc.	Electrification	FDAS	Buildings	CONSTRUCTION	2025-01-14	\N	DECLINE	CBD	VIB	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	VIB Feb03: Yek Yeu M. Andaya, no reply to inquiry through viber and email.\nFeb10: to ask support from NSG to followup	6a90853b-5c0f-4a21-9b52-8d8760355257	\N
+2025-01-15	Crimson Clark Chiller Management System	CMRP25010013	0	Applied Thermal Technology Solution Corporation	Automation	PLC / SCADA	Buildings	CONSTRUCTION	2025-01-15	2025-01-21	GO	CBD	RJR	RJR	Submitted	2025-01-21	\N	3118352.39	OP30	\N	\N	\N	\N	\N	\N	\N	\N	Budgetary\nJan20:\n- Offer Siemens Building	f3c76b61-148c-4121-b611-d439412b8b3a	\N
+2025-01-16	Whiteport Supply of Panel Boards & ECBs for FTS (Binondo) Project	CMRP24120523	1	Whiteport, Inc.	Electrification	ELECTRICAL	Buildings	CONSTRUCTION	2025-01-16	\N	GO	NSG	NSG	SubCon	Submitted	2025-01-16	25	1076855.05	OP30	\N	\N	\N	5-New Account, No Champion	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	3a97b055-31f1-4195-9ba8-3b5c7a37667e	\N
+2025-01-16	Riviera Golf Club Replacement of VFD	CMRP24040110	1	Riviera Golf Club, Inc.	Electrification	ELECTRICAL	Buildings	OTHERS	2025-01-16	\N	GO	NSG	NSG	SubCon	Submitted	2025-01-16	17	\N	\N	2025-01-01	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	Awarded: Jan 02, 2025\nPO Cancellation to Riviera Feb 28, 2025	1358b6e4-6165-41be-ad91-b791b3fd35f1	\N
+2025-01-17	Difsys Supply of UTP Lan Cable	CMRP25010011	0	Digitally Intelligent Facility Systems, Inc.	Automation	IT	Manufacturing	OTHERS	2025-01-13	2025-01-20	GO	NSG	NSG	SubCon	Submitted	2025-01-20	25	25378.89	OP30	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	267a13f9-bac4-407a-86f9-96f37b260f9d	\N
+2025-01-17	MRT7 Station 9 VO (additional devices)	CMRP25010009	0	Archipelago Builders Corporation	Electrification	ACS	Buildings	CONSTRUCTION	2025-01-17	2025-01-20	GO	CBD	NSG	SE	Submitted	2025-01-21	19	1005600.47	OP30	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	Ongoing discussion w/ Management	d58153fb-de83-4418-b2bd-1b0a3eff7b00	\N
+2025-01-17	FCF Minerals Supply of Siemens MCCB	\N	\N	FCF Minerals Corporation	Automation	PLC / SCADA	Manufacturing	UTILITIES	2025-01-16	\N	DECLINE	NSG	NSG	NSG	\N	\N	\N	\N	\N	\N	\N	\N	5-New Account, No Champion	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	01/20/2025: For Client Approval, submitted clarification \n01/23/2025: Not Responsive | Declined Supply Opps	005ec25a-f96c-4217-b9a8-0c1c5b01ee60	\N
+2025-01-18	UEO1 Walkthrough Metal Detectors	CMRP25010019	0	Megaworld	Electrification	EE & AUX	Buildings	CONSTRUCTION	2025-01-17	2025-01-21	GO	CBD	RJR	CBG	Submitted	\N	19	404933.04	LOST	2025-02-01	Commercial Offer Optimization	Overstimation of costs	\N	\N	\N	\N	\N	Jan20:\n-waiting for PDX quotation	790f040c-00be-42f9-9cc1-77e0970e228b	\N
+2025-01-18	LA CARLOTA Distillation FDAS PM & Gas Detector & Alarm Inst'n PR No. 1200007856	CMRP	\N	URC SURE	Electrification	FDAS	Manufacturing	MANUFACTURING	2025-01-18	2025-01-25	DECLINE	JMO	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	2-Existing account with No Orders	5 -Need External Resource	2 -Non Core for Subcon	7 -Urgent	5 -Limited	\N	772804c4-7fa7-4ca3-b45a-24dc47216c56	\N
+2025-01-18	LA CARLOTA Distillery Rehabilitation & Centralization of 7-Zones FDAS	CMRP	\N	URC SURE	Electrification	FDAS	Manufacturing	MANUFACTURING	2025-01-18	2025-01-25	DECLINE	JMO	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	2-Existing account with No Orders	5 -Need External Resource	2 -Non Core for Subcon	7 -Urgent	5 -Limited	\N	fe9a72a6-c7c3-48b4-b1a0-b0b3a860953a	\N
+2025-01-18	Project Pylon Auxiliary	\N	\N	Wiz Winner Inc. /Monde	Electrification	EE & AUX	Manufacturing	MANUFACTURING	2025-01-18	2025-01-29	DECLINE	LOS	MMR	MMR	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	af2e8ea0-e191-4249-bbe9-ae5ba3102645	\N
+2025-02-05	Netpac STT BMS Desigo V6 transfer	\N	\N	\N	Automation	BMS	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	4f332212-f63d-403a-bccf-3ff39e96e5e4	\N
+2025-01-19	WPI NGBP Supply & Deliver 7-Switchgear & 37-Transformer	CMRP25010008	0	WHITEPORT, Inc.	Electrification	ELECTRICAL	Buildings	CONSTRUCTION	2025-01-07	2025-01-09	GO	NSG	NSG	SubCon	Submitted	2025-01-17	19	\N	\N	\N	\N	\N	2-Existing account with No Orders	5 -Need External Resource	7 -Core + Peripheral	7 -Urgent	10 -Complete	For Sub Con - G-Tech & SESCO (Rua Source no response)\nJan13: Partial offer for G=Switch gear only\n- Need to cover consultant (IN-HOUSE DATA LAND) to have an edge in the opportunity\n- doublecheck quotation from G Tech and JMO contacts\n- info from end user: local fabricator is allowed	0b73ae7d-b058-4972-ae6b-c29cc2507f46	\N
+2025-01-20	NCC ECC Design, Supply, Installation and Commissioning of FDAS and Fire Suppression using Water\nDeluge System in Substation 1 and 2: 6 x 25 MVA Power Transformer.	CMRP25	\N	NCC	Electrification	FDAS	Manufacturing	CEMENT	2025-01-16	\N	PENDING	LOS	CBG	SubCon	Submitted	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	Hyblaze to subcon fire suppression; Difsys for FDAS - for follow up c/o Ian	85f4990e-c743-49f3-a643-e08b5b18758d	\N
+2025-01-20	NPI Supply and Installation of Ethernet Switch 16port	CMRP25010012	0	Net Pacific, Inc.	Automation	PLC / SCADA	Buildings	CONSTRUCTION	2025-01-20	2025-01-21	GO	NSG	NSG	DS	Submitted	2025-01-21	36	65970.43	OP100	2025-01-25	\N	\N	10-Existing	\N	\N	\N	\N	\N	3a6e5026-0d26-43b9-917a-edca30d4edca	\N
+2025-01-20	NCC ECC Design, Supply, Install & Commission FDAS in Substation 1 & 2 Switchgear\nRoom	\N	\N	NCC	Electrification	FDAS	Manufacturing	CEMENT	2025-01-16	\N	GO	LOS	CBG	SubCon	Submitted	2025-03-18	18	2676886.68	OP30	\N	\N	\N	\N	\N	\N	\N	\N	Hyblaze to subcon fire suppression; Difsys for FDAS - for follow up c/o Ian	c7132474-d577-49ba-aa83-9095756ccee9	\N
+2025-01-20	URC Cal Rewinding of 3 Induction Motors  PR 1000123808	CMRP	\N	URC BCFG	Electrification	ELECTRICAL	Manufacturing	F&B	2025-01-20	\N	DECLINE	JMO	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	33ae48b9-9696-4116-ae2b-4e00c66616b3	\N
+2025-01-20	IBEL PA/BX System	CMRP25010021	1	Megaworld	Electrification	PABGM	Buildings	CONSTRUCTION	2025-01-17	2025-01-29	DECLINE	CBD	MMR	AVR	Submitted	2025-02-14	15	14857164.65	\N	\N	\N	\N	\N	\N	\N	\N	\N	Jan20:\nwaiting for PDX quotation	7a3ca2b7-8acb-4db8-8d1b-30f9119a993b	\N
+2025-01-20	Pilmico Tarlac Feedmill 2 Automation	\N	\N	Pilmico	Automation	PLC / SCADA	Manufacturing	OTHERS	2025-01-09	\N	GO	RTR	RJR	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	For Site Inspection on Jan 22	83938cc8-9598-4e4b-a8e8-028546d1afa4	\N
+2025-01-20	MRT7 Station 12 O&M ACS	CMRP25010015	3	Monocrete	Electrification	ACS	Buildings	CONSTRUCTION	\N	\N	GO	CBD	MMR	MMR	Submitted	2025-02-05	22	6250000.00	OP30	\N	\N	\N	\N	\N	\N	\N	\N	To follow	c10b45c6-ba92-496c-a11b-a34a23c5bfe3	\N
+2025-01-21	Supply & Deliver 63kWp Solar Hybrid System for Napsan Villas	CMRP24110507	\N	WHITEPORT, Inc.	Electrification	SOLAR	Power	CONSTRUCTION	2025-01-21	2025-02-11	DECLINE	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	5-New Account, No Champion	5 -Need External Resource	2 -Non Core for Subcon	5 -Budgetary	10 -Complete	NO Subcon for Installation	fc97c985-3a27-4d2a-b4ad-90094378cbb7	\N
+2025-01-21	DMCI Metrobank Head Office BMS & Aux	\N	\N	DMCI	Automation	BMS	Buildings	CONSTRUCTION	2025-01-17	2025-02-07	DECLINE	CBD	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	For site presentation\nFor Info gathering\n-ask for extension\n-DMCI leverage Siemens in BMS c/o Sir Rojel\n-competitor: IATech using ABB	126656f3-274a-43fa-86d8-832582f659b0	\N
+2025-01-21	URC Bagumbayan_S&I Power Meters & Wiring Components (PR 1200014060)	CMRP25010018	0	URC-BCFG	Electrification	EE & AUX	Manufacturing	F&B	2025-01-21	2025-01-28	GO	JMO	MMR	MMR	Submitted	2025-01-24	15	451799.99	LOST	2025-01-01	Commercial Offer Optimization	Overstimation of costs, Rushed preparation resulting in low-quality proposals.	10-Existing	10 -Existing Solution	10 -Focus Business	7 -Urgent	5 -Limited	wiining Bid 200k+ only	deaa1723-e174-4320-8e61-a1b6eb6c9fd2	\N
+2025-01-22	Copper and Ammonia FMCS Integration	CMRP25010032	0	ST Microelectronics	Automation	INSTRUMENTATION	Manufacturing	SEMICON	2025-01-22	2025-01-28	GO	CBD	RJR	RJR	Submitted	2025-02-03	\N	82624.94	OP100	2025-02-25	\N	\N	\N	\N	\N	\N	\N	\N	11daf982-9eae-477b-a852-6b76516f8e89	\N
+2025-01-22	Magnolia Supply of Level Floatswitch	\N	\N	Magnolia, Inc.	Digitalization	INSTRUMENTATION	Manufacturing	F&B	2025-01-22	\N	DECLINE	NSG	NSG	NSG	\N	\N	\N	\N	\N	\N	\N	\N	8-With Account Champion	3 -No Previous Experience	5 -Peripheral Scope	5 -Budgetary	2 -No Data	\N	d3f9df72-7d4f-4c6e-af99-8e3ce1c7f293	\N
+2025-01-22	URC Passi PR#1000124112 - Electrode	\N	\N	URC SURE	Automation	INSTRUMENTATION	Manufacturing	F&B	2025-01-22	\N	DECLINE	NSG	NSG	NSG	\N	\N	\N	\N	\N	\N	\N	\N	2-Existing account with No Orders	3 -No Previous Experience	5 -Peripheral Scope	5 -Budgetary	2 -No Data	\N	d488c81a-24c4-48a3-a1a7-591c89acc26e	\N
+2025-01-22	BBP Sheraton Manila Hotel Chiller Plant Energy Optimization	CMRP25010016	3	BBP	Electrification	EE & AUX	Buildings	CONSTRUCTION	2025-01-22	\N	GO	RTR	VIB	SE	Submitted	2025-03-07	15	2570000.00	OP100	2025-03-25	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	VIB Feb03: SE already sent BOM, waiting for final approved docs (SOW, components list, io list from BBP)	c675d93e-93cb-4f83-990a-8e06d1a4600b	\N
+2025-01-22	Knoll BMS	\N	\N	Knoll JB Packaging Corporation	Automation	BMS	Manufacturing	MANUFACTURING	2025-01-22	\N	GO	RTR	EIS	EIS	Submitted	\N	\N	\N	\N	\N	\N	\N	5-New Account, No Champion	10 -Existing Solution	10 -Core Business	5 -Budgetary	10 -Complete	\N	8ccd3d9c-5449-4200-8f6f-e2fe7131dafb	\N
+2025-01-22	Replacement of Capacitor and its Aux in CapBank B LVSG Nursing Tower 1	\N	0	St. Luke's	Electrification	ELECTRICAL	Buildings	OTHERS	2025-01-20	2025-02-03	GO	CBD	MMR	MMR	Submitted	2025-01-30	16	3039803.58	OP30	\N	\N	\N	\N	\N	\N	\N	\N	\N	d3eb29d4-40cc-4ef5-9850-6027e0a94771	\N
+2025-01-23	Repair/Programming Siemens HMI LCD @ Water Treatment Plant (PR#1000126500)	CMRP25020040	0	URC SURE Ursumco	Automation	PLC / SCADA	Manufacturing	MANUFACTURING	2025-01-23	2025-01-30	GO	JMO	VIB	VIB	Submitted	2025-01-27	38	399822.38	LOST	2025-01-01	Competitive Landscape	Competitor is gencon/prev contractor//fabricator/core skilled	10-Existing	10 -Existing Solution	8 -Strategic Business	5 -Budgetary	5 -Limited	Lost to Cebu-based Metrologic (143k Only)	47a9e1a6-bfae-48a4-8461-ef9e7f48b2d6	\N
+2025-01-23	IBEL AVR	\N	3	Megaworld	Electrification	ELECTRICAL	Buildings	CONSTRUCTION	2025-01-23	2025-01-28	GO	CBD	MMR	\N	Submitted	2025-01-27	\N	886000.72	LOST	2025-03-01	\N	\N	\N	\N	\N	\N	\N	Awarded to winning Genset supplier (package)	4770493d-b580-4ff8-b290-04f28de36dae	\N
+2025-01-23	MRT7 S7 FDAS VO	CMRP22030140VOFDAS	0	ARAJA	Electrification	FDAS	Buildings	CONSTRUCTION	2025-01-23	2025-01-23	GO	RTR	VIB	SE	Submitted	2025-01-23	28	1638709.41	OP100	2025-01-25	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	7 -Urgent	10 -Complete	SC000014218	44836745-3d02-42d5-b521-091c2e050e02	\N
+2025-01-23	MRT7 S7 ACS VO	CMRP22030140VOACS	0	ARAJA	Electrification	ACS	Buildings	CONSTRUCTION	2025-01-23	2025-01-23	GO	RTR	VIB	SE	Submitted	2025-01-23	31	1634377.86	OP100	2025-01-25	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	7 -Urgent	10 -Complete	\N	46180aee-a0c8-4320-b5bd-0df779485cce	\N
+2025-01-23	NGC EE & Aux (Works)	CMRP25010024	9	Megaworld	Electrification	EE & AUX	Buildings	CONSTRUCTION	2025-01-23	2025-02-14	GO	CBD	CBG	CBG	Submitted	2025-05-15	21	8469643.13	OP30	\N	\N	\N	\N	\N	\N	\N	\N	June or Q3 target awarding	3feffc2e-29ed-471b-9b94-74e29e8d63af	\N
+2025-01-23	WPI NGBP Supply & Deliver 7-Switchgear & 37-Transformer	CMRP25010008	1	WHITEPORT, Inc.	Electrification	ELECTRICAL	Buildings	CONSTRUCTION	2025-01-07	2025-01-24	GO	NSG	NSG	SubCon	Submitted	2025-01-24	19	170113926.89	OP30	\N	\N	\N	2-Existing account with No Orders	5 -Need External Resource	7 -Core + Peripheral	7 -Urgent	10 -Complete	\N	87279d5f-7dbd-4c79-ae1a-90a8b23540b9	\N
+2025-01-23	WPI Supply and Delivery of Panel Boards for QC Congress Secretarial Project	CMRP25010021	1	WHITEPORT, Inc.	Electrification	ELECTRICAL	Buildings	CONSTRUCTION	2025-01-23	2025-01-24	GO	NSG	NSG	NSG	Submitted	2025-01-24	25	71745.52	OP30	\N	\N	\N	5-New Account, No Champion	8 -Need to Customize	8 -Strategic Business	5 -Budgetary	5 -Limited	\N	90b7d740-3760-4f09-9d1d-1a9768196ce2	\N
+2025-01-24	SMYPC CGP Field Wiring & Siemens Control Hardware	\N	0	San Miguel Yamamura Packaging Corporation	Automation	PLC / SCADA	Manufacturing	MANUFACTURING	2025-01-24	2025-01-30	GO	RTR	AVR	MMR	Submitted	\N	\N	\N	\N	\N	\N	\N	10-Existing	10 -Existing Solution	8 -Strategic Business	7 -Urgent	10 -Complete	\N	c5f2bea5-e2b6-4369-b7d1-2e7b97a6f243	\N
+2025-01-24	ADI Supply of BMS Spare Parts	CRMP25010017	1	Analog Devices, Inc.	Automation	BMS	Manufacturing	SEMICON	2025-01-23	2025-01-24	GO	NSG	NSG	DS	Submitted	2025-01-24	25	205536.54	OP90	\N	\N	\N	10-Strategic	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	b670baa9-75fa-4ab2-a9d8-06418a8bdddb	\N
+2025-01-24	Difsys Supply of Patch Cords	CRMP25010023	0	Digitally Intelligent Facility Systems, Inc.	Automation	IT	Manufacturing	OTHERS	2025-01-24	2025-01-24	GO	NSG	NSG	NSG	Submitted	2025-01-24	20	59164.06	OP30	\N	\N	\N	10-Existing	10 -Existing Solution	8 -Strategic Business	10 -Reasonable Time	10 -Complete	From Netpacific Stock	f63eae06-cf60-49a1-a45a-58a2f867eaef	\N
+2025-01-24	ACS Variation Order - MRT 7 Station 4	CMRP24100443	1	Rhodium 688 Builders, Inc	Electrification	ACS	Buildings	CONSTRUCTION	2025-01-24	2025-01-24	GO	NSG	NSG	SubCon	Submitted	2025-01-24	19	486913.69	OP30	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Focus Business	10 -Reasonable Time	10 -Complete	Updated VO - ACS Devices Only	e7f8cea5-9d66-48cc-8c79-711e7421497b	\N
+2025-01-24	ACS Variation Order - MRT 7 Station 5	CMRP24100444	1	Rhodium 688 Builders, Inc	Electrification	ACS	Buildings	CONSTRUCTION	2025-01-24	2025-01-24	GO	NSG	NSG	SubCon	Submitted	2025-01-24	19	401045.46	OP30	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Focus Business	10 -Reasonable Time	10 -Complete	Updated VO - ACS Devices Only	bee40b68-d116-4479-b50b-550e36db755b	\N
+2025-01-24	Velaris Tower 2 FDAS	\N	\N	RLB	Electrification	FDAS	Buildings	CONSTRUCTION	2025-01-24	2025-01-29	DECLINE	CBD	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	c3de2eee-274c-413f-a576-31d16324e192	\N
+2025-01-24	Zimmon Industries NCCC Mall Davao BMS	CMRP24020041	2	Zimmon Industries	Automation	BMS	Buildings	CONSTRUCTION	\N	\N	GO	LOS	RJR	RJR	Submitted	2025-01-30	17	26442832.07	OP30	\N	\N	\N	8-With Account Champion	3 -No Previous Experience	10 -Core Business	5 -Budgetary	5 -Limited	\N	2abaa522-bc84-4b76-ac44-d3fcd62558bb	\N
+2025-01-24	FBI Servequest Office Project FDAS	\N	0	Forthright Builders Inc.	Electrification	EE & AUX	Buildings	OTHERS	2025-01-24	\N	GO	LOS	CBG	Partner	Submitted	2025-02-13	35	274734.56	OP30	\N	\N	\N	5-New Account, No Champion	10 -Existing Solution	10 -Core Business	7 -Urgent	5 -Limited	\N	661bccbd-f149-42e5-ae45-08df71e6e084	\N
+2025-01-24	FBI Serveuest Office Project Boom Barrier	\N	0	Forthright Builders Inc.	Electrification	EE & AUX	Buildings	OTHERS	2025-01-24	\N	GO	LOS	CBG	Partner	Submitted	2025-02-13	30	500750.08	OP30	\N	\N	\N	5-New Account, No Champion	10 -Existing Solution	10 -Core Business	7 -Urgent	5 -Limited	\N	ee4bf749-f56f-48d1-a6ad-9e546bdd1aaa	\N
+2025-01-25	ORCA-Taguig 399.8kWp Solar (PPA)	CMRP23030049	11	ENTORIA Energy Asia	Electrification	SOLAR	Power	COLD STORAGE	2025-01-25	2025-03-31	GO	JMO	JMO	Partner	Submitted	2025-03-31	20	18568711.62	OP60	\N	\N	\N	5-New Account, No Champion	8 -Need to Customize	8 -Strategic Business	5 -Budgetary	10 -Complete	23May: ENTORIA request SESCO Water Proofing Methodology	cbe46b9b-16b5-41b0-9059-d581dd1ab7cc	\N
+2025-01-28	MRT7 Station 8 ACS (Devices)	CMRP25020036	2	NW Steel Technologies Inc	Electrification	ACS	Buildings	CONSTRUCTION	2025-01-30	\N	GO	CBD	MMR	MMR	Submitted	2025-03-11	27	4537572.82	OP100	2025-05-25	\N	\N	\N	\N	\N	\N	\N	\N	062a91e5-6cb1-4d52-86e0-7df2ef1ca6a3	\N
+2025-01-28	MRT7 Station 8 ACS (Works)	CMRP25020036	2	NW Steel Technologies Inc	Electrification	ACS	Buildings	CONSTRUCTION	2025-01-30	\N	GO	CBD	MMR	MMR	Submitted	2025-03-11	27	2909213.40	OP90	\N	\N	\N	\N	\N	\N	\N	\N	to follow	f2b5ae85-c233-4efe-bb8d-b89f83de91dc	\N
+2025-01-31	MRT7 S7 LIGHTINGS VO	CMRP22030140VOLIGHTINGS	0	ARAJA	Electrification	FDAS	Buildings	CONSTRUCTION	2025-01-30	2025-01-31	GO	RTR	VIB	SE	Submitted	2025-01-31	39	5750924.77	OP90	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	7 -Urgent	10 -Complete	\N	63b54939-53f4-4463-9d6b-bd72b66b5e79	\N
+2025-01-31	MRT7 S7 SMALL POWER VO	CMRP22030140VOSMALLPOWER	0	ARAJA	Electrification	FDAS	Buildings	CONSTRUCTION	2025-01-30	2025-01-31	GO	RTR	VIB	SE	Submitted	2025-01-31	38	2498470.96	OP90	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	7 -Urgent	10 -Complete	\N	2a7d44b4-d1d9-4731-883e-2884c554684d	\N
+2025-01-31	Holcim Supply of Siemens Contactor	CMRP24120538	0	Holcim Philippines, Inc.	Electrification	ELECTRICAL	Manufacturing	CEMENT	2025-01-28	2025-01-28	GO	NSG	NSG	NSG	Submitted	2025-01-28	15	93066.60	OP100	2025-01-25	\N	\N	10-Existing	10 -Existing Solution	10 -Focus Business	10 -Reasonable Time	10 -Complete	\N	b572981c-a698-48ef-a401-52549f114378	\N
+2025-01-31	URC Sonedco Supply of Proximity Sensor	\N	\N	URC SURE	Digitalization	INSTRUMENTATION	Manufacturing	MANUFACTURING	2025-01-27	\N	DECLINE	NSG	NSG	\N	\N	\N	\N	\N	\N	\N	\N	\N	2-Existing account with No Orders	3 -No Previous Experience	2 -Non Core for Subcon	7 -Urgent	2 -No Data	\N	82d87524-43cc-4c2c-ab3e-401d0772854c	\N
+2025-01-31	Maxeon Supply of Schneider Analog Input Kit	\N	\N	SunPower Philippines Mfg. Ltd.	Digitalization	PLC / SCADA	Manufacturing	MANUFACTURING	2025-01-27	\N	DECLINE	NSG	NSG	\N	\N	\N	\N	\N	\N	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	Pending Payment	8ed844eb-f46c-4d24-bf2f-e190c78ddc0c	\N
+2025-01-31	URC Supply of Signal Splitter	\N	\N	URC SURE	Digitalization	INSTRUMENTATION	Manufacturing	MANUFACTURING	2025-01-30	\N	DECLINE	NSG	NSG	\N	\N	\N	\N	\N	\N	\N	\N	\N	2-Existing account with No Orders	3 -No Previous Experience	2 -Non Core for Subcon	7 -Urgent	2 -No Data	\N	8fd97e45-a257-4436-bb26-d2875e929b48	\N
+2025-01-31	NURC-Cav_Install 60A Ind'l Socket @ HY Sumitomo Hot Runner Controller PR1200015255	CMRP25020040	0	URC BCFG	Electrification	ELECTRICAL	Manufacturing	F&B	2025-01-31	2025-02-11	GO	JMO	CBG	CBG	Submitted	2025-02-14	17	357004.76	LOST	2025-02-01	\N	\N	2-Existing account with No Orders	8 -Need to Customize	5 -Peripheral Scope	7 -Urgent	5 -Limited	Late Bid submission	ad7f06fb-7a12-46f8-87d4-42ce47e599ba	\N
+2025-01-31	Rockwell URC Ursumco New Control Installation of Old House Pans 10 & 11, New House Pans 1, 2, 3 & 4, and Bryant Pans 1, 2, 3 & 5	CMRP24120536	0	Rockwell	Automation	PLC / SCADA	Manufacturing	F&B	\N	\N	GO	RTR	RTR	\N	Submitted	2025-01-31	\N	9397553.68	OP30	\N	\N	\N	\N	\N	\N	\N	\N	\N	054921ed-a265-4659-ae58-84c21c0662d3	\N
+2025-02-03	URC Passi Supply of Sensors and Transmitters	\N	\N	URC SURE	Digitalization	INSTRUMENTATION	Manufacturing	MANUFACTURING	2025-01-31	\N	DECLINE	NSG	NSG	\N	\N	\N	\N	\N	\N	\N	\N	\N	10-Existing	3 -No Previous Experience	2 -Non Core for Subcon	5 -Budgetary	2 -No Data	\N	2bedb025-9e5d-4db9-a58e-26583d407f54	\N
+2025-02-03	NCC Maintenance of Line A Fire Detection Alarm System	CMRP25010004	1	​Northern Cement ​Corporation	Electrification	FDAS	Manufacturing	CEMENT	2025-01-28	2025-02-04	GO	NSG	NSG	Partner	\N	2025-02-05	\N	\N	\N	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	d37e2d5f-f482-4b80-a22f-be69128d1c00	\N
+2025-02-03	NCC Network Booster, Workstation and Additional Annunciator	CMRP25020035	0	​Northern Cement ​Corporation	Electrification	FDAS	Manufacturing	CEMENT	2025-01-28	2025-02-04	GO	NSG	NSG	Partner	Submitted	2025-02-05	30	2317469.96	OP90	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	mar31\n- awarding on May	c74f4a49-bc95-4dbf-9b36-9cbad9175974	\N
+2025-02-04	NCC Supply and Delivery of Centralized Maintenance Building Electrical Panels	CMRP24120511	0	Northern Cement Corporation	Electrification	ELECTRICAL	Manufacturing	CEMENT	2025-01-20	2025-02-04	GO	LOS	NSG	NSG	Submitted	2025-02-04	23	1979826.19	OP90	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	mar31\nQ4 awarding	c5a22781-c332-4a76-98a2-9956ad23044b	\N
+2025-02-04	SONEDCO- replacement of SCADA, Orion Mx RTU (PR nO. 1200014938)	\N	\N	URC SURE	Automation	PLC / SCADA	Manufacturing	F&B	2025-02-04	\N	DECLINE	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	10-Existing	5 -Need External Resource	5 -Peripheral Scope	10 -Reasonable Time	5 -Limited	\N	c49987f9-b2ef-4cf4-b142-00d2ca711a26	\N
+2025-02-04	Supply & Installation of Jet fan	CMRP25020033	\N	Servequest	Electrification	MECHANICAL	Buildings	CONSTRUCTION	\N	\N	GO	LOS	MMR	MMR	Submitted	2025-03-04	23	3827970.98	OP60	\N	\N	\N	\N	\N	\N	\N	\N	\N	bf865d44-70c1-4bc3-82a2-e9b3a94f854c	\N
+2025-02-05	BWLLI PV Solar Rooftop System	CMRP22070350	4	Bloom with Looms Logistics	Electrification	SOLAR	Manufacturing	MANUFACTURING	2025-02-05	\N	GO	ISP	ISP	SE	Submitted	2025-03-06	18	5211494.93	OP60	\N	\N	\N	5-New Account, No Champion	10 -Existing Solution	8 -Strategic Business	10 -Reasonable Time	5 -Limited	Re-open of New Opportunity from 2022-2023 of Shaye's Acct	5bf42376-523f-4674-943a-8e7f9453254d	\N
+2025-02-05	Siemens WILMAR Gingoog PCS7 Services	CMRP25020084	1	Siemens	Automation	PLC / SCADA	Manufacturing	F&B	2025-02-04	\N	GO	RTR	AVR	SubCon	Submitted	2025-03-06	18	3371250.11	Inactive	\N	\N	\N	\N	\N	\N	\N	\N	send NDA	0509bba6-789f-4ca6-92d8-4f6ae5011548	\N
+2025-02-05	Siemens WILMAR Roxas PCS7 Services	CMRP25020083	0	Siemens	Automation	PLC / SCADA	Manufacturing	F&B	2025-02-04	\N	GO	RTR	AVR	SubCon	Submitted	2025-03-06	18	3245632.15	OP60	\N	\N	\N	\N	\N	\N	\N	\N	send NDA	ceaba02d-e621-4ad9-b720-17a60bbafa02	\N
+2025-02-05	BWLLI Electrical Improvement Ciruit Breaker	\N	0	Bloom with Looms Logistics	Electrification	ELECTRICAL	Manufacturing	MANUFACTURING	2025-02-05	\N	GO	ISP	CBG	SE	Submitted	2025-03-06	18	1159228.95	OP60	\N	\N	\N	5-New Account, No Champion	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	5 -Limited	\N	bb71e988-cfcd-4547-a3a0-f07b5137630b	\N
+2025-02-06	WPI Napsan Palawan Panel Board Supply	CMRP25020038	0	WHITEPORT, Inc.	Electrification	ELECTRICAL	Buildings	CONSTRUCTION	2025-02-06	2025-02-06	GO	NSG	NSG	Partner	Submitted	2025-02-06	25	669697.08	OP30	\N	\N	\N	8-With Account Champion	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	a2364686-88d2-4073-853d-8d9bc76a8375	\N
+2025-02-06	NPI Installation of Ethernet Switch	CMRP25020037	0	Net Pacific, Inc.	Automation	PLC / SCADA	Buildings	CONSTRUCTION	2025-02-06	2025-02-06	GO	NSG	NSG	DS	Submitted	2025-02-06	25	20000.00	Inactive	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	bd71da20-f269-46f5-a4aa-6b16761e3f63	\N
+2025-02-07	URC Malvar NSL_Electrical Works Site Development Lightings	CMRP25020061	2	URC BCFG	Electrification	EE & AUX	Manufacturing	F&B	2025-02-07	2025-02-24	GO	JMO	CBG	Partner	Submitted	2025-03-27	22	18140891.35	LOST	2025-04-01	Commercial Offer Optimization	\N	10-Existing	3 -No Previous Experience	5 -Peripheral Scope	5 -Budgetary	10 -Complete	Lost to SSW acc to buyer (Levi Gealogo), 14Apr	16ed9ac5-dee5-4cf5-9922-3e030f3702f2	\N
+2025-02-07	Isuzu Inventory Management	\N	\N	Isuzu Philippines	Digitalization	IT	Manufacturing	MANUFACTURING	2025-02-05	\N	GO	ISP	ISP	ISP	\N	\N	\N	\N	\N	\N	\N	\N	2-Existing account with No Orders	3 -No Previous Experience	8 -Strategic Business	5 -Budgetary	5 -Limited	\N	b7f266d6-892f-4792-930e-cd1fdb78afaa	\N
+2025-02-07	URC Malvar NSL_Supply & Install Utility Flowmeters	CMRP25020048	2	URC BCFG	Automation	INSTRUMENTATION	Manufacturing	F&B	2025-02-07	2025-02-24	GO	JMO	EIS	Partner	For Revision	2025-02-24	17	40775161.90	OP30	\N	\N	\N	10-Existing	5 -Need External Resource	7 -Core + Peripheral	5 -Budgetary	10 -Complete	Apr3: ffup Axis instru quotation RJR	f970ba69-6881-48c0-8b30-73564c9960d3	\N
+2025-02-07	Amherst CMMS	CMRP25020055	0	Amherst Laboratories Inc.	Digitalization	IT	Manufacturing	MANUFACTURING	2025-01-31	\N	GO	ISP	ISP	ISP	Submitted	2025-02-21	53	1221240.00	OP60	\N	\N	\N	2-Existing account with No Orders	3 -No Previous Experience	8 -Strategic Business	5 -Budgetary	5 -Limited	\N	d75ca6f3-8b98-43f5-8549-8a10a6fe1985	\N
+2025-02-08	URC Pam Replace HMI of Line 3 Filler Machine (RFP by Sir Errol Ventura for TJ)	CMRP	0	URC BCFG	Automation	PLC / SCADA	Manufacturing	F&B	2025-02-08	\N	PENDING	JMO	RJR	RJR	\N	\N	20	\N	Inactive	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Focus Business	7 -Urgent	2 -No Data	Sir Errol request back-up program from EOM	ec10301b-7853-4eb6-9f5b-69267d94034e	\N
+2025-02-12	One World Square BMS	CMRP25020078	0	Asia Affinity Property Management	Automation	BMS	Buildings	CONSTRUCTION	2025-02-12	2025-02-27	GO	CBD	RJR	EIS	Submitted	2025-02-27	23	5178571.20	OP30	\N	\N	\N	\N	\N	\N	\N	\N	Q4 or 2026	7b3a25bf-1567-4e42-ba02-fec4aa9b8f7a	\N
+2025-02-12	Paragua Sands Hotel	\N	\N	DMCI	Electrification	EE & AUX	Buildings	CONSTRUCTION	2025-02-12	2025-02-21	DECLINE	CBD	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	203e82c4-af4d-4b56-9d7d-557e8e804e43	\N
+2025-02-12	PMS of Lightning Arrester	\N	\N	St. Luke's	Electrification	ELECTRICAL	Buildings	UTILITIES	2025-02-05	2025-02-12	DECLINE	CBD	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	1f5ecc9c-f33b-4593-8a9e-db2a64f105e4	\N
+2025-02-12	The Bellagio Palawan - BMS and EV Charger Supply & Delivery	CMRP25030116	0	DDT Konstract	Automation	BMS	Buildings	CONSTRUCTION	2025-02-12	2025-03-19	DECLINE	NSG	NSG	Partner	\N	\N	20	\N	\N	\N	\N	\N	5-New Account, No Champion	5 -Need External Resource	7 -Core + Peripheral	5 -Budgetary	5 -Limited	Endorsed to Neil for Supply Only	36e0a467-b1b0-4a1c-a71f-b3a4aaa327ee	\N
+2025-02-12	URC Pam 2_ Boiler PLC and CPU Upgrade (RFP by Sir Errol)	CMRP25020047	0	URC BCFG	Automation	PLC / SCADA	Manufacturing	F&B	2025-02-12	\N	GO	JMO	RJR	RJR	Submitted	\N	33	434910.71	OP100	2025-04-25	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	7 -Urgent	5 -Limited	PO#  400159505 08-April-2025	8ca3059f-771f-4bfa-a22f-95094525a37d	\N
+2025-02-12	URC Cal 2 S&I Steam Power Metering (PR 12000017572)	CMRP25020049	2	URC BCFG	Automation	PLC / SCADA	Manufacturing	F&B	2025-02-12	2025-03-06	GO	JMO	RJR	DS	Submitted	2025-03-24	32	399966.00	OP100	2025-05-25	\N	\N	10-Existing	10 -Existing Solution	10 -Focus Business	10 -Reasonable Time	5 -Limited	PO# 400165340 14-May-2025	828a28bb-055e-4430-8db8-64eec8727f57	\N
+2025-02-12	LBI Supply of TRS 230V Relay	CMRP25020039	1	LBI Philippines, Inc	Automation	PLC / SCADA	Buildings	OTHERS	2025-02-12	2025-02-12	GO	NSG	NSG	NSG	Submitted	2025-02-12	25	79787.53	Inactive	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	ace0562a-0250-46e6-8aec-3d690bfa2cd2	\N
+2025-02-14	URC Pam 2 Supply of Siemens Breaker	CMRP25020043	0	URC BCFG	Electrification	ELECTRICAL	Manufacturing	F&B	2025-02-14	2025-02-14	GO	NSG	NSG	NSG	Submitted	2025-02-14	30	54208.85	OP30	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	3b460abf-3f58-488d-b453-0378ac85e9ea	\N
+2025-02-14	URC Binan Cabana Packaging Machine HMI Upgrade	CMRP	0	URC BCFG	Automation	PLC / SCADA	Manufacturing	F&B	2025-02-14	\N	PENDING	JMO	RJR	Partner	Not Yet Started	\N	20	\N	\N	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	2 -No Data	CAPEX for approval per Sir Chris Manikat	fda0e443-9313-4ff3-a359-00bc6a259347	\N
+2025-02-14	URC Binan Assessment of Existing FDAS	CMRP	0	URC BCFG	Electrification	FDAS	Manufacturing	F&B	2025-02-14	\N	PENDING	JMO	ISP	Partner	Not Yet Started	\N	20	\N	\N	\N	\N	\N	10-Existing	8 -Need to Customize	5 -Peripheral Scope	5 -Budgetary	2 -No Data	Cris Manikat requested SoW mailed for PR	bac5b7f7-5f7d-4a63-ac0c-1bfbaf21b68f	\N
+2025-02-17	URSUMCO PR#1000115722 ;1000114198 ;1200012429 ; 1200002825	\N	\N	URC SURE	Electrification	ELECTRICAL	Manufacturing	F&B	2025-02-10	\N	DECLINE	NSG	NSG	NSG	\N	\N	\N	\N	\N	\N	\N	\N	2-Existing account with No Orders	3 -No Previous Experience	2 -Non Core for Subcon	5 -Budgetary	5 -Limited	\N	184c1590-ca35-4b9c-b52c-671aa8baab95	\N
+2025-02-17	BAIS DIS PR#1000115722 ;1000114198 ;1200012429 ; 1200002825	\N	\N	URC SURE	Electrification	ELECTRICAL	Manufacturing	F&B	2025-02-10	\N	DECLINE	NSG	NSG	NSG	\N	\N	\N	\N	\N	\N	\N	\N	2-Existing account with No Orders	3 -No Previous Experience	2 -Non Core for Subcon	5 -Budgetary	5 -Limited	\N	987419b2-232a-4f01-9d0e-57cb9eb6fdd7	\N
+2025-02-17	PASSI PR#1000111983 - Transmitter	\N	\N	URC SURE	Automation	INSTRUMENTATION	Manufacturing	F&B	2025-02-14	\N	DECLINE	NSG	NSG	NSG	\N	\N	\N	\N	\N	\N	\N	\N	2-Existing account with No Orders	3 -No Previous Experience	2 -Non Core for Subcon	5 -Budgetary	5 -Limited	\N	253a4823-45e4-40f1-9342-b35958025391	\N
+2025-02-17	URSUMCO PR#1200014292 ; 1200014426 ; 1200014512 ; 1200014513 - VFD and Transformers	CMRP25020044	1	URC SURE	Electrification	ELECTRICAL	Manufacturing	F&B	2025-02-12	2025-02-20	GO	NSG	NSG	NSG	Submitted	2025-02-20	15	9845567.29	OP30	\N	\N	\N	10-Existing	10 -Existing Solution	8 -Strategic Business	10 -Reasonable Time	10 -Complete	\N	3c09dce8-d7e9-4527-9a38-a53b62383c5d	\N
+2025-02-17	URC SONEDCO PR #1000104836 - Softstarter	CMRP25020045	0	URC SURE	Electrification	ELECTRICAL	Manufacturing	F&B	2025-02-12	2025-02-20	GO	NSG	NSG	NSG	Submitted	2025-02-19	25	109333.13	OP30	\N	\N	\N	10-Existing	10 -Existing Solution	8 -Strategic Business	10 -Reasonable Time	10 -Complete	\N	bb825c8b-81d2-45a5-8ecf-e72fff68b403	\N
+2025-02-17	SCADA Preventive Maintenance	\N	\N	ACEN	Automation	PLC / SCADA	Power	POWER PLANT	2025-02-17	\N	DECLINE	CBD	RJR	DS	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	Too long to quote	f6d1935b-3cbc-4bbe-b221-20d452652fc6	\N
+2025-02-17	FujiHaya SM Fairview Power Metering System -OptionA	CMRP25020065A	0	FujiHaya	Automation	INSTRUMENTATION	Buildings	CONSTRUCTION	2025-02-13	\N	GO	CBD	AVR	Partner	Submitted	2025-03-06	20	745154.95	OP30	\N	\N	\N	\N	\N	\N	\N	\N	\N	19d42d5b-16ed-40e9-8592-6185d42c08b3	\N
+2025-02-17	FujiHaya SM Fairview Power Metering System -OptionB	CMRP25020065B	0	FujiHaya	Automation	INSTRUMENTATION	Buildings	CONSTRUCTION	2025-02-13	\N	GO	CBD	AVR	Partner	Submitted	2025-03-06	\N	\N	OP30	\N	\N	\N	\N	\N	\N	\N	\N	\N	ea17ddd0-8080-4893-bfef-da452c1e43b3	\N
+2025-02-17	PrimeHouse MEPFS	\N	\N	Archipelago Builders Corporation	Electrification	EE & AUX	Buildings	CONSTRUCTION	2025-02-14	2025-02-19	DECLINE	CBD	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	cb659137-07e6-4fbf-a23d-77ec19b268ce	\N
+2025-02-17	Kingsford Power & Lightning	\N	\N	Megaworld	Electrification	ELECTRICAL	Buildings	CONSTRUCTION	2025-02-12	2025-02-17	DECLINE	CBD	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	87f68568-bb56-4f06-a9db-2128207472b6	\N
+2025-02-17	World Finance Plaza FDAS	CMRP24010018	1	Asia Affinity Property Management	Electrification	FDAS	Buildings	CONSTRUCTION	2025-02-17	2025-02-18	GO	CBD	RJR	\N	Submitted	2025-02-19	20	420736.32	OP30	\N	\N	\N	\N	\N	\N	\N	\N	June or Q3 target awarding	85ec7c52-a736-4bcf-b356-a90e6f5f5b0f	\N
+2025-02-17	URC San Pedro-1 Rehab of Waste Water Control Panel 1	CMRP25020054	0	URC BCFG	Electrification	ELECTRICAL	Manufacturing	F&B	2025-02-17	2025-02-26	GO	JMO	CBG	CBG	Submitted	2025-02-26	20	576972.09	LOST	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Focus Business	7 -Urgent	5 -Limited	Lost to Rivera (300K only)	610d9efe-305e-41c4-a09a-71d9f6cfd23a	\N
+2025-02-17	NCC Maintenance of Line A Fire Detection Alarm System	CMRP25010004	2	​Northern Cement ​Corporation	Electrification	FDAS	Manufacturing	CEMENT	2025-02-17	2025-02-17	GO	NSG	NSG	NSG	Submitted	2025-02-17	\N	\N	\N	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	mar31\n- April awarding	d634eb94-f07c-457e-8c95-3f3a30c96d9c	\N
+2025-02-18	Two Techno Place Additional CCTV Cameras	CMRP25030122	3	Asia Affinity Property Management	Automation	CCTV	Buildings	CONSTRUCTION	2025-02-18	2025-04-07	GO	CBD	AVR	Partner	Submitted	2025-04-21	20	1133928.57	OP30	\N	\N	\N	\N	\N	\N	\N	\N	June or Q3 target awarding	19dff00d-2368-4579-89ad-aa6c4c0b5afb	\N
+2025-02-19	ORCA Caloocan 321.28 kWp Roof-Mount On-Grid Solar	CMRP25020072	0	ORCA-Caloocan	Electrification	SOLAR	Buildings	COLD STORAGE	2025-02-19	2025-02-28	GO	JMO	JMO	Partner	Submitted	\N	20	17247292.22	OP60	\N	\N	\N	5-New Account, No Champion	10 -Existing Solution	5 -Peripheral Scope	7 -Urgent	10 -Complete	23May: ENTORIA request SESCO Water Proofing Methodology	b22857a7-ba58-4297-8c4c-6eabc39fb514	\N
+2025-02-19	Manila Water Supply of Fluke 1630	CMRP25020050	0	Manila Water Philippines Venture	Digitalization	INSTRUMENTATION	Buildings	UTILITIES	2025-02-18	2025-02-20	GO	NSG	NSG	Partner	Submitted	2025-02-19	25	566065.58	OP30	\N	\N	\N	8-With Account Champion	8 -Need to Customize	10 -Focus Business	7 -Urgent	10 -Complete	\N	b416a728-f793-4ada-b7bb-e5b3db1da5d1	\N
+2025-02-19	Manila Water Supply of VFD	CMRP25020051	0	Manila Water Philippines Venture	Electrification	ELECTRICAL	Buildings	UTILITIES	2025-02-18	\N	GO	NSG	NSG	Partner	Submitted	2025-02-25	20	990632.39	OP30	\N	\N	\N	8-With Account Champion	8 -Need to Customize	10 -Focus Business	7 -Urgent	10 -Complete	\N	7b86de3d-1ffb-4ad7-8acf-59ec6e9b0041	\N
+2025-02-19	BBP Supply and Installation of CB and Lugs	CMRP25020052	0	BBP	Electrification	ELECTRICAL	Buildings	CONSTRUCTION	2025-02-19	2025-02-19	GO	NSG	NSG	SE	Submitted	2025-02-19	41	20594.08	OP100	2025-03-25	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	7 -Urgent	10 -Complete	\N	9fcf9117-f57b-46ec-b4f7-32c629d63236	\N
+2025-02-19	Westgate Bosch FDAS	CMRP25040158	0	Reytech Construction and Development Corporation	Electrification	FDAS	Manufacturing	CONSTRUCTION	2025-02-19	\N	GO	CBD	CBG	SE	Submitted	2025-04-07	20	3415079.11	LOST	\N	\N	\N	\N	\N	\N	\N	\N	too long to quote due to turnover and gencon lost as well	98deca4c-48e8-453b-915f-c3788ceab9ba	\N
+2025-02-19	PASSI Assess & Repair ASSENWARE FDAS (PR 1000128249)	CMRP	0	URC SURE	Electrification	FDAS	Manufacturing	F&B	2025-02-19	2025-02-26	DECLINE	JMO	\N	Partner	\N	\N	20	\N	\N	\N	\N	\N	10-Existing	5 -Need External Resource	5 -Peripheral Scope	5 -Budgetary	2 -No Data	\N	a799c44b-71c7-4b3b-8f0f-c4e1365209ac	\N
+2025-02-20	Pam 1 Bakery Line PMS of Cummins GenSet #5 (PR1000130020)	CMRP25020066	0	URC BCFG	Electrification	ELECTRICAL	Manufacturing	F&B	2025-02-20	2025-02-27	GO	JMO	CBG	Partner	Submitted	\N	15	269690.07	LOST	2025-04-01	\N	\N	10-Existing	5 -Need External Resource	2 -Non Core for Subcon	5 -Budgetary	5 -Limited	Lost to MADOCS (CCL equipment Supplier	332a7adc-5d22-40de-b3b5-be5a2cc8f5c3	\N
+2025-02-20	Pam 1 Bakery Line PMS of Detroit GenSet #4 (PR 1000130014 )	\N	0	URC BCFG	Electrification	ELECTRICAL	Manufacturing	F&B	2025-02-20	2025-02-27	DECLINE	JMO	CBG	Partner	\N	\N	15	\N	\N	\N	\N	\N	10-Existing	5 -Need External Resource	2 -Non Core for Subcon	10 -Reasonable Time	5 -Limited	Site assessed by RUA: Detroit Genset not working	2a73ec83-dde3-45fd-8e1b-3f7c7de036dc	\N
+2025-02-20	Pam 1 Confec Radiator OH & PMS of Caterpillar GenSet #3 (PR1000130004)	CMRP25020067	0	URC BCFG	Electrification	ELECTRICAL	Manufacturing	F&B	2025-02-20	2025-02-27	GO	JMO	CBG	Partner	Submitted	\N	15	477819.71	LOST	2025-04-01	\N	\N	10-Existing	5 -Need External Resource	2 -Non Core for Subcon	10 -Reasonable Time	5 -Limited	Lost to MADOCS (CCL equipment Supplier	b4fbecd0-e327-45fc-9872-ec1638dec4a0	\N
+2025-02-20	Pam 1 Confec PMS of Caterpillar GenSet # 2 (PR 1000130003)	CMRP25020068	0	URC BCFG	Electrification	ELECTRICAL	Manufacturing	F&B	2025-02-20	2025-02-27	GO	JMO	CBG	Partner	Submitted	\N	15	269690.07	LOST	2025-04-01	\N	\N	10-Existing	5 -Need External Resource	2 -Non Core for Subcon	10 -Reasonable Time	5 -Limited	Lost to MADOCS (CCL equipment Supplier	fcd5ce96-ec60-45eb-b190-38196c10d8bb	\N
+2025-02-20	Pam 1 Confec Radiator OH & PMS of Caterpillar GenSet # 1 (PR1000129998)	CMRP25020069	0	URC BCFG	Electrification	ELECTRICAL	Manufacturing	F&B	2025-02-20	2025-02-27	GO	JMO	CBG	Partner	Submitted	\N	15	342554.13	LOST	2025-04-01	\N	\N	10-Existing	5 -Need External Resource	2 -Non Core for Subcon	10 -Reasonable Time	5 -Limited	Lost to MADOCS (CCL equipment Supplier	3ba50d1c-0a20-4199-aa03-9a2a68a43cf7	\N
+2025-02-20	Pam 1 Bakery Plant A PM of Transformer & MVSG (PR 1000127525)	CMRP25020070	0	URC BCFG	Electrification	ELECTRICAL	Manufacturing	F&B	2025-02-20	\N	DECLINE	JMO	CBG	Partner	\N	\N	15	\N	\N	\N	\N	\N	10-Existing	5 -Need External Resource	2 -Non Core for Subcon	10 -Reasonable Time	5 -Limited	Site assessed but declined by RUA	21c37976-b266-4fdb-a29a-2ce5fc8260af	\N
+2025-02-20	Pam 1 Bakery Plant B PM of Transformer & MVSG (PR 1000127786 )	CMRP25020071	0	URC BCFG	Electrification	ELECTRICAL	Manufacturing	F&B	2025-02-20	\N	DECLINE	JMO	CBG	Partner	Submitted	\N	15	\N	\N	\N	\N	\N	10-Existing	5 -Need External Resource	2 -Non Core for Subcon	10 -Reasonable Time	5 -Limited	Site assessed but declined by RUA	0aa70d1b-4f92-4a34-b7db-517e0d4eb138	\N
+2025-02-21	MRT7 Station 2 ACS	CMRP25020076	2	DBBC	Electrification	ACS	Buildings	CONSTRUCTION	2025-02-19	2025-02-26	GO	CBD	CBG	Partner	Submitted	2025-04-30	28	8035714.29	OP60	\N	\N	\N	\N	\N	\N	\N	\N	waiting for updated plan from SMC	e4866fec-8cb6-4fdb-8fe7-e5a81b3f9e10	\N
+2025-02-21	Northwin Cable wires	\N	0	Megaworld	Electrification	ELECTRICAL	Buildings	CONSTRUCTION	2025-02-20	\N	\N	NSG	NSG	Partner	Submitted	2025-02-24	\N	31663.44	OP30	\N	\N	\N	\N	\N	\N	\N	\N	\N	f0f7f289-1175-4daa-aff8-afd4d14d51ff	\N
+2025-02-21	NURC Tarlac_Steam Monitoring	CMRP25040187	2	URC BCFG	Automation	PLC / SCADA	Manufacturing	F&B	2025-02-21	2025-04-30	GO	JMO	RJR	EIS	Submitted	2025-05-19	20	6480921.06	OP60	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	5 -Limited	15May request anew parts removal: 19May rev02 offer submitted	d1db05ac-8786-4f8b-bc46-9c68d38ecb08	\N
+2025-02-21	NURC Tarlac _Automated Oil Refill for Cooker	CMRP25040188	1	URC BCFG	Automation	INSTRUMENTATION	Manufacturing	F&B	2025-02-21	2025-04-30	GO	JMO	RJR	EIS	Submitted	2025-05-15	25	3257096.97	OP60	\N	\N	\N	10-Existing	10 -Existing Solution	8 -Strategic Business	10 -Reasonable Time	5 -Limited	30Apr, Rev01 submitted: 15May request anew parts removal	bb05322b-eb79-499b-b182-63c1bf20a9e0	\N
+2025-02-21	NUR Cavite_S&I Door Interlock of 5-Hoists	CMRPP25020073	0	URC BCFG	Electrification	ELECTRICAL	Manufacturing	F&B	2025-02-21	2025-03-05	GO	JMO	CBG	CBG	Submitted	2025-03-06	17	524980.85	LOST	2025-04-01	\N	\N	10-Existing	8 -Need to Customize	5 -Peripheral Scope	5 -Budgetary	5 -Limited	Lost Bid; Offered same failing technology	5006f68a-0234-44c4-b177-c7015a11b5a1	\N
+2025-02-22	NothHill CCTV Lamp Post	CMRP24080297	\N	Megaworld	Electrification	ELECTRICAL	Buildings	CONSTRUCTION	2025-12-12	\N	GO	CBD	JEB	\N	Submitted	2025-03-20	\N	330357.14	OP90	\N	\N	\N	\N	\N	\N	\N	\N	mar31\n- waiting for PO, actual status:delivered	29116126-202e-4cc1-be08-118bae88225e	\N
+2025-02-24	URC La Carlota Mill Installation of Controls for 10 units of Pans	CMRP24120536	2	URC BCFG	Automation	PLC / SCADA	Manufacturing	F&B	2025-01-31	\N	GO	RTR	RTR	RTR	Submitted	2025-02-21	\N	9910704.77	OP60	\N	\N	\N	10-Existing	8 -Need to Customize	8 -Strategic Business	5 -Budgetary	5 -Limited	\N	5d2a49cc-4827-412d-bfc5-c3a052b18b28	\N
+2025-02-24	URC AIG Antipolo Electrical & FDAS System Wet Pet Food Plant at Hatchery	CMRP25030109	0	URC AIG	Electrification	EE & AUX	Manufacturing	F&B	2025-02-21	2025-03-07	GO	JMO	CBG	Partner	Submitted	2025-04-28	19	5161075.83	LOST	2025-04-25	\N	\N	10-Existing	8 -Need to Customize	8 -Strategic Business	5 -Budgetary	5 -Limited	28Apr submitted; 26May, Lost per Sir Gerald Cerilla feedback	c1c11b5a-9b4d-4173-85f1-490adb9e555d	\N
+2025-02-24	URC BALAYAN PR#1200015711 - Programmer,Indus,Siemens Field PG M6 Adv	CMRP25020056	0	URC SURE	Automation	PLC / SCADA	Manufacturing	F&B	2025-02-19	2025-02-26	GO	NSG	NSG	NSG	Submitted	2025-02-25	20	866411.44	OP30	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	8a31515b-d0f1-4014-8812-d451dc5646ff	\N
+2025-02-24	URSUMCO PR#1000132532 - Transmitters	\N	\N	URC SURE	Automation	INSTRUMENTATION	Manufacturing	F&B	2025-02-20	2025-02-27	DECLINE	NSG	NSG	NSG	\N	\N	\N	\N	\N	\N	\N	\N	10-Existing	5 -Need External Resource	2 -Non Core for Subcon	7 -Urgent	5 -Limited	\N	bd855433-db0d-4da2-bfaa-ba6c0cbec2b6	\N
+2025-02-24	RFQ - PR C-00295 AUXILIARY WIRE FOR NGC BPO TOWER 1 (BULACAN)	CMRP25020057	0	Megaworld	Automation	FDAS	Buildings	CONSTRUCTION	2025-02-20	2025-02-24	GO	NSG	NSG	NSG	Submitted	2025-02-24	40	31663.44	OP30	\N	\N	\N	10-Existing	10 -Existing Solution	8 -Strategic Business	10 -Reasonable Time	10 -Complete	\N	f71fa49e-c41f-48e6-b32b-98a650e1d202	\N
+2025-02-24	MServ Supply and Delivery of Schneider HV Switchgear	CMRP25020058	\N	Meralco Energy, Inc.	Electrification	ELECTRICAL	Power	UTILITIES	2025-02-20	\N	DECLINE	NSG	NSG	NSG	\N	\N	\N	\N	\N	\N	\N	\N	10-Strategic	8 -Need to Customize	8 -Strategic Business	5 -Budgetary	2 -No Data	Not responsive	599862e7-1829-40e0-a761-306c62590536	\N
+2025-02-24	MServ Supply and Delivery of GCB 1600A Main	CMRP25020059	\N	Meralco Energy, Inc.	Electrification	ELECTRICAL	Power	UTILITIES	2025-02-20	\N	DECLINE	NSG	NSG	NSG	\N	\N	\N	\N	\N	\N	\N	\N	10-Existing	8 -Need to Customize	8 -Strategic Business	5 -Budgetary	2 -No Data	Not responsive	58185f30-d577-47f4-a6a0-7989d108727c	\N
+2025-02-24	PASSI PR#1000122014 - Solenoid Valve	\N	\N	URC SURE	Automation	INSTRUMENTATION	Manufacturing	F&B	2025-02-22	2025-03-01	DECLINE	NSG	NSG	NSG	\N	\N	\N	\N	\N	\N	\N	\N	5-New Account, No Champion	5 -Need External Resource	2 -Non Core for Subcon	7 -Urgent	2 -No Data	\N	8170d56d-9f8a-4d36-9ce5-a6ce68debb0e	\N
+2025-02-24	Aboitiz TMO EcoStruxure Control Expert XL License	CMRP25030099	0	Aboitiz	Digitalization	PLC / SCADA	Power	POWER PLANT	2025-02-13	2025-03-11	GO	RTR	RJR	Partner	Submitted	2025-02-20	17	250000.00	OP100	2025-03-25	\N	\N	\N	\N	\N	\N	\N	\N	693cfacf-c2ad-4591-9734-00dd566ad28a	\N
+2025-02-24	Amherst Supply and Installation of MES/PCS Workstations Booth	\N	\N	Unilab	Digitalization	MECHANICAL	Manufacturing	PHARMA	2025-02-17	\N	DECLINE	RTR	RJR	Partner	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	waiting for Difsys quotation	b20d4376-090d-4374-b088-1eac27b27c06	\N
+2025-02-24	TMI M2: CYLINDER PRESSURE SENSOR (PR 140002707)	CMRP25020063	0	Aboitiz	Automation	INSTRUMENTATION	Power	POWER PLANT	2025-02-24	2025-02-25	GO	NSG	NSG	Partner	Submitted	2025-02-25	49	237230.22	OP100	2025-04-25	\N	\N	10-Existing	10 -Existing Solution	10 -Focus Business	10 -Reasonable Time	10 -Complete	PO_150002098_0 15-April-2025	c687b481-d528-4903-a00d-010c87d9d009	\N
+2025-02-24	URC Canlubang S,I & Relocate Elec'l, CCTV & Lighting System	CMRP25030094	0	URC BCFG	Electrification	ELECTRICAL	Manufacturing	F&B	2025-02-24	2025-03-04	GO	JMO	CBG	Partner	Submitted	2025-03-04	20	3110556.87	OP60	\N	\N	\N	10-Existing	3 -No Previous Experience	5 -Peripheral Scope	5 -Budgetary	2 -No Data	25Apr; For SSW Schedule	cb4fc379-cbfe-4487-9a06-5d449e776394	\N
+2025-02-24	Laguna Water Rehab of Mobile Water Treatment Plant	CMRP	0	Manila Water Phil. Ventures	Electrification	MECHANICAL	Buildings	UTILITIES	2025-02-24	\N	GO	JMO	JMO	Partner	Not Yet Started	\N	20	\N	LOST	\N	\N	\N	5-New Account, No Champion	3 -No Previous Experience	2 -Non Core for Subcon	7 -Urgent	5 -Limited	21Apr: Budgeted @3.5M WINFRA to generate 2 Offers, for Twinfra Qtn after Water Lab Results from Sir Danny : \n23May Proc. Mgr. to ff-up w/ Sir Danny	a1dd167a-96bf-44b6-bd54-72337ee40419	\N
+2025-02-24	ADI Calibration of Siemens Instruments	CMRP25020060	0	Analog Devices, Inc.	Automation	INSTRUMENTATION	Manufacturing	SEMICON	2025-02-17	\N	GO	NSG	NSG	DS	Submitted	2025-03-04	31	310715.15	OP60	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	51eb5dc2-548d-4436-a4ee-7910df063ca9	\N
+2025-02-25	Megaworld Savoy Hotel Palawan	\N	\N	DMCI	Electrification	EE & AUX	Buildings	CONSTRUCTION	2025-02-18	\N	DECLINE	CBD	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	cd8070e6-00cb-48db-9b57-f11bfb2ec9c2	\N
+2025-02-25	Megaworld Bellagio Palawan	\N	\N	DMCI	Electrification	EE & AUX	Buildings	CONSTRUCTION	2025-02-18	\N	DECLINE	CBD	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	c874ef46-8c26-466b-a433-0ac85589f5d2	\N
+2025-02-25	URC CARSUMCO PR No. 1000104638 - Pneumatic Actuator	\N	\N	URC SURE	Automation	INSTRUMENTATION	Manufacturing	F&B	2025-02-25	\N	DECLINE	NSG	NSG	NSG	\N	\N	\N	\N	\N	\N	\N	\N	10-Existing	3 -No Previous Experience	2 -Non Core for Subcon	7 -Urgent	2 -No Data	\N	bca1797a-abbd-4953-961d-0c828acaa203	\N
+2025-02-25	NURC Cavite UPS Activation at Production Line Control Panel	CMRP25020075	0	URC BCFG	Electrification	EE & AUX	Manufacturing	F&B	2025-02-24	2025-03-06	GO	JMO	CBG	Partner	Submitted	2025-03-06	20	424317.22	LOST	2025-04-01	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	5 -Limited	23Apr: Lost Bid; Price issue	bd640166-16df-4837-a16d-213c5a1861c8	\N
+2025-02-26	DDT House of Representative Secretariat Bldg Auxillary	CMRP	0	DDT Konstract	Automation	FDAS	Buildings	CONSTRUCTION	2025-02-26	2025-03-12	DECLINE	JMO	CBG	Partner	\N	\N	20	\N	LOST	2025-04-25	\N	\N	5-New Account, No Champion	10 -Existing Solution	10 -Focus Business	5 -Budgetary	10 -Complete	Apr24:-package without qtn, please proceed as no qoute	cc8853af-632b-4fb6-83f9-3dbf9b7c6848	\N
+2025-02-27	URC Pam 1 Conversion & Upgrade of Silo PLC & Desktop PC	CMRP25030095	1	URC BCFG	Automation	PLC / SCADA	Manufacturing	F&B	2025-02-27	2025-03-31	GO	JMO	RJR	RJR	Submitted	2025-03-31	19	2245652.41	OP100	2025-04-25	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	7 -Urgent	10 -Complete	PO# 400159992 10-Apr-2025	c78bb925-c82f-4879-a512-48e79651dfaf	\N
+2025-02-27	LC DIS PR#1200015861 ;1200015860 ;1000132592 ;1000132591 - ACB and Breaker Siemens	CMRP25020081	0	URC SURE	Electrification	ELECTRICAL	Manufacturing	F&B	2025-02-27	2025-03-06	GO	NSG	NSG	Partner	Submitted	2025-02-28	15	\N	\N	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	8a2a5dba-840d-4e30-9911-62c7429c1bcc	\N
+2025-02-27	BBP Festive Relocation of Power Supply	CMRP25020079	0	BBP	Electrification	ELECTRICAL	Buildings	CONSTRUCTION	2025-02-27	\N	GO	NSG	NSG	SE	Submitted	2025-02-28	29	88446.75	LOST	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	82a4bd2a-f27b-4b57-9fd2-edbf6aae7d0a	\N
+2025-02-27	URC San Pedro 2_ PM of 8 units Transformers (PR1000134285)	CMRP	0	URC BCFG	Electrification	ELECTRICAL	Manufacturing	F&B	2025-02-20	2025-03-15	DECLINE	JMO	JMO	Partner	\N	\N	15	\N	\N	\N	\N	\N	10-Existing	5 -Need External Resource	2 -Non Core for Subcon	10 -Reasonable Time	5 -Limited	\N	4cbd4a84-b905-4da7-9b5c-0c3c8a6fcff6	\N
+2025-02-28	BBP Ascott Installation of New VFD	CMRP25020086	0	BBP	Electrification	ELECTRICAL	Buildings	CONSTRUCTION	2025-02-28	\N	GO	NSG	NSG	SE	Submitted	2025-02-28	31	17857.14	Inactive	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	7765f7be-7fd6-43db-ab73-f96ef3c43d47	\N
+2025-03-01	PGH Phase 3 BMS	CMRP24020062	6	DMCI	Automation	BMS	Buildings	CONSTRUCTION	\N	\N	GO	CBD	EIS	EIS	Submitted	2025-04-22	23	26695436.61	OP60	\N	\N	\N	\N	\N	\N	\N	\N	June or Q3 target awarding	30a85729-4ede-4779-8851-913fae965ec3	\N
+2025-03-03	Aboitiz TMO UPGRADE OF MOBILE 5 DG 8,9,10 PLC SYSTEM	CMRP25030098	0	Aboitiz	Automation	PLC / SCADA	Power	POWER PLANT	2025-02-17	2025-03-07	GO	RTR	AVR	DS	Submitted	2025-03-12	20	5405994.87	OP90	\N	\N	\N	\N	\N	\N	\N	\N	mar31\n- followup ms Jean today, and request details on bonds	ff444e8a-b7d6-40d8-8df7-77912cf0b33a	\N
+2025-03-03	NCC Hamme Mill 1 To LST Pulverizer Automation	CMRP25030096	0	NCC	Automation	PLC / SCADA	Manufacturing	CEMENT	2025-02-18	2025-03-05	GO	LOS	RJR	SubCon	Submitted	2025-04-02	15	876613.20	OP90	\N	\N	\N	\N	\N	\N	\N	\N	Apr14:\n- discount 1% to be able to attain Client budget, for PO Prep	ac71abec-6193-418d-901e-a17461a71da1	\N
+2025-03-03	Forthright MCEP Supply, Delivery and Testing of Fans and Blowers	CMRP25020080	1	Forthright Builders Inc.	Electrification	MECHANICAL	Buildings	CONSTRUCTION	\N	2025-03-27	GO	LOS	CBG	Partner	Submitted	2025-03-06	22	558318.07	OP30	\N	\N	\N	\N	\N	\N	\N	\N	\N	8f468b56-9d81-46d5-a395-9921bbad760c	\N
+2025-03-03	Aboitiz TMO Transformer Assesment	\N	\N	Aboitiz	Electrification	ELECTRICAL	Power	POWER PLANT	2025-02-27	2025-03-03	DECLINE	RTR	\N	SubCon	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	to followup transformer details	b674e97a-3bce-4db0-88e0-3b7468178d70	\N
+2025-03-03	Aboitiz TMI M2 UPGRADE OF PROTECTION RELAY FOR SEL700G	\N	\N	Aboitiz	Electrification	\N	\N	\N	2025-02-28	2025-03-07	DECLINE	RTR	\N	SubCon	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	48a1d3da-f60f-4d02-9d34-bc98b117b47f	\N
+2025-03-03	ULI Capacitor bank at LVSG 4	CMRP25020077	0	ULI	Electrification	ELECTRICAL	Manufacturing	PHARMA	\N	\N	GO	RTR	ASB	MMR	Submitted	2025-03-28	17	1199984.19	LOST	2025-04-01	\N	\N	\N	\N	\N	\N	\N	\N	dc253018-9a22-4a49-9ef7-63e7999eee4c	\N
+2025-03-03	LC DIS PR#1200015861 ;1200015860 ;1000132592 ;1000132591 - ACB and Breaker Siemens	CMRP25020081	1	URC SURE	Electrification	ELECTRICAL	Manufacturing	MANUFACTURING	2025-03-03	2025-03-10	GO	NSG	NSG	Partner	Submitted	2025-03-10	19	\N	\N	\N	\N	\N	10-Existing	10 -Existing Solution	5 -Peripheral Scope	7 -Urgent	5 -Limited	\N	76d0a254-cb92-4ac2-86c2-f3b36f28099e	\N
+2025-03-04	Riviera Replacement of VFD Sumitomo	CMRP25030090	0	Riviera Golf Club, Inc.	Electrification	ELECTRICAL	Buildings	OTHERS	2025-03-04	\N	GO	NSG	NSG	SubCon	Submitted	2025-03-04	5	112857.14	OP100	2025-04-25	\N	\N	10-Existing	10 -Existing Solution	8 -Strategic Business	10 -Reasonable Time	10 -Complete	\N	49acbf70-01dc-4d46-85da-8b4d4cbdc7f6	\N
+2025-03-04	PASSI - Level Transmitter	\N	\N	URC SURE	Automation	INSTRUMENTATION	Manufacturing	F&B	2025-03-04	\N	DECLINE	NSG	NSG	Partner	\N	\N	\N	\N	\N	\N	\N	\N	2-Existing account with No Orders	3 -No Previous Experience	2 -Non Core for Subcon	5 -Budgetary	2 -No Data	\N	00e4b46c-ffbc-4917-8dbb-55504eddf022	\N
+2025-03-04	The Farm at San Benito Siemens FDAS	CMRP25030119	0	The Farm at San Benito	Electrification	FDAS	Buildings	OTHERS	2025-03-04	\N	DECLINE	NSG	\N	SubCon	\N	\N	\N	\N	\N	\N	\N	\N	10-Strategic	10 -Existing Solution	10 -Focus Business	10 -Reasonable Time	5 -Limited	\N	2b3e2eaf-2355-44c1-9713-eb6a19db2796	\N
+2025-03-04	Pam 1 Electrical Install'n of Power Feeder Supply for Roof Exhaust Drive Motor  (PRPR 1000133236)	CMRP25030106	0	URC BCFG	Electrification	EE & AUX	Manufacturing	F&B	2025-03-04	2025-03-11	GO	JMO	JMO	CBG	Submitted	2025-03-11	19	890679.63	LOST	2025-04-01	\N	\N	10-Existing	8 -Need to Customize	8 -Strategic Business	7 -Urgent	5 -Limited	Lost to MHECO	1883d37f-6713-4663-8a6a-7e9875ea890e	\N
+2025-03-05	Supply & Install Walk Thru Detector & Baggage Scanner for Savoy Hotel	CMRP25030100	0	DDT Konstract	Electrification	EE & AUX	Buildings	CONSTRUCTION	2025-03-05	\N	GO	JMO	JMO	Partner	Submitted	\N	21	1364152.50	OP60	\N	\N	\N	5-New Account, No Champion	5 -Need External Resource	5 -Peripheral Scope	7 -Urgent	2 -No Data	For 30May Meeting w/  buyer	8de207b4-d304-4cd7-a30c-b34a54b6122d	\N
+2025-03-05	Rockwell Nepo Pamp EE Supply and Installation	CMRP25020064	2	Applied Thermal Technology Solution Corporation	Electrification	ELECTRICAL	Buildings	CONSTRUCTION	2025-03-05	2025-03-07	GO	CBD	RJR	RJR	Submitted	2025-05-16	20	11464041.88	OP60	\N	\N	\N	\N	\N	\N	\N	\N	May awarding to them; June or Q3 to their partners	6d9d5975-7c5c-43ac-8bfb-adeb8622351a	\N
+2025-03-05	Maple Grove CCTV	CMRP25030117	3	Megaworld	Electrification	CCTV	Buildings	CONSTRUCTION	2025-03-04	2025-03-14	GO	CBD	AVR	Partner	Submitted	2025-04-25	20	6026785.71	OP30	\N	\N	\N	\N	\N	\N	\N	\N	April 10: need to update status, already submitted	2628d9a1-72e5-424e-9b3d-7b1c413fa4e6	\N
+2025-03-05	Siemens Dole Polomok PLC	CMRP25020085	2	Siemens	Automation	PLC / SCADA	Manufacturing	F&B	2025-02-28	2025-03-14	GO	RTR	EIS	EIS	Submitted	2025-03-13	30	1553245.74	OP30	\N	\N	\N	\N	\N	\N	\N	\N	\N	eb7c4f3a-473e-408d-9582-220379aab031	\N
+2025-03-06	QC Secretariat Supply, Deliver & Installation of Electrical & Auxiliary Works	CMRP	0	WHITEPORT, Inc.	Electrification	EE & AUX	Buildings	CONSTRUCTION	2025-03-06	2025-03-17	DECLINE	JMO	MMR	Partner	\N	\N	20	\N	\N	\N	\N	\N	5-New Account, No Champion	10 -Existing Solution	8 -Strategic Business	10 -Reasonable Time	10 -Complete	Apr24:-package without qtn, please proceed as no qoute	59f359cf-8300-449d-afec-0f738aab7fa3	\N
+2025-03-07	Dept. Of Finance BMS Preventive Maintenance	CMRP	0	RUA Energia	Automation	BMS	Buildings	OTHERS	2025-03-07	\N	PENDING	JMO	RJR	RJR	Not Yet Started	\N	15	\N	\N	\N	\N	\N	5-New Account, No Champion	3 -No Previous Experience	8 -Strategic Business	10 -Reasonable Time	5 -Limited	29Apr -Rua to ff-up enduser pending info	cd4ddd80-017e-4ed7-b3a9-f9b2bf11badc	\N
+2025-03-07	PASSI_FDAS & Fire Suppression System @ Boiler No.5 (PR 1200015592)	CMRP	0	URC SURE	Electrification	FDAS	Manufacturing	F&B	2025-03-07	\N	DECLINE	JMO	CBG	Partner	\N	\N	\N	\N	\N	\N	\N	\N	10-Existing	8 -Need to Customize	5 -Peripheral Scope	7 -Urgent	2 -No Data	\N	c0e63358-53fc-4a63-a01f-889d5d6a4f46	\N
+2025-03-10	Forthright Builders Servequest Ofc AUX	CMRP25020082	1	Forthright Builders Inc.	Electrification	EE & AUX	Buildings	CONSTRUCTION	\N	\N	GO	LOS	RJR	Partner	Submitted	2025-03-07	22	2753432.27	OP30	\N	\N	\N	\N	\N	\N	\N	\N	\N	2dfcf12e-3d87-467c-bcfb-8ccaf621ccaf	\N
+2025-03-10	MRT7 Station 6 VO (Works)	CMRP25030091	1	Grand Apex Construction Inc.	Electrification	ELECTRICAL	Buildings	CONSTRUCTION	\N	\N	GO	CBD	MMR	MMR	Submitted	2025-05-16	26	196428.57	OP90	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	f95fb00a-7a6a-47e7-8616-6bcaa04b93ae	\N
+2025-03-10	Netpac FNG Uniqlo Warehouse BMS Project	CMRP25030105	0	Net Pacific, Inc.	Automation	BMS	Buildings	CONSTRUCTION	2025-03-05	\N	GO	RTR	EIS	EIS	Submitted	2025-03-11	25	8481478.54	OP30	\N	\N	\N	\N	\N	\N	\N	\N	\N	1941ab51-8822-438e-b2d1-663b5b59dde8	\N
+2025-03-10	VMCI WinCC Server Upgrade	\N	0	Victorias Milling Company, Inc.	Automation	\N	\N	\N	2025-02-26	\N	DECLINE	LOS	RJR	RJR	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	7cc8322c-8b47-4e86-bf8d-7ac80f3ea7e5	\N
+2025-03-10	Pilmico Tarlac PLC Spare parts Testing	\N	0	Pilmico	Automation	PLC / SCADA	Manufacturing	F&B	2025-02-07	\N	GO	RTR	EIS	EIS	Submitted	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	7948ef28-1a8a-475a-b2c1-e1289d919c50	\N
+2025-03-10	Aboitiz TMO M5 Common PLC Upgrade	CMRP25030092	0	Aboitiz	Automation	PLC / SCADA	Power	POWER PLANT	2025-03-06	2025-05-06	GO	RTR	AVR	DS	For Revision	2025-03-31	21	4318196.14	OP90	\N	\N	\N	\N	\N	\N	\N	\N	\N	91df5c6a-804e-46d8-b3c6-4820d39b4483	\N
+2025-03-10	Richmonde FDAS Rehab	CMRP25030101	0	Asia Affinity Property Management	Electrification	FDAS	Buildings	CONSTRUCTION	2025-03-06	2025-03-11	GO	CBD	MMR	DS	Submitted	2025-03-18	20	1300958.95	OP30	\N	\N	\N	\N	\N	\N	\N	\N	June or Q3 target awarding	d20f565c-28f1-4a88-83f1-85aa419874cf	\N
+2025-03-10	URC SURE Supply of Pressure Transmitter	\N	\N	URC SURE	Automation	INSTRUMENTATION	Manufacturing	F&B	2025-03-10	\N	DECLINE	NSG	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	10-Existing	5 -Need External Resource	2 -Non Core for Subcon	5 -Budgetary	2 -No Data	\N	210c17c5-fa84-4220-aaa1-9b54697f7e6a	\N
+2025-03-10	URC San Pedro 1_ Installation of  5-unit High Bay Lamp at DC Warehouse	CMRP	0	URC BCFG	Electrification	ELECTRICAL	Manufacturing	F&B	2025-03-10	\N	DECLINE	JMO	CBG	Partner	\N	\N	20	\N	\N	\N	\N	\N	10-Existing	5 -Need External Resource	5 -Peripheral Scope	7 -Urgent	5 -Limited	\N	9606390c-d520-45dc-847f-8ecb0f616ae1	\N
+2025-03-10	NURC Tarlac_ PM of Transformers (PR PR 1300001491) March 22 Execution	CMRP	0	URC BCFG	Electrification	ELECTRICAL	Manufacturing	F&B	2025-03-10	\N	DECLINE	JMO	CBG	Partner	\N	\N	20	\N	\N	\N	\N	\N	8-With Account Champion	5 -Need External Resource	2 -Non Core for Subcon	7 -Urgent	5 -Limited	\N	4f9e0b61-1f1b-4e61-bedc-90fd467119e7	\N
+2025-03-10	BBP Preventive Maintenance - TEC	CMRP25030103	0	BBP	Electrification	ELECTRICAL	Buildings	CONSTRUCTION	2025-03-10	2025-03-10	GO	NSG	NSG	SE	Submitted	2025-03-10	40	37989.55	OP100	2025-04-25	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	PO 18313	7fae620d-334f-4062-867b-70348766be40	\N
+2025-03-11	LC DIS PR#1200015861 ;1200015860 ;1000132592 ;1000132591 - ACB and Breaker Siemens	CMRP25020081	2	URC SURE	Electrification	ELECTRICAL	Manufacturing	MANUFACTURING	2025-03-11	2025-03-18	GO	NSG	NSG	Partner	Submitted	2025-03-11	19	1964694.78	OP30	\N	\N	\N	10-Existing	5 -Need External Resource	5 -Peripheral Scope	7 -Urgent	5 -Limited	\N	35287922-f980-4351-8c0b-c72c8e540600	\N
+2025-03-11	URC San Pedro 2 Auto Bake Line PLC HMI Upgrade	CMRP25030106	1	URC BCFG	Automation	PLC / SCADA	Manufacturing	F&B	2025-03-07	2025-03-19	GO	JMO	RJR	Partner	Submitted	2025-03-19	18	1880328.07	OP60	\N	\N	\N	10-Existing	5 -Need External Resource	10 -Core Business	10 -Reasonable Time	10 -Complete	20May, for end-user tabulation,	b1b78db4-0971-4f1f-b4c8-9dd38ad5f73d	\N
+2025-03-11	PA Evacutation System One Rep	\N	\N	Megaworld	Electrification	PABGM	Buildings	CONSTRUCTION	2025-03-11	\N	DECLINE	CBD	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	76158187-9bab-41fc-8068-af7ce47ad1f6	\N
+2025-03-11	MIOX On-site Chlorine Generation System (Brine Cell Replacement)	CMRP	0	Laguna Water	\N	MECHANICAL	Buildings	UTILITIES	2025-03-11	2025-03-14	PENDING	JMO	JMO	Partner	No Decision Yet	\N	25	\N	\N	\N	\N	\N	5-New Account, No Champion	5 -Need External Resource	2 -Non Core for Subcon	7 -Urgent	5 -Limited	Apr3:\n-Twinfra interseted in this requirement: sir Jun to ffup\nMay05:\n- waiting Labtest result from LagunaWater	ed3364f0-6c2d-4ddc-a309-38716bbeb44b	\N
+2025-03-11	Design of On-Grid Solar for TARI Aboitiz Estate Facilities	CMRP25030108	1	ABOITIZ Construction Inc.	Electrification	SOLAR	Buildings	CONSTRUCTION	2025-03-11	2025-03-14	GO	JMO	JMO	JMO	Submitted	2025-03-13	23	90000.00	OP30	\N	\N	\N	5-New Account, No Champion	5 -Need External Resource	8 -Strategic Business	7 -Urgent	10 -Complete	Proponent waiting 3rd offer	24358e6b-05a4-41d6-a39c-016b5e85477e	\N
+2025-03-12	LC DIS PR#1000129018 ;1000127272 - Siemens Contactor and Mem Card	CMRP25030107	0	URC SURE	Automation	PLC / SCADA	Manufacturing	F&B	2025-03-12	2025-03-19	GO	NSG	NSG	NSG	Submitted	\N	15	\N	\N	\N	\N	\N	10-Existing	8 -Need to Customize	10 -Focus Business	10 -Reasonable Time	10 -Complete	\N	6a8fcaaa-3235-4feb-be1f-a26c86afcaa4	\N
+2025-03-12	Siemens Busco Sugar PCS7 PLC RIO Panel Assembly	CMRP25030110	0	Busco Sugar Milling Co., Inc.	Automation	PLC / SCADA	Manufacturing	F&B	2025-03-12	\N	GO	RTR	EIS	SubCon	Submitted	2025-05-27	16	1885300.96	OP30	\N	\N	\N	\N	\N	\N	\N	\N	\N	3c97d575-838d-4f87-b7a7-23acbe03d715	\N
+2025-03-12	URC Pam PMS of Genset #6 & Genset #7 on HOLY WEEK (PR 1000129029)	CMRP	0	URC BCFG	Electrification	ELECTRICAL	Manufacturing	F&B	2025-03-12	2025-03-19	DECLINE	JMO	JMO	Partner	\N	\N	\N	\N	\N	\N	\N	\N	10-Existing	5 -Need External Resource	2 -Non Core for Subcon	7 -Urgent	5 -Limited	\N	534c0327-5ece-4bdf-ab09-39434ef3b7d5	\N
+2025-03-12	URC Cal 2  SNACKS C 34 Priority Convenience Outlets (PR 1000134474)	CMRP25030141	1	URC BCFG	Electrification	ELECTRICAL	Manufacturing	F&B	2025-03-12	2025-04-02	GO	JMO	CBG	Partner	Submitted	2025-04-02	20	1498895.35	LOST	2025-04-01	\N	\N	10-Existing	8 -Need to Customize	5 -Peripheral Scope	7 -Urgent	2 -No Data	Lost to JAM (200k only); Megamaster (<400k)	6976dbe8-0d75-4a2f-89cb-33c0573fbbf4	\N
+2025-03-12	La Carlota_CO2 Engineering Workstation and Project PC (PR 1200009773)	CMRP	0	URC SURE	Electrification	EE & AUX	Manufacturing	F&B	2025-03-12	2025-03-19	DECLINE	JMO	RJR	Partner	\N	2025-04-02	20	\N	\N	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Focus Business	5 -Budgetary	5 -Limited	Apr24: - need to ff-up sir Rojel, to send CMR for site inspection\nMay05:\n-followup sir Rojel on Wed Meeting	e54c6754-9e05-401f-b429-09a4b6859cc1	\N
+2025-03-14	Secretariat Bldg 121.8kWp Solar Hybrid On-Grid with 122kWhr Battery	CMRP24100440	4	DDT Konstract, Inc.	Electrification	SOLAR	Buildings	CONSTRUCTION	2025-03-14	2025-03-15	GO	JMO	JMO	Partner	Submitted	\N	19	12000000.00	Inactive	\N	\N	\N	5-New Account, No Champion	5 -Need External Resource	2 -Non Core for Subcon	10 -Reasonable Time	10 -Complete	22May Mtg w/ VP Staff-BGC; for 2026 Execution, still on civil work	368860fa-3fe2-4e1c-92a0-7ed33f9012bb	\N
+2025-03-14	Araja MRT7 Station 7 Minimum Requirement	CMRP25030118	1	ARAJA	Electrification	ELECTRICAL	Buildings	CONSTRUCTION	2025-03-18	2025-03-18	GO	NSG	NSG	SE	Submitted	2025-03-18	44	2875652.05	OP100	2025-03-25	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	7d987d53-3cc5-4c00-9343-fad1ba514003	\N
+2025-03-14	Manila Water Supply and Delivery Submersible Flat Cord	CMRP25030113	0	Manila Water	Electrification	ELECTRICAL	Buildings	UTILITIES	2025-03-14	2025-03-14	DECLINE	NSG	NSG	Partner	\N	\N	\N	\N	\N	\N	\N	\N	8-With Account Champion	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	5fa4015f-30d4-4402-9960-4cf088d6e9a6	\N
+2025-03-14	Supply of Schneider PM5110	CMRP25030114	0	STMicroelectronics, Inc.	Electrification	ELECTRICAL	Manufacturing	SEMICON	2025-03-14	2025-03-14	GO	CBD	NSG	Partner	Submitted	2025-03-14	\N	\N	LOST	2025-04-01	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	for revision, 10% GM	ee2e0290-524e-48ae-b5f2-d0146be8d20b	\N
+2025-03-14	Netpac PLDT Clarktel FDAS PM Service	CMRP25030112	0	Net Pacific, Inc.	Electrification	FDAS	Buildings	CONSTRUCTION	2025-03-13	2025-03-14	GO	RTR	RJR	SE	Submitted	2025-03-14	44	249358.02	OP30	\N	\N	\N	\N	\N	\N	\N	\N	\N	74238ecd-81c4-45da-947b-fae260dca6ac	\N
+2025-03-14	Eastgate CCTV and PABGM	\N	\N	Megaworld	Electrification	AUXILIARY	Buildings	CONSTRUCTION	2025-03-13	2025-03-14	DECLINE	CBD	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	2671ffcf-719f-4a94-ac75-f73f2caa1af9	\N
+2025-03-14	22MW Solar Luzon SCADA	\N	\N	Renesource Inc.	Automation	PLC / SCADA	Power	UTILITIES	2025-03-13	\N	PENDING	CBD	\N	\N	Not Yet Started	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	still no progress	9a8f7955-89a6-46ab-9cac-551ff784c429	\N
+2025-03-14	I-Land Tower 3 MEPFS	\N	\N	Archipelago Builders Corporation	Electrification	MEPFS	Buildings	CONSTRUCTION	2025-03-12	2025-03-27	DECLINE	CBD	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	63f5a655-16b4-4baa-9a02-53493b4ead7f	\N
+2025-03-14	Central Park FitOut	\N	\N	Archipelago Builders Corporation	Electrification	MEPFS	Buildings	CONSTRUCTION	2025-03-12	2025-03-17	DECLINE	CBD	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	0bfb693b-ee3f-4279-b6f7-930a42a9c479	\N
+2025-03-14	Two World and Three World Square BMS Rehab	CMRP25030142	3	Asia Affinity Property Management	Automation	BMS	Buildings	CONSTRUCTION	2025-03-12	2025-03-28	GO	CBD	EIS	DS	Submitted	2025-05-15	20	8294642.86	OP60	\N	\N	\N	\N	\N	\N	\N	\N	To send based on all consideration; note: no VO	affc348b-cc83-4c46-ab6e-2bb28800f098	\N
+2025-03-14	URC Canlubang _Piatto's Line PLC Upgrade	CMRP25030146	0	URC BCFG	Automation	PLC / SCADA	Manufacturing	F&B	2025-03-14	2025-03-24	GO	JMO	RJR	Partner	Submitted	2025-04-11	20	758138.72	OP60	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Focus Business	10 -Reasonable Time	2 -No Data	23May PR 1200017969, site Pre-Bid with RJ	3789547d-f060-4038-93dd-dfc56bc0a938	\N
+2025-03-14	URC Canlubang _Piatto's Sheeter PLC Upgrade	CMRP25030146	0	URC BCFG	Automation	PLC / SCADA	Manufacturing	F&B	2025-03-14	2025-03-24	GO	JMO	RJR	Partner	Submitted	2025-04-11	20	1708934.70	OP60	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Focus Business	10 -Reasonable Time	2 -No Data	25Apr, Forwarded by Sir Marvin to HO for PR/Bidding	718095ae-1ef0-474d-a024-37b16d46ac55	\N
+2025-03-17	Clark Casino BMS	\N	\N	LG Philippines Inc.	Automation	BMS	Buildings	CONSTRUCTION	\N	\N	PENDING	CBD	EIS	EIS	Not Yet Started	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	still no progress	4e083162-9ca0-4bd8-99b4-5a1e6d6f6400	\N
+2025-03-17	New Galleria Baclaran BMS works	\N	\N	Applied Thermal Technology Solution Corporation	Automation	BMS	Buildings	CONSTRUCTION	2025-03-17	\N	PENDING	CBD	\N	\N	Not Yet Started	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	Q3 or Q4 for site inspection	fb60e698-a782-4ad9-97a2-7c0771f77867	\N
+2025-03-18	URC Calamba-2 CCL Cooker Upgrade	CMRP25040163	2	URC BCFG	Automation	PLC / SCADA	Manufacturing	F&B	2025-03-18	2025-05-15	GO	JMO	RJR	AVR	Submitted	2025-05-15	32	3000000.00	OP60	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	5 -Budgetary	5 -Limited	30Apr site w/ TJ, for quote Ph. 1 (Cooker) w/ 3M Budget\n15May: Budgetry submitted w/ Topology for discussion w/ Mgr	cddad5af-fd13-4ead-a0ce-ad7cd01f04eb	\N
+2025-03-19	URC Sonedco Pressure Transmitter	\N	\N	URC SURE	Automation	INSTRUMENTATION	Buildings	F&B	2025-03-19	\N	DECLINE	NSG	NSG	Partner	\N	\N	\N	\N	\N	\N	\N	\N	10-Existing	5 -Need External Resource	2 -Non Core for Subcon	5 -Budgetary	2 -No Data	\N	a66d88c5-7922-41fb-b57c-70fca56f5f5e	\N
+2025-03-19	URC Binan_Structural Analysis & Integrity Certification	CMRP25030133	2	URC BCFG	Electrification	CIVIL	Manufacturing	F&B	2025-03-19	2025-03-26	GO	JMO	JMO	JMO	Submitted	2025-05-06	30	141218.53	OP90	\N	\N	\N	10-Existing	5 -Need External Resource	2 -Non Core for Subcon	7 -Urgent	10 -Complete	21May, Tech'l Director approved, charge to facility/bldg CAPEX	63616ba1-233a-41c5-9812-df2ee4a719d5	\N
+2025-03-20	Petron Supply of 110V Contactor	CMRP25030125	0	Petron Corporation	Electrification	ELECTRICAL	Power	OIL & GAS	2025-03-20	2025-03-14	GO	NSG	NSG	NSG	Submitted	2025-03-20	40	5777.90	OP30	\N	\N	\N	10-Strategic	10 -Existing Solution	8 -Strategic Business	7 -Urgent	10 -Complete	\N	3c2155af-5f40-4537-973f-03d08b995035	\N
+2025-03-20	Petron Supply of S7-400 DO Module	CMRP25030126	0	Petron Corporation	Automation	PLC / SCADA	Power	OIL & GAS	2025-03-20	2025-03-20	GO	NSG	NSG	NSG	Submitted	2025-03-20	25	61888.92	OP30	\N	\N	\N	10-Strategic	10 -Existing Solution	8 -Strategic Business	7 -Urgent	10 -Complete	\N	288d7b3e-592a-40af-9119-27b916e26ce8	\N
+2025-03-20	First Balfour Supply of Schneider Breaker	CMRP25030127	0	First Balfour, Inc	Electrification	ELECTRICAL	Buildings	CONSTRUCTION	2025-03-20	2025-03-20	GO	NSG	NSG	NSG	Submitted	2025-03-20	30	27803.13	OP30	\N	\N	\N	10-Existing	10 -Existing Solution	8 -Strategic Business	7 -Urgent	10 -Complete	\N	68694735-af00-4569-8e56-fc85fbd68629	\N
+2025-03-20	NCC Supply of Link Box and Profibus DP Connector	CMRP25030128	0	NCC	Electrification	ELECTRICAL	Manufacturing	CEMENT	2025-03-18	2025-03-20	GO	NSG	NSG	NSG	Submitted	\N	\N	\N	\N	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Focus Business	10 -Reasonable Time	10 -Complete	\N	e5009cf4-7ae9-4a43-899f-931ca3b93b12	\N
+2025-03-20	SCII Supply of MPS and Battery	CMRP25030129	0	SCII	Electrification	FDAS	Manufacturing	CEMENT	2025-03-20	2025-03-20	GO	NSG	NSG	NSG	Submitted	2025-03-21	30	\N	\N	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	7 -Urgent	10 -Complete	\N	9b234c15-2b75-44a2-ad99-040059de250a	\N
+2025-03-20	SLTEC Supply of Cable Tray	CMRP25030130	0	ACEN	Electrification	ELECTRICAL	Buildings	CONSTRUCTION	2025-03-20	2025-03-21	GO	NSG	NSG	Partner	Submitted	2025-03-21	35	92070.00	OP30	\N	\N	\N	5-New Account, No Champion	8 -Need to Customize	8 -Strategic Business	7 -Urgent	5 -Limited	\N	122f80e5-ecb8-476a-8662-4c70f5d79e4f	\N
+2025-03-21	Manila Water PowerFuse Switchgear HV 160A	CMRP25030137	0	Manila Water	Electrification	ELECTRICAL	Buildings	UTILITIES	2025-03-21	2025-03-26	DECLINE	NSG	NSG	SubCon	\N	\N	\N	\N	\N	\N	\N	\N	2-Existing account with No Orders	8 -Need to Customize	8 -Strategic Business	7 -Urgent	2 -No Data	No response for the end user for the technical clarif / deadline 03-26-2025	40c0cbc7-a2b4-4916-9bda-99699e30e518	\N
+2025-03-21	PR#1000137480 - Pressure Transmitter	\N	0	URC SURE	Automation	INSTRUMENTATION	Manufacturing	F&B	2025-03-21	2025-03-28	DECLINE	NSG	NSG	\N	\N	\N	\N	\N	\N	\N	\N	\N	8-With Account Champion	3 -No Previous Experience	2 -Non Core for Subcon	5 -Budgetary	2 -No Data	\N	f33d1b96-0111-49d5-8dc3-a2185559a401	\N
+2025-03-21	1Rep FDAS	\N	\N	Megaworld	Electrification	FDAS	Buildings	CONSTRUCTION	2025-03-20	2025-03-28	DECLINE	CBD	ASB	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	56d65920-9207-4df7-a8f3-1bbfb1ff8d4e	\N
+2025-03-21	Mactan Cebu CCTV	\N	\N	Megaworld	Electrification	CCTV	Buildings	CONSTRUCTION	2025-03-20	2025-03-25	DECLINE	CBD	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	ee2e9533-63c7-47dc-bcc2-2dfb40cbe625	\N
+2025-03-21	Silangan Capbank and SCADA	\N	\N	DirectElectrix	Automation	PLC / SCADA	Power	UTILITIES	2025-03-20	\N	PENDING	CBD	NSG	RJR	No Decision Yet	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	still no progress; to design by us thru Meinhardt	b2804311-110c-4258-b92e-c97bd39e776d	\N
+2025-03-24	Unilab Amherst Delta BMS Upgrade	CMRP25030093	0	Unilab	Automation	BMS	Manufacturing	PHARMA	2025-03-21	\N	GO	RTR	EIS	EIS	Submitted	2025-03-21	29	3518123.02	OP60	\N	\N	\N	\N	\N	\N	\N	\N	\N	23557357-c5c6-4f2c-837c-ad781afc4c22	\N
+2025-03-24	Aboitiz EAUC Supply & Installation of Operating Parameters Data Logger	\N	\N	Aboitiz	Electrification	ELECTRICAL	Power	UTILITIES	2025-03-21	2025-03-27	DECLINE	RTR	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	d7ef3daf-a891-4f37-8788-b957789e8fd6	\N
+2025-03-24	Archen DESIGN, MANUFACTURE, SUPPLY, DELIVERY AT SITE, HAUL, INSTALL, AND TESTING AND COMMISSIONING OF CONTINUOUS-DUTY GENERATOR SETS FOR MAITUM PORT FACILITY	\N	\N	\N	Electrification	ELECTRICAL	\N	\N	2025-03-21	\N	DECLINE	LOS	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	22c57085-c74b-4a3f-976a-b4a5f919ad6c	\N
+2025-03-24	Crosslink TI Baguio Phase 7 SCADA	CMRP25030155	0	Cross-link Construction Corp	Automation	PLC / SCADA	Manufacturing	SEMICON	2025-03-21	2025-03-31	GO	LOS	RJR	RJR	Submitted	2025-04-03	27	4858350.11	OP30	\N	\N	\N	\N	\N	\N	\N	\N	\N	ac534b14-7435-4e01-be38-97d83cc17dc1	\N
+2025-03-24	Supply and Delivery of Panel Boards (Gardiola Residence)	\N	\N	Whiteport, Inc	Electrification	ELECTRICAL	Buildings	CONSTRUCTION	2025-03-18	\N	DECLINE	NSG	JMO	\N	Submitted	\N	\N	\N	\N	\N	\N	\N	5-New Account, No Champion	5 -Need External Resource	8 -Strategic Business	10 -Reasonable Time	10 -Complete	\N	af68087a-889e-4b27-964d-71cca12a48ef	\N
+2025-03-24	Amherst Solids BMS Phase 1	CMRP24030101	3	Amherst Laboratories Inc.	Automation	BMS	Manufacturing	PHARMA	\N	\N	GO	RTR	RJR	RJR	Submitted	2025-04-23	30	9257799.55	OP90	\N	\N	\N	\N	\N	\N	\N	\N	Apr 21:\n- clarification meeting last Apr15	292435d7-6eaf-44bd-9626-cfafd6890d70	\N
+2025-03-24	BBP Ascott Megger Testing	CMRP25030135	0	BBP	Electrification	ELECTRICAL	Buildings	CONSTRUCTION	2025-03-24	\N	GO	NSG	NSG	NSG	Submitted	2025-03-25	\N	\N	\N	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Focus Business	10 -Reasonable Time	10 -Complete	\N	f0a58d6b-2e97-4f3f-8415-32b4e5fa0a68	\N
+2025-03-24	Uptown East Gate 14F and 16F EE & Aux	\N	\N	Megaworld	Electrification	EE & AUX	Buildings	CONSTRUCTION	2025-03-24	2025-03-26	DECLINE	CBD	ASB	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	1c01e0ee-52c0-4448-aeb7-8b2e48260e2f	\N
+2025-03-24	Petron Pandacan Manual Filling B Siemens Logo Programming	\N	0	Petron	Automation	PLC / SCADA	Manufacturing	OIL & GAS	2025-03-21	\N	GO	RTR	AVR	AVR	Submitted	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	667cf0fb-d2fb-4e97-a380-3e92589af045	\N
+2025-03-24	Upper East No.1 Aux	\N	\N	Megaworld	Electrification	AUXILIARY	Buildings	CONSTRUCTION	2025-03-24	2025-03-26	DECLINE	CBD	ASB	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	70b691f3-f043-48d4-a313-eeed9d32a4ea	\N
+2025-03-25	URC SONEDCO PR No. 1000015851 - Siemens Module	CMRP25030138	0	URC SURE	Digitalization	PLC / SCADA	Manufacturing	F&B	2025-03-25	2025-04-01	GO	NSG	NSG	NSG	Submitted	2025-03-26	20	748881.89	OP30	\N	\N	\N	10-Strategic	10 -Existing Solution	10 -Focus Business	7 -Urgent	10 -Complete	\N	face99b5-281f-4eb1-93bf-73739656a6e5	\N
+2025-03-25	URC LC DIS PR#1000075965 ;1000124184 - Schneider Breaker	CMRP25030139	0	URC SURE	Electrification	ELECTRICAL	Manufacturing	F&B	2025-03-25	2025-04-01	GO	NSG	NSG	NSG	Submitted	2025-03-26	35	21190.71	OP30	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	7 -Urgent	10 -Complete	\N	ce39b50e-8220-4cae-823f-563ba17861d4	\N
+2025-03-25	URC LC DIS PR#1000061107 - Supply of CCTV	CMRP25030140	0	URC SURE	Electrification	CCTV	Manufacturing	F&B	2025-03-25	2025-04-01	GO	NSG	NSG	NSG	Submitted	2025-03-27	30	51751.70	OP30	\N	\N	\N	10-Existing	10 -Existing Solution	8 -Strategic Business	7 -Urgent	10 -Complete	\N	6c2ec1f2-cc91-4d1f-8dcd-24892ceba9c0	\N
+2025-03-25	Clark City Front Tower 2 EE & Aux	\N	\N	Megaworld	Electrification	EE & AUX	Buildings	CONSTRUCTION	2025-03-24	2025-03-26	DECLINE	CBD	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	512a724c-ed3a-4c3e-bf35-729a05513ef8	\N
+2025-03-26	NCC Supply of Link Box and Profibus DP Connector	CMRP25030128	1	NCC	Electrification	ELECTRICAL	Manufacturing	CEMENT	2025-03-26	2025-03-26	GO	NSG	NSG	NSG	Submitted	2025-03-26	\N	\N	\N	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Focus Business	10 -Reasonable Time	10 -Complete	\N	0220d255-568e-4934-a734-cfb3aa7b00d9	\N
+2025-03-26	La Carlota_ 5000A-ACB Supply @ Pwr Ctr D  w/ Commissioning  (PR1200016893)	CMRP25030151	0	URC SURE	Electrification	EE & AUX	Manufacturing	F&B	2025-03-26	2025-04-02	GO	JMO	CBG	Partner	Submitted	2025-04-02	20	2332741.49	OP30	\N	\N	\N	10-Existing	8 -Need to Customize	5 -Peripheral Scope	10 -Reasonable Time	10 -Complete	23May; Still under review by proponent per Mam Nina	39580fe1-f565-4bf3-accb-6f4d0bf60989	\N
+2025-03-26	URC Canlubang_FDAS PM/Inspection - (PR 1000113352)	CMRP	0	URC BCFG	Electrification	FDAS	Manufacturing	F&B	2025-03-26	2025-04-02	DECLINE	JMO	CBG	Partner	\N	\N	\N	\N	\N	\N	\N	\N	10-Existing	5 -Need External Resource	5 -Peripheral Scope	7 -Urgent	5 -Limited	\N	a79e3f91-8c23-4d58-8ea1-c27a226d542c	\N
+2025-02-08	AEGIS SMY CGP Project Labor Services	CMRP25020034	1	Avant Equinox Group Industry Solutions (Aegis) Inc	Automation	PLC / SCADA	Manufacturing	F&B	\N	\N	GO	RTR	CBG	MMR	Submitted	2025-02-06	18	9912670.46	OP30	\N	\N	\N	\N	\N	\N	\N	\N	\N	ee662d88-7e09-4b7a-a56d-5b4237d6dd3e	\N
+2025-03-26	URC Canlubang_Elec'l Equipment/Substations PM Works (PR 1200015824)	CMRP	0	URC BCFG	Electrification	EE & AUX	Manufacturing	F&B	2025-03-26	2025-04-04	DECLINE	JMO	CBG	Partner	\N	\N	\N	\N	\N	\N	\N	\N	8-With Account Champion	5 -Need External Resource	2 -Non Core for Subcon	7 -Urgent	5 -Limited	\N	188c57d0-30f4-4acc-a45c-2e3f6f4ec45b	\N
+2025-03-26	URC Canlubang Panning Machines Controls Conversions (PR 1200016802)	CMRP25030154	2	URC BCFG	Automation	PLC / SCADA	Manufacturing	F&B	2025-03-26	2025-04-04	GO	JMO	RJR	AVR	Submitted	2025-05-13	15	828798.03	OP100	2025-05-25	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	5 -Budgetary	5 -Limited	13May SSW; 26May PO# 400167561 sent by Sir Norman	0ca297d5-52f1-4b0e-a91a-219ba9024a93	\N
+2025-03-26	URC Cavite_Centralized WONDERWARE SCADA (PR 1200016249)	CMRP25030148	2	URC BCFG	Automation	PLC / SCADA	Manufacturing	F&B	2025-03-26	2025-04-07	GO	JMO	RJR	AVR	Submitted	2025-05-06	15	1295029.02	OP90	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Focus Business	5 -Budgetary	2 -No Data	w/n 1.5M budget; 19May, requested topology provided, for SSW	c9cbdb53-bd09-4d48-8352-da66ef5ff1ec	\N
+2025-03-26	URC Cavite_ Silo PLC & SCADA Electrical Upgrade (PR 1200016271)	CMRP25030149	2	URC BCFG	Automation	PLC / SCADA	Manufacturing	F&B	2025-03-26	2025-04-07	GO	JMO	RJR	AVR	Submitted	2025-05-06	15	3914410.61	OP90	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Focus Business	5 -Budgetary	2 -No Data	w/n 4.0M budget; 19May, requested topology provided, for SSW	860ebf52-7d34-40f6-8e0e-1172b88f3abc	\N
+2025-03-26	URC Cavite_MML Gravomat PLC SCADA upgrade (PR 1200016272)	CMRP25030150	2	URC BCFG	Automation	PLC / SCADA	Manufacturing	F&B	2025-03-26	2025-04-07	GO	JMO	RJR	AVR	Submitted	2025-05-06	15	2587591.76	OP90	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Focus Business	5 -Budgetary	2 -No Data	w/n 2.8M budget; 19May, requested topology provided, for SSW	3f1d384d-f7b9-4788-bad2-662820288c04	\N
+2025-03-27	Laguna Water Supply of Induction Motor	CMRP25030144	0	Laguna Water	Electrification	ELECTRICAL	Buildings	UTILITIES	2025-03-27	2025-03-27	GO	NSG	NSG	NSG	Submitted	2025-03-27	26	126070.56	OP30	\N	\N	\N	5-New Account, No Champion	8 -Need to Customize	8 -Strategic Business	7 -Urgent	10 -Complete	\N	ddf67f67-9bce-4103-b045-688cc8d0205f	\N
+2025-03-27	Laguna Water Supply of Capacitor	CMRP25030145	0	Laguna Water	Electrification	ELECTRICAL	Buildings	UTILITIES	2025-03-27	2025-03-27	GO	NSG	NSG	NSG	Submitted	2025-03-27	29	470925.00	OP30	\N	\N	\N	5-New Account, No Champion	8 -Need to Customize	8 -Strategic Business	7 -Urgent	10 -Complete	\N	d99ddf60-7675-4ba7-8fbc-fd8d957bd862	\N
+2025-03-27	Sumitomo Northport Replacement of DC to AC motor	\N	0	Sumitomo (SHI) Cyclo Drive Asia Pacific Pte Ltd	Electrification	ELECTRICAL	Power	OTHERS	2025-03-27	\N	DECLINE	LOS	NSG	Partner	\N	\N	\N	\N	\N	\N	\N	\N	5-New Account, No Champion	8 -Need to Customize	5 -Peripheral Scope	5 -Budgetary	2 -No Data	\N	0288a600-2b57-4f31-9287-88ca14ef8557	\N
+2025-03-28	PASSI PR#1000134409 (Allen Bradley Parts)	CMRP25030153	0	URC SURE	Electrification	ELECTRICAL	Manufacturing	F&B	2025-03-28	2025-04-04	GO	NSG	NSG	NSG	Submitted	2025-04-03	20	651441.15	OP30	\N	\N	\N	8-With Account Champion	10 -Existing Solution	10 -Focus Business	7 -Urgent	10 -Complete	\N	c54f720a-2ce7-4a76-9dfd-4b70dc579f6a	\N
+2025-03-31	Goltens APRI Woodward Panel Installation HMI	CMRP23080259	3	Goltens	Automation	PLC / SCADA	Power	UTILITIES	2025-03-28	2025-04-03	GO	RTR	RJR	AVR	Submitted	2025-04-04	26	1345922.66	OP30	\N	\N	\N	\N	\N	\N	\N	\N	\N	e8d7245c-f645-4ebe-9a7c-71a7f2639314	\N
+2025-03-31	NCC Supply of Link Box and Profibus DP Connector	CMRP25030128	2	NCC	Electrification	ELECTRICAL	Manufacturing	CEMENT	2025-03-26	2025-03-26	GO	NSG	RJR	NSG	Submitted	2025-04-02	18	1761077.25	OP100	2025-04-25	\N	\N	10-Existing	10 -Existing Solution	10 -Focus Business	10 -Reasonable Time	10 -Complete	\N	892a790c-54cf-4ed2-acbb-4e224149f75b	\N
+2025-03-31	Difsys Supply of Output Monitor Module	CMRP25030156	1	Digitally Intelligent Facility Systems, Inc.	Electrification	FDAS	Buildings	OTHERS	2025-03-31	2025-03-31	GO	NSG	NSG	NSG	Submitted	2025-03-31	40	18519.38	OP30	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Focus Business	10 -Reasonable Time	10 -Complete	\N	a5dc85b0-4639-4788-a85e-e63b56c177f4	\N
+2025-04-02	Supply and Install of Pressure Sensor Switch and Bladder Tank	\N	\N	SMC	\N	MECHANICAL	Manufacturing	F&B	\N	\N	DECLINE	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	f7297277-8219-40a5-ba69-65b1afd18b79	\N
+2025-04-02	LC DIS PR#1000129018 ;1000127272 - Siemens Contactor and Mem Card	CMRP25030107	1	URC SURE	Automation	PLC / SCADA	Manufacturing	F&B	2025-03-12	2025-03-19	GO	NSG	NSG	NSG	Submitted	2025-04-02	15	9776.22	OP100	2025-03-25	\N	\N	10-Existing	8 -Need to Customize	10 -Focus Business	10 -Reasonable Time	10 -Complete	\N	55310589-70ee-4460-b615-4c066b75e12e	\N
+2025-04-03	Amherst Lab Supply of Wireless Hygrometer	CMRP25040159	0	Amherst Laboratories Inc.	Digitalization	INSTRUMENTATION	Manufacturing	PHARMA	2025-04-03	2025-04-03	GO	NSG	NSG	DS	Submitted	2025-04-03	30	603281.25	OP30	\N	\N	\N	10-Existing	8 -Need to Customize	10 -Focus Business	10 -Reasonable Time	10 -Complete	\N	9a6b913e-9d60-4e13-ae55-c69ad76b41a5	\N
+2025-04-03	MC Engineer Supply of Wago Connectors	CMRP25040160	0	M.C Engineering Inc.	Electrification	ELECTRICAL	Buildings	OTHERS	2025-04-03	2025-04-03	GO	NSG	NSG	NSG	Submitted	2025-04-03	37	53753.07	OP100	2025-04-25	\N	\N	5-New Account, No Champion	10 -Existing Solution	10 -Focus Business	10 -Reasonable Time	10 -Complete	Ready stock - Netpacific	8d68a9b9-9da9-42cd-8c58-c35615b38598	\N
+2025-04-03	Difsys Mcgill Enclosure	CMRP25040161	1	Digitally Intelligent Facility Systems, Inc.	Electrification	ELECTRICAL	Buildings	OTHERS	2025-04-03	2025-04-03	GO	NSG	NSG	NSG	Submitted	2025-04-03	40	6366.39	OP30	\N	\N	\N	10-Strategic	10 -Existing Solution	10 -Focus Business	10 -Reasonable Time	10 -Complete	\N	cf48736c-525d-4698-bdd6-77b529c83919	\N
+2025-04-03	URC Cavite _ Upgrade/Programming, PLC ASC Fuji (PR 1200015883)	CMRP25040178	0	URC BCFG	Automation	PLC / SCADA	Manufacturing	F&B	2025-03-26	2025-04-11	GO	JMO	RJR	RJR	Submitted	2025-04-15	20	3777417.11	OP60	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Focus Business	5 -Budgetary	2 -No Data	beyond 2.919M budget, for optimization, 26May Topology provided	2aca974c-df69-40ed-8adf-65099b7e6afb	\N
+2025-04-03	URC Cavite _ Upgrade/Programming, PLC WF2 Fuji G (PR 1200016133)	CMRP25040179	0	URC BCFG	Automation	PLC / SCADA	Manufacturing	F&B	2025-03-26	2025-04-11	GO	JMO	RJR	RJR	Submitted	2025-04-15	20	3791936.39	OP60	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Focus Business	5 -Budgetary	2 -No Data	beyond 1.823M budget, for optimization, 26May Topology provided	163cf9a7-6ca2-4f62-8fca-706da03bffd1	\N
+2025-04-03	URC Cavite _ Upgrade/Programming, PLC  CL1 Fuji Primary (PR 1200016101)	CMRP25040180	0	URC BCFG	Automation	PLC / SCADA	Manufacturing	F&B	2025-03-26	2025-04-11	GO	JMO	RJR	RJR	Submitted	2025-04-15	20	3719393.77	OP60	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Focus Business	5 -Budgetary	2 -No Data	beyond 3.058M budget, for optimization, 26May Topology provided	98d52066-3391-44d2-b0d4-181e50252862	\N
+2025-04-03	URC Cavite _ Upgrade/Programming, PLC  CL2 Fuji Peters (PR 1200016877)	CMRP25040181	0	URC BCFG	Automation	PLC / SCADA	Manufacturing	F&B	2025-03-26	2025-04-11	GO	JMO	RJR	RJR	Submitted	2025-04-15	20	4374201.38	OP60	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Focus Business	5 -Budgetary	2 -No Data	beyond 2.000M budget, for optimization, 26May Topology provided	da713785-c11b-49a9-be58-a789df3c2593	\N
+2025-04-03	URC Cavite _ Upgrade/Programming, PLC Dyna Fuji FW7700 (PR 1200017035)	CMRP25040182	0	URC BCFG	Automation	PLC / SCADA	Manufacturing	F&B	2025-03-26	2025-04-11	GO	JMO	RJR	RJR	Submitted	2025-04-15	20	3346928.13	OP60	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Focus Business	5 -Budgetary	2 -No Data	beyond 1.398M budget, for optimization, 26May Topology provided	c832cecf-fba9-4155-ac45-77cc783a81e2	\N
+2025-04-03	URC Cavite _ Upgrade/Programming, PLC XO Microfilm PLC/ HMI (PR 1200016879)	CMRP25040175	1	URC BCFG	Automation	PLC / SCADA	Manufacturing	F&B	2025-03-26	2025-04-11	GO	JMO	RJR	RJR	Submitted	2025-04-28	20	1797167.00	OP90	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Focus Business	5 -Budgetary	2 -No Data	w/n 1.80M budget; 19May, requested topology provided, for SSW	cd4623d0-bbbf-4abe-a8c4-db96468c622e	\N
+2025-04-03	URC Cavite _Elect'l Works CHOCOLATE Weineroto Panel (PR 1200016270)	CMRP25040168	1	URC BCFG	Electrification	ELECTRICAL	Manufacturing	F&B	2025-04-03	2025-04-11	GO	JMO	CBG	Partner	Submitted	2025-05-06	17	1766546.93	LOST	2025-05-25	\N	\N	10-Existing	10 -Existing Solution	10 -Focus Business	5 -Budgetary	10 -Complete	Budget 1.80M Only; 06May SSW lost to MegaMaster (1,044,562)	6c70d620-df9f-47c9-a059-b4313d29b990	\N
+2025-04-03	URC Cavite _LBS Installation at SubsStation (PR  1200015875)	CMRP	0	URC BCFG	Electrification	EE & AUX	Manufacturing	F&B	2025-04-03	2025-04-11	DECLINE	JMO	RJR	Partner	\N	\N	\N	\N	\N	\N	\N	\N	10-Existing	\N	\N	\N	\N	\N	ed9f959f-83d8-4efa-a43d-3d88cd3878b6	\N
+2025-04-03	URC Cavite _QA Workstation LP & PP Panels Install'n (PR 1200016400)	CMRP25040169	2	URC BCFG	Electrification	EE & AUX	Manufacturing	F&B	2025-04-03	2025-04-11	GO	JMO	CBG	Partner	Submitted	2025-05-06	19	1098459.82	LOST	2025-05-25	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	5 -Budgetary	10 -Complete	Budget 1.1M Only; 06May SSW lost to MegaMaster (669,642)	a6caaa1c-1a8a-47b8-90a4-18087c37fe12	\N
+2025-04-03	URC Cavite _Battery Charging Station (PR 1200016471)	CMRP25040172	2	URC BCFG	Electrification	EE & AUX	Manufacturing	F&B	2025-04-03	2025-04-11	GO	JMO	CBG	Partner	Submitted	2025-05-06	18	788625.31	LOST	2025-05-25	\N	\N	10-Existing	10 -Existing Solution	10 -Focus Business	5 -Budgetary	10 -Complete	Budget 0.8M Only; 06May SSW lost to Megamaster (553,571)	a5e39398-3a2a-44e1-a201-d91e3eb3d97e	\N
+2025-04-04	FCF Minerals Supply of Siemens ACB	CMRP25040162	0	FCF Minerals Corporation	Electrification	ELECTRICAL	Power	OTHERS	2025-04-04	2025-04-11	GO	NSG	NSG	NSG	Submitted	2025-04-10	40	95223.38	OP30	\N	\N	\N	5-New Account, No Champion	10 -Existing Solution	10 -Focus Business	10 -Reasonable Time	10 -Complete	\N	6e155ac2-69d8-49da-a787-fba33818fa1d	\N
+2025-04-07	Philcore SMGP 1 Year BESS SCADA Maintenance Services	CMRP25030152	0	Philcore System Solutions Power Inc	Automation	PLC / SCADA	Power	POWER PLANT	2025-03-28	2025-03-31	GO	RTR	EIS	EIS	Submitted	2025-03-31	76	892012.31	OP30	\N	\N	\N	\N	\N	\N	\N	\N	Apr 04:\n- Client advises to raise costing	7c76a908-29fb-42c5-bee3-6cbc31c06153	\N
+2025-04-07	SURE Bais_ WTP LCD Replacement Annual PM (PR 1000134530)	CMRP	0	URC SURE	Automation	PLC / SCADA	Manufacturing	F&B	2025-04-07	2025-04-14	DECLINE	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	10-Existing	3 -No Previous Experience	2 -Non Core for Subcon	5 -Budgetary	2 -No Data	\N	e2f16f9c-b099-43f1-b2bd-5875c51e61f1	\N
+2025-04-07	URC SP1_Improvement of FUEL transfer pump and Grounding	CMRP25040177	0	URC BCFG	Electrification	ELECTRICAL	Manufacturing	F&B	2025-04-07	2025-04-15	GO	JMO	CBG	Partner	Submitted	2025-04-29	16	621002.06	OP90	\N	\N	\N	10-Existing	8 -Need to Customize	5 -Peripheral Scope	5 -Budgetary	5 -Limited	20May SSW no results yet	50afc216-c9d9-431c-aaf2-5ec3e3e05622	\N
+2025-04-07	URC SP1_Improvement of Controlled & Combustible	CMRP	0	URC BCFG	Electrification	CIVIL	Manufacturing	F&B	2025-04-07	\N	DECLINE	JMO	CBG	Partner	\N	\N	\N	\N	\N	\N	\N	\N	10-Existing	8 -Need to Customize	5 -Peripheral Scope	5 -Budgetary	5 -Limited	\N	3e447640-ebe2-468c-ace2-b9f43ec97389	\N
+2025-04-08	Siemens D&L Programming (dotX)	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	1410a95a-99a6-4cdd-9f5e-5b32999555e1	\N
+2025-04-10	Brent Additional Temp Sensor and Outdoor RH Temp	CMRP25040166	0	Applied Thermal Technology Solution Coporation	Digitalization	INSTRUMENTATION	Buildings	CONSTRUCTION	2025-04-10	\N	GO	NSG	NSG	DS	Submitted	2025-04-11	40	244020.00	OP30	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Focus Business	10 -Reasonable Time	10 -Complete	\N	5c5bcb7c-5557-4453-8e86-cf8f3f8a8273	\N
+2025-04-10	URC Binan  Holy Week Transformers PM (PR  1000138203)	CMRP	0	URC BCFG	Electrification	PABGM	Manufacturing	F&B	2025-04-02	2025-04-14	DECLINE	JMO	JMO	Partner	\N	\N	\N	\N	\N	\N	\N	\N	8-With Account Champion	5 -Need External Resource	2 -Non Core for Subcon	7 -Urgent	5 -Limited	\N	fa3b89e5-2a12-496e-be1d-e271ac6f511b	\N
+2025-04-11	URC Sonedco Supply of Siemens Power Supply (1000135280)	CMRP25040167	0	URC SURE	Electrification	ELECTRICAL	Manufacturing	F&B	2025-04-11	2025-04-18	GO	NSG	NSG	NSG	Submitted	2025-04-15	25	193668.32	OP30	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Focus Business	10 -Reasonable Time	10 -Complete	\N	6388be6d-2f50-4a16-b110-a94c752eb9d6	\N
+2025-04-11	BBP Ascott Megger Testing	CMRP25030135	1	BBP	Electrification	ELECTRICAL	Buildings	CONSTRUCTION	2025-04-11	\N	GO	NSG	NSG	NSG	Submitted	2025-04-11	25	67431.00	OP30	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	c15fa864-de78-452d-8ce9-121a2d591ab5	\N
+2025-04-12	RCBC Chiller #5 ACB accessories	CMRP25010006A	1	Applied Thermal Technology Solution Coporation	Electrification	ELECTRICAL	Buildings	CONSTRUCTION	2025-04-07	\N	GO	CBD	CBG	SE	Submitted	2025-04-25	20	80357.14	OP60	\N	\N	\N	\N	\N	\N	\N	\N	\N	098005ce-58a6-4886-b356-9067738c3ddd	\N
+2025-04-12	PSDC FDAS Additional	CMRP	\N	Megaworld	Electrification	FDAS	Buildings	CONSTRUCTION	2025-04-02	\N	GO	CBD	CBG	SE	Submitted	2025-04-11	\N	323360.70	OP30	\N	\N	\N	\N	\N	\N	\N	\N	\N	a88f0d39-6b79-4a63-9951-84e0d04a1593	\N
+2025-04-12	Pump Station SCADA	\N	\N	Guam Pacific Mechanical & Electrical	Automation	PLC / SCADA	Buildings	UTILITIES	2025-04-08	\N	PENDING	CBD	\N	\N	No Decision Yet	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	still no response	aef38e82-d7cf-4bc1-a273-cc54d592d187	\N
+2025-04-14	TIPI Baguio R2 Electrical System SCADA Integration	CMRP25040185	0	Texas Instruments Philippines, Inc.	Automation	PLC / SCADA	Manufacturing	SEMICON	\N	\N	GO	LOS	RJR	RJR	Submitted	2025-04-24	34	3053090.77	OP30	\N	\N	\N	\N	\N	\N	\N	\N	Apr24:\n-Technical Prop submitted today\nApr25:\n-Client sent revised BOM and new Drawings	f9adad7b-40f8-4e34-b326-e566be752e50	\N
+2025-04-14	MRT7 Station 2 EE works	CMRP24110478A	0	Grand Apex Construction Inc.	Electrification	ELECTRICAL	Buildings	CONSTRUCTION	2025-04-02	\N	GO	CBD	CBG	CBG	Submitted	2025-05-19	22	13068720.42	OP30	\N	\N	\N	\N	\N	\N	\N	\N	May05:\n- for optimization	b8f760d2-688a-47f1-9bfb-951e165c45b3	\N
+2025-04-14	Laguna Water PQM and EMS - Water Pump Station	CMRP25040164	0	Laguna Water	Digitalization	IT	Buildings	UTILITIES	2025-04-14	\N	GO	LOS	NSG	DS	Submitted	2025-04-15	50	1200000.00	OP30	\N	\N	\N	5-New Account, No Champion	8 -Need to Customize	8 -Strategic Business	10 -Reasonable Time	5 -Limited	\N	688b2609-3739-44e9-8921-7e3721c5fa5b	\N
+2025-04-15	Difsys Supply of XTRI Module	CMRP25040174	0	Digitally Intelligent Facility Systems, Inc.	Automation	FDAS	Manufacturing	OTHERS	2025-04-15	2025-04-15	GO	NSG	NSG	NSG	Submitted	2025-04-15	45	5228.21	OP30	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Focus Business	10 -Reasonable Time	10 -Complete	\N	165bd6c3-0b0f-430c-89a7-4b13d199a903	\N
+2025-04-15	Twinfra Suppy of Siemens Components and VFD	CMRP25040183	0	Twinfra Corporation	Digitalization	PLC / SCADA	Buildings	UTILITIES	2025-04-15	\N	GO	RTR	NSG	Partner	Submitted	2025-04-15	\N	\N	\N	\N	\N	\N	5-New Account, No Champion	10 -Existing Solution	10 -Focus Business	10 -Reasonable Time	10 -Complete	\N	2f229f0e-e2f3-4fab-8f6d-7debddde76ac	\N
+2025-04-16	Replacement of Existing Expander Line Control in Concrete Silo	CMRP25030121A	0	URC AIG	Electrification	ELECTRICAL	Manufacturing	F&B	2025-04-08	2025-04-16	GO	JMO	CBG	Partner	Submitted	2025-04-23	22	1810032.02	OP60	\N	\N	\N	10-Existing	8 -Need to Customize	8 -Strategic Business	5 -Budgetary	5 -Limited	23May for client revision due budget concern	eca31edf-0fdb-42ad-8770-4cb478c0fa5b	\N
+2025-04-21	NCC Supply of Pulverized Limestone I.O Panel	CMRP25040184	0	NCC	Digitalization	PLC / SCADA	Manufacturing	CEMENT	2025-04-10	2025-04-25	GO	NSG	NSG	Partner	Submitted	2025-05-08	25	1391613.48	OP30	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Focus Business	10 -Reasonable Time	10 -Complete	\N	b779190d-a504-4a9f-97f0-ce71ca8d15f4	\N
+2025-04-23	Nexperia BMS Training	CMRP25040189	0	Nexperia Philippines, Inc	Digitalization	BMS	Manufacturing	SEMICON	2025-04-23	2025-04-23	GO	NSG	NSG	DS	Submitted	2025-04-23	36	10000.00	OP30	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	5c7c4fdd-061e-4a06-b647-f68af6e9544f	\N
+2025-04-23	ACIC VFD with Free Standing Panel	CMRP25040190	0	Advantage Concrete Industries Corporation	Electrification	ELECTRICAL	Manufacturing	CEMENT	2025-04-23	\N	GO	NSG	NSG	Partner	Submitted	2025-04-24	25	836751.62	OP30	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	3e186511-9bee-46b5-ba79-67a1da2d86bb	\N
+2025-04-23	Laguna Water Supply of 650 VA UPS	CMRP25040191	0	Laguna Water	Electrification	ELECTRICAL	Buildings	UTILITIES	2025-04-23	2025-04-25	GO	NSG	NSG	Partner	Submitted	2025-04-24	20	86517.86	OP30	\N	\N	\N	10-Strategic	10 -Existing Solution	10 -Focus Business	10 -Reasonable Time	10 -Complete	\N	b6efecc4-581a-4152-bffa-2ab58e6a35a7	\N
+2025-04-23	MRT7 Station 9 VO (Works)	CMRP	\N	Archipelago Builders Corporation	Electrification	ELECTRICAL	Buildings	CONSTRUCTION	\N	\N	GO	CBD	JEB	SE	Submitted	\N	\N	232142.86	OP100	2025-04-25	\N	\N	\N	\N	\N	\N	\N	\N	1fc63b16-a863-4d29-813d-cf3eb3ca9433	\N
+2025-04-23	MRT7 Station 9 VO (CAD)	CMRP	\N	Archipelago Builders Corporation	Electrification	ELECTRICAL	Buildings	CONSTRUCTION	\N	\N	GO	CBD	JEB	SE	Submitted	\N	\N	80357.14	OP100	2025-04-25	\N	\N	\N	\N	\N	\N	\N	\N	1104ac9c-a485-4bd1-b75e-5dced5924864	\N
+2025-04-23	SLTEC Stand-alone PLC Upgrade	CMRP25040192	0	ACEN	Automation	PLC / SCADA	Power	POWER PLANT	2025-04-23	2025-05-06	PENDING	CBD	RJR	RJR	Submitted	2025-05-27	23	839739.65	OP30	\N	\N	\N	\N	\N	\N	\N	\N	Apr24:\n-RFI Submitted Apr23\n-ask support from RA Apr24	d0232f20-4006-4cdd-a19f-b579032b976e	\N
+2025-04-23	SLTEC Design and Installation of Sprinkler System	\N	0	ACEN	Electrification	FDAS	Power	POWER PLANT	2025-04-23	2025-05-06	DECLINE	CBD	CBG	SubCon	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	no response from end user	1ab4dd55-4dd1-44f6-ae26-e1e728de9565	\N
+2025-04-23	SCII Supply of MPS and Battery	CMRP25030129	1	SCII	Electrification	FDAS	Manufacturing	CEMENT	2025-04-23	2025-04-23	GO	NSG	NSG	NSG	Submitted	2025-04-23	\N	\N	\N	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	e1481bc4-d929-4ae6-98bb-44665b12f9b2	\N
+2025-04-23	Maintenance Service Agreement NS2550A)– Electrical System of WSO Facilities (2 years)	CMRP	0	MAYNILAD Water	Electrification	ELECTRICAL	Buildings	UTILITIES	2025-04-23	2025-06-05	GO	JMO	JEB	CBG	On-Going	\N	15	\N	\N	\N	\N	\N	2-Existing account with No Orders	5 -Need External Resource	8 -Strategic Business	5 -Budgetary	5 -Limited	28Apr: JMO to check budget & if allow selected Area only\n05May: 1st time to roll-out 2-year PMS: 500k/plant budget\n21May Procurement rolled out official RFQ & Bid Schedules, \n27May due Technical Clariifcations	fca4a794-d705-4520-8ac1-c123e9c4073d	\N
+2025-04-23	URC Malvar NSX Bldg. Lines Dosing Automation	CMRP25040197	0	URC BCFG	Automation	INSTRUMENTATION	Manufacturing	F&B	2025-04-23	2025-05-20	GO	JMO	RJR	EIS	Submitted	2025-05-20	\N	19642608.21	OP30	\N	\N	\N	10-Existing	8 -Need to Customize	8 -Strategic Business	10 -Reasonable Time	5 -Limited	29Apr: Recvd 8-Tender Docs: JMO to check any budget info\nMay05: Instruments - ongoing RFQ \ndue 20May, pending AXIS (E+H) offer	e29220f3-7536-4ddd-8281-9f40ea17324c	\N
+2025-04-24	Twinfra Supply of IP65 VFD	CMRP25040193	0	Twinfra Corporation	Electrification	ELECTRICAL	Buildings	UTILITIES	2025-04-24	\N	GO	NSG	NSG	Partner	Submitted	2025-04-24	20	568664.61	OP30	\N	\N	\N	10-Strategic	10 -Existing Solution	10 -Focus Business	10 -Reasonable Time	10 -Complete	\N	5e96522c-e5a1-4591-b033-4d36ed30a0f7	\N
+2025-04-24	Twinfra Supply of Fabricated Panel	CMRP25040194	0	Twinfra Corporation	Electrification	ELECTRICAL	Buildings	UTILITIES	2025-04-24	\N	GO	NSG	NSG	Partner	Submitted	2025-04-28	35	28467.41	OP30	\N	\N	\N	10-Strategic	10 -Existing Solution	10 -Focus Business	10 -Reasonable Time	10 -Complete	\N	9268bbab-3928-4274-b70e-9500088b952b	\N
+2025-04-24	Laguna Water AVR 125kVA	CMRP25040195	0	Laguna Water	Electrification	ELECTRICAL	Buildings	UTILITIES	2025-04-24	\N	GO	LOS	NSG	SubCon	Submitted	2025-04-24	20	475625.00	OP30	\N	\N	\N	5-New Account, No Champion	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	06761e16-1f3d-490f-bf92-5855c4cee0aa	\N
+2025-04-24	AAI Vermosa Cold Storage MCC and EE Works	CMRP25040186	0	ALogis Artico, Inc.	Electrification	ELECTRICAL	Manufacturing	COLD STORAGE	2025-04-22	\N	GO	LOS	CBG	ASB	On-Going	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	Apr24:\n- MCC motor pump no plan, need to request to client\nMay05:\n- for support with ASB to finalize consumeables\nMay19: \n- for Approval	c1a2329b-fb6b-41f0-baa5-9609fa3570a5	\N
+2025-04-25	ACIC MCC Cement Mill & Packhouse	CMRP25040196	0	Advantage Concrete Industries Corporation	Electrification	ELECTRICAL	Manufacturing	CEMENT	2025-04-25	2025-04-25	GO	NSG	NSG	NSG	Submitted	2025-04-25	17	40105122.18	OP30	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	9c5883a4-b8c2-4f4e-ba66-17ecab93d30a	\N
+2025-04-25	Difsys Supply of Fabricated Enclosure	CMRP25040198	0	Digitally Intelligent Facility Systems, Inc.	Electrification	ELECTRICAL	Manufacturing	OTHERS	2025-04-25	2025-04-25	GO	NSG	NSG	NSG	Submitted	2025-04-25	\N	\N	\N	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	fb14422b-ad4e-4a8a-bbdf-db62c94790c8	\N
+2025-04-25	Siemens RCC - Crane System Upgrade	\N	0	Siemens	Automation	PLC / SCADA	Manufacturing	CEMENT	2025-04-15	\N	GO	RTR	RJR	\N	No Decision Yet	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	Apr25:\n-RFQ was sent to JKC last Apr15\n- Requested for further info, and if opp is still open\nApr29:\n-ffup Siemens for requested info\nMay19: to check with siemens if still open	9afbe060-a497-45c9-a597-385217ff8866	\N
+2025-04-25	NURC Tarlac_Supply & Install PAGM System (PR PR 1200017503 )	CMRP	0	URC BCFG	Electrification	PABGM	Manufacturing	F&B	2025-04-25	\N	DECLINE	JMO	CBG	Partner	\N	\N	\N	\N	\N	\N	\N	\N	10-Existing	5 -Need External Resource	5 -Peripheral Scope	10 -Reasonable Time	5 -Limited	28Apr: for Subcon to PDXTech pending plan from end-user\nMay19, for No quote	b0ccdb53-2f79-4c44-983e-7a5dd7c7b5d1	\N
+2025-04-25	URC San Pedro 1_Installation 5-CCTVs at RM Warehouse (PR1200017008)	CMRP25050213	0	URC BCFG	Electrification	CCTV	Manufacturing	F&B	2025-04-25	2025-05-09	GO	JMO	AVR	Partner	Submitted	2025-05-09	20	368145.17	OP60	\N	\N	\N	10-Existing	10 -Existing Solution	5 -Peripheral Scope	10 -Reasonable Time	5 -Limited	20May- Tech'l query addressed & w/n budget	e21c68bb-418d-49f2-9556-cba684a5d82c	\N
+2025-04-25	URC San Pedro 1_Installation 5-CCTVs at DC Warehouse (PR1200017009)	CMRP25050214	0	URC BCFG	Electrification	CCTV	Manufacturing	F&B	2025-04-25	2025-05-09	GO	JMO	AVR	Partner	Submitted	2025-05-09	20	380734.64	OP60	\N	\N	\N	10-Existing	10 -Existing Solution	5 -Peripheral Scope	10 -Reasonable Time	5 -Limited	20May- Tech'l query addressed & w/n budget	2c37bc7a-a60c-4007-9c0c-95fc5750adb0	\N
+2025-04-28	Twinfra Supply of Letatwin Tag Printer	CMRP25040199	0	Twinfra Corporation	Electrification	ELECTRICAL	Buildings	UTILITIES	2025-04-28	\N	GO	NSG	NSG	NSG	Submitted	2025-04-28	20	103603.83	OP30	\N	\N	\N	5-New Account, No Champion	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	b29efbd8-b027-43e6-9f54-46db4c807552	\N
+2025-04-28	Unilab Mini Glatt	CMRP25040200	0	Unilab	Automation	PLC / SCADA	Manufacturing	PHARMA	2025-04-28	\N	GO	NSG	NSG	DS	Submitted	2025-04-29	37	\N	\N	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	abebee17-dc9f-4b7e-a0d2-70e1738f43e1	\N
+2025-04-28	URC Canlubang_Annual PM/Cleaning 1MWp Solar PV System (PR 1000120456)	CMRP25050212	0	URC BCFG	Electrification	SOLAR	Manufacturing	F&B	2025-04-28	2025-05-09	GO	JMO	JMO	SubCon	Submitted	2025-05-13	23	583000.00	OP30	\N	\N	\N	10-Existing	5 -Need External Resource	2 -Non Core for Subcon	5 -Budgetary	5 -Limited	13May Budgetary offer quoted 340k by SESCO	9a9f5d04-6b3d-4101-96b1-2ffe1857336f	\N
+2025-04-28	URC San Pedro 2 _ Structural Analysis & Integrity Certification	CMRP25050204	0	URC BCFG	Electrification	SOLAR	Manufacturing	F&B	2025-04-28	2025-05-06	GO	JMO	JMO	Partner	Submitted	2025-05-06	24	168805.92	OP90	\N	\N	\N	10-Existing	5 -Need External Resource	2 -Non Core for Subcon	7 -Urgent	5 -Limited	21May, Tech'l Director approved, charge to facility/bldg CAPEX	c7c3d2e9-b255-4e20-8751-f75c19d28003	\N
+2025-04-28	URC Cavite_ Structural Analysis & Integrity Certification	CMRP25050205	0	URC BCFG	Electrification	SOLAR	Manufacturing	F&B	2025-04-28	2025-05-06	GO	JMO	JMO	Partner	Submitted	2025-05-06	30	128482.63	OP90	\N	\N	\N	10-Existing	5 -Need External Resource	2 -Non Core for Subcon	7 -Urgent	5 -Limited	21May, Tech'l Director approved, charge to facility/bldg CAPEX	2ffc6e08-6c56-4e4d-a496-763f4a7285a5	\N
+2025-04-28	Pepsi Cola_ Sto Tomas,- Electrical Repair of Fire Pump Motor	CMRP	0	PEPSI Cola	Electrification	FDAS	Manufacturing	F&B	2025-04-28	\N	PENDING	JMO	JEB	Partner	Not Yet Started	\N	15	\N	\N	\N	\N	\N	5-New Account, No Champion	5 -Need External Resource	2 -Non Core for Subcon	5 -Budgetary	2 -No Data	RFQ by Roxlee Manay (Pepsi Sto. Tomas new Maint.)\nMay19: waiting for end-user docs	b74d9878-44cc-47c2-8320-3502ee899f3c	\N
+2025-04-30	URC San Pablo_ June-July Annual PM of Substation 1 and 2	CMRP	0	URC BCFG	Electrification	EE & AUX	Manufacturing	F&B	2025-04-30	2025-05-16	DECLINE	JMO	JMO	Partner	\N	\N	\N	\N	\N	\N	\N	\N	10-Existing	5 -Need External Resource	2 -Non Core for Subcon	10 -Reasonable Time	5 -Limited	For subcon & RFQ to RUA\nMay19: overdue date, no quotation from RUA. for decline	baeb4e0b-5e42-46fe-b67c-1abfa53fee9e	\N
+2025-05-02	RCBC Chiller #1 ACB Replacement	CMRP	0	Applied Thermal Technology Solution Coporation	Electrification	ELECTRICAL	Buildings	CONSTRUCTION	2025-05-02	\N	GO	CBD	ASB	\N	On-Going	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	May 14 site inspection\nMay19: Drawing sent last Friday, for submission this week 2 options\nChiller 1-4, need to create new opps line	5e7482f3-16e8-458f-943f-4468e3671bd0	\N
+2025-05-02	RCBC Chiller #1 BMS (Schneider) Integration	CMRP	0	Applied Thermal Technology Solution Coporation	Automation	BMS	Buildings	CONSTRUCTION	2025-05-02	\N	PENDING	CBD	\N	\N	No Decision Yet	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	To further discuss, \nMay19: remind on Wednesday meeting with sir Rojel and TJ	1848f2cc-8b11-4ed5-b590-21999b8767b4	\N
+2025-05-02	Digital Meter (Multiple Projects)	CMRP	0	Asia Affinity Property Management	Automation	\N	Buildings	CONSTRUCTION	2025-04-28	2025-05-21	GO	CBD	EIS	\N	On-Going	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	May19: 2 of 5 sites done by EIS, to continue by RJR	496672f5-4151-4e0f-aeba-6d727381c4f3	\N
+2025-05-05	Leslies FDAS Repair / Reactivation and Smoke Detector Relocation	CMRP25050211	0	Leslie Corporation	Electrification	FDAS	Manufacturing	F&B	2025-05-06	2025-05-06	GO	ISP	CBG	ASB	Submitted	2025-05-09	18	1779876.25	OP60	\N	\N	\N	\N	\N	\N	\N	\N	May05:\n- takeoff done. for commercial prep	ce100c4c-3edb-44ac-93c0-ed2097f9fd8a	\N
+2025-05-05	SCII Supply of MPS and Battery	CMRP25030129	2	SCII	Electrification	FDAS	Manufacturing	CEMENT	2025-04-23	2025-04-23	GO	NSG	NSG	NSG	Submitted	2025-05-05	29	30008.65	OP100	2025-04-25	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	SCII_7300002902	2ed04eb9-a048-4464-87d3-ffbb2126e0b9	\N
+2025-05-05	RCS Menekes Plug Station	CMRP25050203	0	Royale Cold Storage North, Inc.	Electrification	ELECTRICAL	Manufacturing	COLD STORAGE	2025-05-05	\N	GO	NSG	NSG	NSG	Submitted	2025-05-05	\N	\N	\N	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	e9712fa6-5ea4-4b7e-b079-6bf1cc265041	\N
+2025-05-05	Difsys Supply of Fabricated Enclosure	CMRP25040198	1	Digitally Intelligent Facility Systems, Inc.	Electrification	ELECTRICAL	Manufacturing	OTHERS	2025-05-05	2025-05-05	GO	NSG	NSG	NSG	Submitted	2025-05-05	20	207117.19	OP30	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	be60a09a-7952-44c2-9502-8d4b96ad0030	\N
+2025-05-05	One World Square FDAS Rehab	CMRP	0	Asia Affinity Property Management	Electrification	FDAS	Buildings	CONSTRUCTION	2025-05-05	2025-05-27	PENDING	CBD	\N	\N	No Decision Yet	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	Apr8 site inspection\nMay 19: last friday received docs	16ea8f59-7d4d-4816-b9d7-647c34656e31	\N
+2025-05-05	8 Upper McKinley FDAS Rehab	CMRP	0	Asia Affinity Property Management	Electrification	FDAS	Buildings	CONSTRUCTION	2025-05-05	2025-05-27	PENDING	CBD	\N	\N	No Decision Yet	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	e1c7da43-9e2c-4bdd-aa03-828c786fd382	\N
+2025-05-05	Westside City CCTV	CMRP	0	Megaworld	Electrification	CCTV	Buildings	CONSTRUCTION	2025-05-05	\N	PENDING	CBD	\N	\N	No Decision Yet	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	May 19: last friday received docs	e69b5920-83da-4ead-8169-50ec93605b87	\N
+2025-05-06	YHS Cambodia Engineering Support Services	\N	0	YHS (Cambodia) Food & Beverage Pte Ltd	Automation	PLC / SCADA	Manufacturing	F&B	2025-04-29	\N	GO	RTR	RJR	Partner	Submitted	\N	\N	\N	OP100	2025-05-25	\N	\N	\N	\N	\N	\N	\N	\N	67dc5e65-9fcb-43e9-a76d-952816d5c81c	\N
+2025-05-07	NCC Hardwares for the Integration of SCHENCK (A & B) Flowmeters	CMRP25050208	0	NCC	Electrification	ELECTRICAL	Manufacturing	CEMENT	2025-05-05	2025-05-19	GO	NSG	NSG	Partner	Submitted	2025-05-19	18	758329.78	OP60	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	May 19: For submission today	1be668e4-5172-4154-b5ee-f8bb52d9f3fa	\N
+2025-05-07	Aboitiz EAUC Amtek Annunciator Panel Replacement	\N	\N	\N	Electrification	ELECTRICAL	Power	POWER PLANT	\N	\N	DECLINE	RTR	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	d0c7e495-8324-4f50-aee8-fc3453ab531b	\N
+2025-05-07	URC CAL 2 SCADA Migration WinCC V8	CMRP2505030	0	URC BCFG	Automation	PLC / SCADA	Manufacturing	F&B	2025-05-02	\N	GO	JMO	AVR	AVR	Submitted	2025-05-19	50	869000.00	OP60	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	5 -Budgetary	5 -Limited	4k tags; 30Apr, site assessed with TJ\n19May: to endorse to Ariel: x\n22May: budgetary for approval\n23May: Budgetary approved & submitted	e9b73a88-9400-452a-91c6-dd9987e0a2ba	\N
+2025-05-07	Siemens ACI Boysen Banawe Control Upgrade Engineering Services	\N	0	\N	Automation	PLC / SCADA	Manufacturing	MANUFACTURING	2025-05-06	2025-05-09	GO	RTR	RJR	RJR	For Revision	2025-05-09	30	1775612.46	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	2c497fa0-f876-4697-9e89-554293583ed9	\N
+2025-05-09	Hyblaze Supply of MCCB and ACB	CMRP25050216	0	Hyblaze Engineering Services	Electrification	ELECTRICAL	Manufacturing	OTHERS	2025-05-09	\N	GO	NSG	NSG	CBG	Submitted	2025-05-09	20	\N	\N	\N	\N	\N	8-With Account Champion	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	eb36df60-cb97-4a00-96ae-c5d6fe000693	\N
+2025-05-13	STMicro Supply of Belimo Actuators	CMRP25050218	0	STMicroelectronics, Inc.	Automation	INSTRUMENTATION	Manufacturing	SEMICON	2025-05-13	2025-05-16	GO	NSG	NSG	Partner	Submitted	2025-05-13	20	704651.54	OP30	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	8a55cd51-d49c-4c7b-a502-bc31917deded	\N
+2025-05-13	STMicro Supply of Thermowell and Temperature Sensor	CMRP25050219	0	STMicroelectronics, Inc.	Automation	INSTRUMENTATION	Manufacturing	SEMICON	2025-05-13	2025-05-16	GO	NSG	NSG	Partner	Submitted	2025-05-21	25	231669.38	OP30	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	May19: RJR to endorse previous quotation	d5d46a2b-2b91-4cc9-909b-7292e547a831	\N
+2025-05-13	ACIC Supply of Electrical Components and Panel	CMRP25050220	0	Advantage Concrete Industries Corporation	Electrification	ELECTRICAL	Manufacturing	CEMENT	2025-05-08	2025-05-14	GO	NSG	NSG	Partner	Submitted	2025-05-14	25	138714.04	OP30	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	12ab60f1-7dc8-4913-9cd4-1607c10c25af	\N
+2025-05-13	Twinfra Suppy of Siemens Components and VFD	CMRP25040183	1	Twinfra Corporation	Automation	PLC / SCADA	Buildings	UTILITIES	2025-05-13	2025-05-13	GO	NSG	NSG	Partner	Submitted	2025-05-13	5	106992.23	OP100	2025-05-25	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	779f5c01-1fc3-4ca1-941e-1234fdbf94f2	\N
+2025-05-14	NCC FDAS FOR EMPLOYEES QUARTERS - INSTALLATION WORK	CMRP25050221	0	NCC	Electrification	FDAS	Manufacturing	CEMENT	2025-05-09	2025-05-22	GO	NSG	NSG	SubCon	Submitted	2025-05-22	20	1836876.43	OP30	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	May19: to be quoted by Difsys	00f76d7e-ccd9-481e-a8ed-f4db0de8b08c	\N
+2025-05-14	NCC PRF-L3-25-4140 - OPTIBOX FROM REMOTE MCC/IO TO S7-400 MAIN PLS	CMRP25050222	0	NCC	Electrification	ELECTRICAL	Manufacturing	CEMENT	2025-05-14	\N	GO	NSG	NSG	Partner	Submitted	2025-05-20	\N	\N	\N	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	5edbd444-fa6d-415b-8458-f2f3b5e94ba7	\N
+2025-05-15	ACIC Supply of Flood Light and CP for Siren	CMRP25050223	0	Advantage Concrete Industries Corporation	Electrification	ELECTRICAL	Manufacturing	CEMENT	2025-05-15	2025-05-16	GO	NSG	NSG	NSG	Submitted	2025-05-16	30	125509.31	OP30	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	106cfd90-bad3-4c01-a453-e563a0d73931	\N
+2025-05-15	NCC Maintenance of Line A Fire Detection Alarm System	CMRP25010004	3	​Northern Cement ​Corporation	Electrification	FDAS	Manufacturing	CEMENT	2025-05-15	2025-05-15	GO	NSG	NSG	NSG	Submitted	2025-05-15	18	2077189.58	OP90	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	cb19bd29-d59b-4d88-833f-4406556317f9	\N
+2025-05-15	PHC P2 BBF Expansion Line - Supply and Delivery of Medium Voltage System Equipment	CMRP25050224	0	Purefoods-Hormel Co	Electrification	ELECTRICAL	Manufacturing	F&B	2025-05-15	2025-05-15	GO	NSG	NSG	NSG	Submitted	2025-05-15	10	67252089.29	OP30	\N	\N	\N	5-New Account, No Champion	8 -Need to Customize	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	d34f49eb-316a-494a-b60f-7c12b7246315	\N
+2025-05-15	MRT7 Station 9 EE works Takeover	CMRP25050210	0	SMC	Electrification	ELECTRICAL	Buildings	CONSTRUCTION	2025-04-28	2025-05-08	GO	CBD	CBG	SE	Submitted	\N	\N	975808.63	OP60	\N	\N	\N	\N	\N	\N	\N	\N	\N	c9d255bf-312f-4221-a288-042890b5d284	\N
+2025-05-15	MRT7 Station 9 ECB	CMRP25050210	0	SMC	Electrification	ELECTRICAL	Buildings	CONSTRUCTION	2025-04-28	2025-05-09	GO	CBD	CBG	SE	Submitted	\N	\N	422113.78	OP60	\N	\N	\N	\N	\N	\N	\N	\N	\N	ed7b1621-1617-47f6-bbb3-ef5a9bff8e12	\N
+2025-05-15	MRT7 Station 8 EE Works Takeover	CMRP	\N	SMC	Electrification	ELECTRICAL	Buildings	\N	2025-05-13	\N	GO	CBD	CBG	CBG	On-Going	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	May 19: on going	39966ad6-4a58-4fde-9359-ee558c403810	\N
+2025-05-15	RCBC Chiller #4 ACB Wirings	CMRP	\N	Applied Thermal Technology Solution Corporation	Electrification	ELECTRICAL	Buildings	CONSTRUCTION	2025-05-13	\N	GO	CBD	\N	\N	On-Going	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	May 14 site inspection	0c186696-ede0-49f9-8f70-df258454a2ff	\N
+2025-05-15	New Pasig Cty Hall BMS & FDAS	CMRP	\N	RLB	\N	\N	Buildings	CONSTRUCTION	2025-05-14	\N	PENDING	CBD	\N	\N	No Decision Yet	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	May 19: RJR to review docs, forward FDAS docs to JEB	3f788caf-b013-47ac-aed8-1948f764e3ea	\N
+2025-05-15	Upper East No.1 EE & Aux 3F Hallway	\N	\N	Megaworld	Electrification	EE & AUX	Buildings	CONSTRUCTION	2025-05-14	2025-05-16	DECLINE	CBD	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	subcon in Bacolod	527c53cb-c1c9-429c-8aa8-44bb177aede4	\N
+2025-05-16	Unilab Mini Glatt	CMRP25040200	1	Unilab	Automation	PLC / SCADA	Manufacturing	PHARMA	2025-05-16	\N	GO	NSG	NSG	DS	Submitted	2025-05-16	28	570000.00	OP90	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	24251036-16de-4dab-b0e6-cb7228657025	\N
+2025-05-16	URC-Cal 2_SCHAAF2 Seasoner Panel Reha (PR 1200017229)	CMRP25050266	0	URC BCFG	Electrification	EE & AUX	Manufacturing	F&B	2025-05-16	2025-05-23	GO	JMO	JEB	Partner	Submitted	2025-05-26	20	124881.40	OP30	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	5 -Budgetary	10 -Complete	15May site assessed by Jay Neil, May19: endorsed to SE\n21May ff-up by Jeremie, 26May Tech'l & Comm'l Offers submitted	55f501b9-7f1c-4048-b4be-b53c16066332	\N
+2025-05-16	SONEDCO_Boiler# 5 Automatic Fire Suppression System (PR 1200015592)	CMRP	\N	URC SURE	Electrification	FDAS	Manufacturing	F&B	2025-05-16	2025-05-23	DECLINE	JMO	JEB	CBG	No Decision Yet	\N	\N	\N	\N	\N	\N	\N	10-Existing	3 -No Previous Experience	2 -Non Core for Subcon	5 -Budgetary	5 -Limited	For JEB's Decision to quote\nMay19: for decline	bd636e7b-b9a1-47c4-ab66-8538575272b4	\N
+2025-05-19	Hyblaze Supply of MCCB and ACB	CMRP25050216	1	Hyblaze Engineering Services	Electrification	ELECTRICAL	Manufacturing	OTHERS	2025-05-09	\N	GO	NSG	\N	CBG	On-Going	\N	\N	\N	\N	\N	\N	\N	5-New Account, No Champion	10 -Existing Solution	8 -Strategic Business	10 -Reasonable Time	10 -Complete	May19: for support - retrofitting	810990e7-3c03-4838-bc1f-d7d886353c79	\N
+2025-05-19	SLTE Supply of Siemens VFD	CMRP25050227	0	South Luzon Thermal Energy	Electrification	ELECTRICAL	Power	POWER PLANT	2025-05-16	2025-05-20	GO	NSG	NSG	Partner	Submitted	2025-05-21	30	204362.19	OP30	\N	\N	\N	5-New Account, No Champion	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	2e0756ee-6d46-4dde-a710-a96cc34167ee	\N
+2025-05-19	EEI Supply of Field Instruments - SEC3 CFPP Project	CMRP25050228	0	EEI Corporation	Automation	INSTRUMENTATION	Buildings	CONSTRUCTION	2025-05-19	2025-05-23	GO	NSG	NSG	Partner	On-Going	\N	\N	\N	\N	\N	\N	\N	5-New Account, No Champion	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	8bbc6c5c-cb7d-459b-89bf-e773a4e38f0d	\N
+2025-05-19	SMFI Sariaya Broiler Farm - Electrical Equipment	CMRP25050229	0	San Miguel Corporation	Electrification	ELECTRICAL	Buildings	CONSTRUCTION	2025-05-19	\N	GO	NSG	NSG	Partner	Submitted	2025-05-20	25	46146333.89	OP30	\N	\N	\N	8-With Account Champion	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	4640e7c2-11f0-4683-8d52-63a6485e6878	\N
+2025-05-19	URC SP-2_Upgrading Control For Potato Chips Line Fryer (PR 1200016898)	CMRP	0	URC BCFG	Automation	PLC / SCADA	Manufacturing	F&B	2025-05-19	2025-06-02	GO	JMO	RJR	RJR	On-Going	\N	20	\N	\N	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	2 -No Data	20May, Site Pre-Bid by RJTR & JMO	5b6aee54-2154-4ebe-8206-6daeef7a6417	\N
+2025-05-19	URC SP-2_Packaging Controls (CONBAR FFS) Upgrade PH 1 (PR 1200017139)	CMRP	0	URC BCFG	Automation	PLC / SCADA	Manufacturing	F&B	2025-05-19	2025-06-10	GO	JMO	RJR	RJR	On-Going	\N	20	\N	\N	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	2 -No Data	20May, Site Pre-Bid by RJTR & JMO	2a0caa19-0aef-4464-9d28-5c484fee809c	\N
+2025-05-19	URC Pasig Pinagbuhatan DC_Installation of Hochiki FDAS	CMRP	0	URC BCFG	Electrification	FDAS	Manufacturing	F&B	2025-05-19	\N	DECLINE	JMO	CBG	CBG	\N	\N	\N	\N	\N	\N	\N	\N	10-Existing	8 -Need to Customize	8 -Strategic Business	5 -Budgetary	2 -No Data	19May, clarify Dahua acceptable; 20May, FDAS PMS per end-user	1fe2cbfd-3b01-4f8e-8fea-4c1df3133cc9	\N
+2025-05-19	Difsys Supply of Siemens FACP	CMRP25050231	0	Digitally Intelligent Facility Systems, Inc.	Electrification	FDAS	Manufacturing	OTHERS	2025-05-19	\N	GO	NSG	NSG	NSG	Submitted	2025-05-19	30	207403.47	OP30	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	f2fd706e-b6ff-4501-b83e-6f2bf01370c3	\N
+2025-05-19	URC Pam 1_Installation of 12 units Solar Perimeter Lightings (PR 1000148145)	CMRP	0	URC BCFG	Electrification	SOLAR	Manufacturing	F&B	2025-05-19	2025-05-26	DECLINE	JMO	JEB	Partner	\N	\N	\N	\N	\N	\N	\N	\N	10-Existing	5 -Need External Resource	5 -Peripheral Scope	5 -Budgetary	5 -Limited	due 26May	e5cd8144-8f1f-4a37-9ff4-a08f894dd5b0	\N
+2025-05-19	URC Pam 1_Installation of Lightings at Bakery DC Tunnel (PR 1000148146)	CMRP	0	URC BCFG	Electrification	ELECTRICAL	Manufacturing	F&B	2025-05-19	2025-05-26	DECLINE	JMO	JEB	Partner	\N	\N	\N	\N	\N	\N	\N	\N	10-Existing	5 -Need External Resource	5 -Peripheral Scope	5 -Budgetary	5 -Limited	due 26May	5e412465-27a4-466f-adb3-2c849f16f8cb	\N
+2025-05-19	URC Pam NLDC_Annual PMS of FDAS (PR 1000148564)	CMRP	0	URC BCFG	Electrification	FDAS	Buildings	F&B	2025-05-19	2025-05-26	DECLINE	JMO	JEB	Partner	\N	\N	\N	\N	\N	\N	\N	\N	10-Existing	8 -Need to Customize	2 -Non Core for Subcon	5 -Budgetary	2 -No Data	due 26May	8a5444bc-3a37-45bd-b179-99979e84ea2e	\N
+2025-02-10	URC Canl Nips Sprayed Line - Panning Machine PLC System Upgrade (PR1200015565)	CMRP25020046	0	URC BCFG	Automation	PLC / SCADA	Manufacturing	F&B	2025-02-10	2025-02-21	GO	JMO	AVR	AVR	Submitted	2025-05-13	20	1363953.45	OP90	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	5 -Budgetary	5 -Limited	13May Offer for SSW	13bc01cf-40d8-47b8-a64b-d7fbb30a549c	\N
+2025-02-10	URC Canl Nips Peanuts Duonadin AHU Electrical Works	CMRP25020053	0	URC BCFG	Electrification	ELECTRICAL	Manufacturing	F&B	2025-02-10	2025-02-21	GO	JMO	MMR	MMR	Submitted	2025-02-21	15	1309436.64	LOST	2025-04-01	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	5 -Budgetary	5 -Limited	Lost Bid to Megamaster link	48448fdc-b20c-43ca-af1a-9e8a03a37675	\N
+2025-02-08	Aboitiz TMI Nasipit RTU Integration	CMRP25010029	1	Aboitiz	Electrification	PLC / SCADA	Power	POWER PLANT	\N	\N	GO	RTR	AVR	SubCon	Submitted	2025-02-03	24	1896937.17	OP100	2025-02-25	\N	\N	\N	\N	\N	\N	\N	\N	d565e783-03ef-46d0-83e9-366f8cd42678	\N
+2025-02-08	NetPac Globe Davao BMS Programming&Integration Services	CMRP24100453	3	Net Pacific Inc.	Automation	BMS	Buildings	OTHERS	\N	\N	GO	RTR	RJR	RJR	Submitted	2025-02-07	48	699800.00	OP100	2025-02-25	\N	\N	\N	\N	\N	\N	\N	\N	da3d2a74-9519-4fff-9a20-26a43bdd678d	\N
+2025-05-08	UCP Pasig_ Install CCTV System @ Kennel & Cattery Areas (OPTION 1)	CMRP25050225	0	URC AIG	Electrification	CCTV	Manufacturing	F&B	2025-05-08	2025-05-23	GO	JMO	CBG	Partner	Submitted	2025-05-16	25	421472.95	OP30	\N	\N	\N	10-Existing	10 -Existing Solution	8 -Strategic Business	5 -Budgetary	5 -Limited	09May Pre-Bid: 13May Ocular, Budgetary submitted 16May	9ce1b50a-8201-48ab-bf24-66f0dcbd86b4	\N
+2025-05-08	UCP Pasig_ Install CCTV System @ Kennel & Cattery Areas (OPTION 2)	CMRP25020225A	0	URC AIG	Electrification	CCTV	Manufacturing	F&B	2025-05-08	2025-05-23	GO	JMO	CBG	Partner	Submitted	2025-05-16	20	386363.93	OP30	\N	\N	\N	10-Existing	10 -Existing Solution	8 -Strategic Business	5 -Budgetary	5 -Limited	09May Pre-Bid: 13May Ocular, Budgetary submitted 16May	241780b5-418b-4740-b9ac-3d851b1889d0	\N
+2025-05-08	UCP Pasig _Installation of CCTV System at Silo Area	CMRP	0	URC AIG	Electrification	CCTV	Manufacturing	F&B	2025-05-08	2025-05-26	GO	JMO	CBG	Partner	On-Going	2025-05-23	20	\N	\N	\N	\N	\N	10-Existing	10 -Existing Solution	8 -Strategic Business	5 -Budgetary	5 -Limited	09May Pre-Bid: 13May Ocular, Budgetary due 26May	2211d1d3-ae9d-4fa1-9530-2105ffef66fa	\N
+2025-05-08	UCP Pasig_Telephone System Improvement (Phase 1)	CMRP	0	URC AIG	Electrification	PABGM	Manufacturing	F&B	2025-05-08	\N	DECLINE	JMO	JEB	AVR	\N	\N	\N	\N	\N	\N	\N	\N	10-Existing	5 -Need External Resource	5 -Peripheral Scope	5 -Budgetary	5 -Limited	\N	9f688a32-ad32-48e9-8ac2-1e8f6150a2d3	\N
+2025-04-02	URC ESMO PM of 3 Power Transformers (PR 1000129599)	CMRP	0	URC BCFG	Electrification	PABGM	Manufacturing	F&B	2025-04-02	2025-04-14	DECLINE	JMO	JMO	Partner	\N	\N	\N	\N	\N	\N	\N	\N	8-With Account Champion	5 -Need External Resource	2 -Non Core for Subcon	7 -Urgent	5 -Limited	\N	ff056767-a467-4d3b-8de0-a66372d830c3	\N
+2025-03-13	URC Pam 1_Bakery/Snacks MVSG PMS on Holy Week (PR 1000127786--127525)	CMRP	0	URC BCFG	Electrification	EE & AUX	Manufacturing	F&B	2025-03-20	2025-03-20	DECLINE	JMO	JMO	Partner	\N	\N	\N	\N	\N	\N	\N	\N	10-Existing	5 -Need External Resource	5 -Peripheral Scope	7 -Urgent	5 -Limited	\N	7dc31ccd-844b-4b23-a721-feebdd4e11f7	\N
+2025-03-19	NURC-Tarlac_Structural Analysis & Integrity Certification	CMRP25030131	2	URC BCFG	Electrification	CIVIL	Manufacturing	F&B	2025-03-19	2025-03-26	GO	JMO	JMO	JMO	Submitted	2025-05-06	23	197477.00	OP90	\N	\N	\N	10-Existing	5 -Need External Resource	2 -Non Core for Subcon	7 -Urgent	5 -Limited	21May, Tech'l Director approved, charge to facility/bldg CAPEX	b730d3b1-85bb-4ee9-abf9-a089accf6951	\N
+2025-03-19	URC Pam 1 _Structural Analysis & Integrity Certification	CMRP25030132	2	URC BCFG	Electrification	CIVIL	Manufacturing	F&B	2025-03-19	2025-03-26	GO	JMO	JMO	JMO	Submitted	2025-05-06	24	181699.49	OP90	\N	\N	\N	10-Existing	5 -Need External Resource	2 -Non Core for Subcon	7 -Urgent	5 -Limited	21May, Tech'l Director approved, charge to facility/bldg CAPEX	594ebfa6-9823-4680-86c1-df1119307f7f	\N
+2025-05-07	URC Calamba 1_Repair Power Module for ATLAS COPCO Compressor	CMRP	0	URC BCFG	Automation	PLC / SCADA	Manufacturing	MANUFACTURING	2025-05-07	2025-05-08	DECLINE	JMO	RJR	RJR	\N	\N	20	\N	\N	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	7 -Urgent	5 -Limited	May19: RJR to inform client component not PLC component	26d706fa-7022-414b-912e-7b7ffad38468	\N
+2025-05-14	URC Bagumbayan_Installation of Additional CCTV at DC Warehouse (PR 1200017729)	CMRP	0	URC BCFG	Electrification	CCTV	Manufacturing	F&B	2025-05-14	\N	DECLINE	JMO	CBG	CBG	\N	\N	20	\N	\N	\N	\N	\N	10-Existing	8 -Need to Customize	8 -Strategic Business	5 -Budgetary	5 -Limited	For Site Ocular c/o  @Edison L. Urminita / @BenjaminJr Payumo\nMay 19: to review and schedule site assessment	b1087a90-6e71-46af-a36a-b7b26efd4292	\N
+2025-05-14	URC Malvar_Electrical Works for Utilities Power Distribution	CMRP25050233	0	URC BCFG	Electrification	EE & AUX	Manufacturing	F&B	2025-05-14	2025-05-23	GO	JMO	JEB	CBG	Submitted	2025-05-26	20	45929024.77	OP30	\N	\N	\N	10-Existing	5 -Need External Resource	8 -Strategic Business	5 -Budgetary	5 -Limited	For 15May 11am Virtual Pre-Bid\nMay 19: to check with JEB scope of work, which we can quote\n- checkpoint on wednesday if needed deadline extension\n26May, budgetary JEB approved	b7f9fd3d-dd3c-44f2-a03f-f2dcd3f97bc4	\N
+2025-05-19	Siemens ACI Boysen GenTri Control Upgrade Engineering Services	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	May19: RJR to sched for prop	d56e3221-46d0-476b-8ab7-391e46556870	\N
+2025-05-20	Maynilad_OH & Fabricatte Screw Press Deawatering System100 Perforated screen	CMRP	0	Maynilad Water	\N	MECHANICAL	Buildings	UTILITIES	2025-05-20	\N	DECLINE	JMO	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	2-Existing account with No Orders	3 -No Previous Experience	2 -Non Core for Subcon	10 -Reasonable Time	2 -No Data	Mechanical works not CMR Expertise	77b9950d-63e1-4fea-807b-9ae92f6f52ec	\N
+2025-05-20	Laguna Water Supply of 650 VA UPS	CMRP25040191	1	Laguna Water	Electrification	ELECTRICAL	Buildings	UTILITIES	2025-05-20	2025-05-20	GO	NSG	NSG	Partner	Submitted	2025-05-20	21	83482.08	OP90	\N	\N	\N	5-New Account, No Champion	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	5d4b9e4f-f285-4f25-8c4c-4c5bd66ac92f	\N
+2025-05-21	STMicro Supply of Belimo Actuators	CMRP25050218	1	STMicroelectronics, Inc.	Automation	INSTRUMENTATION	Manufacturing	SEMICON	2025-05-21	2025-05-21	GO	NSG	NSG	Partner	Submitted	2025-05-21	20	669418.97	OP90	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	Requesting discounted price - STmicro	a4aae38d-efff-415b-9ee6-4fed55dbe864	\N
+2025-05-21	URC Canlubang_Rehab of Intercom & Paging System (PR 1200017421)	CMRP	0	URC BCFG	Electrification	PABGM	Manufacturing	F&B	2025-05-21	2025-05-30	DECLINE	JMO	RJR	Partner	No Decision Yet	\N	20	\N	\N	\N	\N	\N	10-Existing	5 -Need External Resource	5 -Peripheral Scope	5 -Budgetary	2 -No Data	\N	4f1b6817-0540-4223-b4dd-51a95f91d0f6	\N
+2025-05-21	URC Canlubang_Rehab Elec'l Control Panel Corn Cleaner Area Chippy Line (PR 1200017969)	CMRP	0	URC BCFG	Electrification	PLC / SCADA	Manufacturing	F&B	2025-05-21	2025-05-30	GO	JMO	RJR	Partner	On-Going	\N	20	\N	\N	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	5 -Budgetary	5 -Limited	23May 10:30am On-Site Pre-Bid by RJ/JMO	cd1e301a-00da-48b0-acad-ecbc9daa3359	\N
+2025-05-21	URC Canlubang_Install Control System Piattao's PLC Upgrade (PR 1200017874)	CMRP	0	URC BCFG	Automation	PLC / SCADA	Manufacturing	F&B	2025-05-21	2025-05-30	GO	JMO	RJR	Partner	On-Going	\N	20	\N	\N	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	5 -Budgetary	5 -Limited	23May 10:30am On-Site Pre-Bid by RJ/JMO	53618c03-0c72-4432-bf90-50334c5543c6	\N
+2025-05-21	URC Canlubang_Rehab of Elec'l wiring Bakery Line 1 (PR 1200018084)	CMRP	0	URC BCFG	Electrification	EE & AUX	Manufacturing	F&B	2025-05-21	2025-05-30	GO	JMO	RJR	Partner	On-Going	\N	20	\N	\N	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	5 -Budgetary	5 -Limited	23May 10:30am On-Site Pre-Bid by RJ/JMO	9c294fe4-49bf-4c91-96bf-f7d9b90c991a	\N
+2025-05-21	URC Sn Pedro 2_Supply/Install Potential Transformer (34.5KV/1.732) @ MDP (PR 1000145075)	CMRP	0	URC BCFG	Electrification	EE & AUX	Manufacturing	F&B	2025-05-21	2025-05-27	DECLINE	JMO	JEB	CBG	\N	\N	\N	\N	\N	\N	\N	\N	10-Existing	8 -Need to Customize	5 -Peripheral Scope	7 -Urgent	5 -Limited	22May JEB Decision decline, no experience on 34.5KVA	aea9f5b9-7b34-4164-808e-c1469cfe96c3	\N
+2025-05-22	NCC PRF-L3-25-4140 - OPTIBOX FROM REMOTE MCC/IO TO S7-400 MAIN PLS	CMRP25050222	1	NCC	Electrification	ELECTRICAL	Manufacturing	CEMENT	2025-05-22	\N	GO	NSG	NSG	Partner	Submitted	2025-05-22	16	2519110.00	OP60	\N	\N	\N	10-Existing	10 -Existing Solution	10 -Focus Business	10 -Reasonable Time	10 -Complete	\N	52a71e5f-28d9-4366-a328-b9cb6ef57782	\N
+2025-05-22	Twinfra Wincc & Step 7 License	CMRP25050241	0	Twinfra Corporation	Automation	PLC / SCADA	Buildings	UTILITIES	2025-05-22	2025-05-23	GO	NSG	NSG	DS	Submitted	2025-05-26	30	428023.03	OP30	\N	\N	\N	10-Strategic	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	851a140a-65e5-4fba-8652-cd74a0489577	\N
+2025-05-22	Preventive Maintenance Servicing of PWTP 1 Substation 1 (ITB No. NO2505B)	CMRP	0	Maynilad Water	Electrification	EE & AUX	Buildings	UTILITIES	2025-05-22	2025-05-28	GO	JMO	JEB	Partner	On-Going	\N	15	\N	\N	\N	\N	\N	5-New Account, No Champion	5 -Need External Resource	2 -Non Core for Subcon	7 -Urgent	5 -Limited	22May, for Quote by RUA, bid due 28May	e69e26f6-02e3-4067-9144-282e86a77311	\N
+2025-05-22	Supply & Install Water Distillation Laboratory Equipment (Milli-Q EQ 7008/7016)	CMRP	0	Maynilad Water	Automation	INSTRUMENTATION	Buildings	UTILITIES	2025-05-22	2025-05-23	GO	JMO	JMO	Partner	No Decision Yet	\N	15	\N	\N	\N	\N	\N	5-New Account, No Champion	5 -Need External Resource	2 -Non Core for Subcon	7 -Urgent	5 -Limited	22May, WINFRA CONFIRM support; 23May MWSI LOI Submitted	0337a1ea-07df-428c-a9f7-8bcc7488ed18	\N
+2025-05-26	SMFI BBF Expansion Live - MVSG and LVSG	CMRP25050245	0	San Miguel Corporation	Electrification	ELECTRICAL	Buildings	CONSTRUCTION	2025-05-26	2025-05-28	GO	NSG	NSG	Partner	On-Going	\N	\N	\N	\N	\N	\N	\N	5-New Account, No Champion	5 -Need External Resource	8 -Strategic Business	7 -Urgent	10 -Complete	\N	acc21039-1678-46e2-a983-e8a579e9515c	\N
+2025-05-26	Install Production Meter and Pressure Gauge at GDC (RFQ :  859960)	CMRP	0	Laguna AAAWater	Electrification	MECHANICAL	Buildings	UTILITIES	2025-05-22	\N	DECLINE	JMO	JMO	Partner	\N	\N	\N	\N	\N	\N	\N	\N	2-Existing account with No Orders	3 -No Previous Experience	2 -Non Core for Subcon	5 -Budgetary	5 -Limited	25May: Lindsey advise no quote, not expertise	74147969-94f7-4519-9cdf-ed630a05f3a6	\N
+2025-05-27	RCS Menekes Plug Station	CMRP25050203	1	Royale Cold Storage North, Inc.	Electrification	ELECTRICAL	Manufacturing	COLD STORAGE	2025-05-27	2025-05-27	GO	NSG	NSG	NSG	Submitted	2025-05-05	22	221302.68	OP100	2025-05-25	\N	\N	10-Existing	10 -Existing Solution	10 -Core Business	10 -Reasonable Time	10 -Complete	\N	ff5fe3e6-b6ce-4246-a5b0-c46a3a1073bf	\N
+2025-05-28	Arkinetix Supply of Humidity Sensor	CMRP25050251	0	Arkinetix Builders	Automation	INSTRUMENTATION	Buildings	CONSTRUCTION	2025-05-28	2025-05-28	GO	NSG	NSG	NSG	On-Going	\N	\N	\N	\N	\N	\N	\N	5-New Account, No Champion	8 -Need to Customize	8 -Strategic Business	10 -Reasonable Time	10 -Complete	\N	0123f6a3-35b1-4194-8689-66daef1fcea0	\N
+2025-05-28	SunPower VFD SCADA Integration Service	CMRP25050243	0	Sun Power	Automation	PLC / SCADA	Manufacturing	MANUFACTURING	2025-05-19	\N	GO	NSG	RJR	RJR	Submitted	2025-05-22	91	82271.40	OP30	\N	\N	\N	\N	\N	\N	\N	\N	\N	171a8f28-560c-4d88-8be1-92a680da2356	\N
+2025-05-28	Pandacan MFB Control System Upgrade	CMRP25040201	0	Petron	Automation	PLC / SCADA	Manufacturing	MANUFACTURING	\N	\N	GO	RTR	AVR	Partner	Submitted	2025-05-26	20	784413.45	\N	\N	\N	\N	\N	\N	\N	\N	\N	\N	61071813-2322-4d47-89e4-c8c0324f6cf3	\N
+2024-09-27	UGC CMMS Lightweight MES	CMRP24060230	2	UGC	Digitalization	IT	Manufacturing	MANUFACTURING	2025-09-27	\N	GO	ISP	ISP	ISP	Submitted	\N	\N	643200.00	OP30	\N	\N	\N	10-Strategic	8 -Need to Customize	8 -Strategic Business	10 -Reasonable Time	10 -Complete	\N	8b9f3cb1-86cd-45ff-acd5-2ac1fa1b2c7e	\N
+\.
+
+
+--
+-- Data for Name: roles; Type: TABLE DATA; Schema: public; Owner: reuelrivera
+--
+
+COPY public.roles (id, name) FROM stdin;
+1	technical
+2	proposal
+3	sales
+\.
+
+
+--
+-- Data for Name: user_column_preferences; Type: TABLE DATA; Schema: public; Owner: reuelrivera
+--
+
+COPY public.user_column_preferences (id, user_id, page_name, column_settings, created_at, updated_at) FROM stdin;
+19fa1e84-7956-4dfe-9d92-a49c51c21c5f	d372f63f-c48a-45ef-9103-605a4d8acff5	opportunities	{"a": false, "c": false, "d": false, "r": false, "u": false, "bom": true, "pic": true, "rev": false, "client": true, "margin": true, "status": true, "decision": true, "lost_rca": false, "final_amt": true, "solutions": true, "industries": true, "opp_status": true, "account_mgr": true, "encoded_date": false, "project_code": false, "project_name": true, "date_received": true, "forecast_date": false, "l_particulars": false, "submitted_date": false, "client_deadline": false, "ind_particulars": false, "sol_particulars": false, "remarks_comments": true, "date_awarded_lost": false}	2025-05-27 16:21:21.533958	2025-05-27 16:21:21.533958
+8a1365e9-39a7-44c9-93e0-526ffadddf35	acec2530-e612-4bca-892e-277eabe2f8bf	opportunities	{"a": false, "c": false, "d": false, "r": false, "u": false, "bom": true, "pic": true, "rev": false, "client": true, "margin": true, "status": true, "decision": true, "lost_rca": false, "final_amt": true, "solutions": true, "industries": true, "opp_status": true, "account_mgr": true, "encoded_date": false, "project_code": false, "project_name": true, "date_received": true, "forecast_date": false, "l_particulars": false, "submitted_date": false, "client_deadline": false, "ind_particulars": false, "sol_particulars": false, "remarks_comments": true, "date_awarded_lost": false}	2025-05-27 16:22:03.542435	2025-05-27 16:22:03.542435
+993b9adb-6fb6-41a7-9167-608298ae9f57	f1c777df-650e-434b-a539-7cffdcf00e0f	opportunities	{"a": false, "c": false, "d": false, "r": false, "u": false, "bom": true, "pic": true, "rev": false, "client": true, "margin": true, "status": true, "decision": true, "lost_rca": false, "final_amt": true, "solutions": true, "industries": true, "opp_status": true, "account_mgr": true, "encoded_date": true, "project_code": false, "project_name": true, "date_received": true, "forecast_date": false, "l_particulars": false, "submitted_date": true, "client_deadline": false, "ind_particulars": false, "sol_particulars": false, "remarks_comments": true, "date_awarded_lost": true}	2025-05-27 16:17:45.306624	2025-05-28 09:53:55.321624
+\.
+
+
+--
+-- Data for Name: user_roles; Type: TABLE DATA; Schema: public; Owner: reuelrivera
+--
+
+COPY public.user_roles (user_id, role_id) FROM stdin;
+12fb7b1d-308e-4116-8f1e-c54ce59e0758	1
+12fb7b1d-308e-4116-8f1e-c54ce59e0758	2
+12fb7b1d-308e-4116-8f1e-c54ce59e0758	3
+\.
+
+
+--
+-- Data for Name: users; Type: TABLE DATA; Schema: public; Owner: reuelrivera
+--
+
+COPY public.users (id, email, password_hash, name, is_verified, created_at, updated_at, roles, account_type) FROM stdin;
+12fb7b1d-308e-4116-8f1e-c54ce59e0758	riverareuel@gmail.com	$2b$10$1hljxtli9NGe97ID3EUPB.j2F.swzl/tMur/6ap4AFLjOuf38AzNy	Reuel Rivera	t	2025-05-10 23:38:35.390841	2025-05-10 23:38:35.390841	{Technical,Proposal}	Admin
+917c0109-8b76-4a35-aac4-c87787f01385	crisostomo.diaz@cmrpautomation.com	$2b$10$XkmOq0UzDtWdDn7loOe2q.GeLVzPMzc/LgGWk3fGsriokug.6jp96	CBD	t	2025-05-21 05:49:08.212052	2025-05-21 05:49:08.212052	{Sales}	User
+333be6a2-7b33-4d79-b3bd-ef61d1c5f065	tyronejames.caballero@cmrpautomation.com	$2b$10$iXM6PdLPqC5v.xX6eXZLUOc24rubFsNx8/BDIyWcN75l7YmPi3zAW	TJC	t	2025-05-21 05:49:52.457315	2025-05-21 05:49:52.457315	{Technical,Proposal}	User
+e638e394-114e-4500-a2a4-36932ae84c1d	dianne.rael@cmrpautomation.com	$2b$10$Wg.LWiOqo.s9hghlKn6Ir.8LGtAogOzMu/X8ws.W6piPBk1BX.Bi6	DAR	t	2025-05-21 05:50:23.845187	2025-05-21 05:50:23.845187	{Sales}	User
+33a6f374-3365-42d9-be7e-585cb870ba7b	ivy.pico@cmrpautomation.com	$2b$10$4RMsnV4k.gMs3sB3hf3Gw.PKu2TbD8YqytxpM6Ns6rlbUVGkqegoC	ISP	t	2025-05-21 05:50:46.056895	2025-05-21 05:50:46.056895	{Sales}	User
+49ad8d0a-8aad-45b2-84f0-36234b4e54a6	neil.gomez@cmrpautomation.com	$2b$10$psepchTQR60A7mRISSxWt.WvOyPcSLKG5hPceBMXcxYjZQqccSTw6	NSG	t	2025-05-21 05:51:46.597781	2025-05-21 05:51:46.597781	{Proposal,Sales}	User
+8483d8cb-f2d5-42eb-91ca-65a90d7f3caa	shiella.bagalacsa@cmrpautomation.com	$2b$10$P4UlQuHgDON7NiVnotA9tOArZz60SFEgMCm90w/M5/7uvCkFpj.pO	SLB	t	2025-05-21 05:51:18.56515	2025-05-21 05:51:18.56515	{Sales}	Admin
+f1c777df-650e-434b-a539-7cffdcf00e0f	reuel.rivera@cmrpautomation.com	$2b$10$LrG6lSAGqCF1xZlkeigMZu5TeJFpVmb0xuXx3PdyqrkhUpXY0algy	RJR	t	2025-05-13 20:19:07.964646	2025-05-13 20:19:07.964646	{Technical,Proposal}	Admin
+acec2530-e612-4bca-892e-277eabe2f8bf	rojel.rivera@cmrpautomation.com	$2b$10$rfBlQTp7ce8jgb3iMnmXk.OWrP6KC6A02fpcRDUEn4sh/Aa/zkVUa	RTR	t	2025-05-21 05:11:55.866801	2025-05-21 05:11:55.866801	{Technical,Proposal,Sales}	Admin
+d372f63f-c48a-45ef-9103-605a4d8acff5	juan.ortiz@cmrpautomation.com	$2b$10$oKlyGWPLwUuvVyyld.cddui8HWkMoOGZGdRgCIgtbanJztdV6XEeK	JMO	t	2025-05-21 05:12:44.931825	2025-05-21 05:12:44.931825	{Proposal,Sales}	User
+\.
+
+
+--
+-- Name: forecast_revisions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: reuelrivera
+--
+
+SELECT pg_catalog.setval('public.forecast_revisions_id_seq', 53, true);
+
+
+--
+-- Name: opportunity_revisions_id_seq; Type: SEQUENCE SET; Schema: public; Owner: reuelrivera
+--
+
+SELECT pg_catalog.setval('public.opportunity_revisions_id_seq', 216, true);
+
+
+--
+-- Name: roles_id_seq; Type: SEQUENCE SET; Schema: public; Owner: reuelrivera
+--
+
+SELECT pg_catalog.setval('public.roles_id_seq', 3, true);
+
+
+--
+-- Name: forecast_revisions forecast_revisions_pkey; Type: CONSTRAINT; Schema: public; Owner: reuelrivera
+--
+
+ALTER TABLE ONLY public.forecast_revisions
+    ADD CONSTRAINT forecast_revisions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: opportunity_revisions opportunity_revisions_pkey; Type: CONSTRAINT; Schema: public; Owner: reuelrivera
+--
+
+ALTER TABLE ONLY public.opportunity_revisions
+    ADD CONSTRAINT opportunity_revisions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: opportunity_revisions opportunity_revisions_uid_rev_unique; Type: CONSTRAINT; Schema: public; Owner: reuelrivera
+--
+
+ALTER TABLE ONLY public.opportunity_revisions
+    ADD CONSTRAINT opportunity_revisions_uid_rev_unique UNIQUE (opportunity_uid, revision_number);
+
+
+--
+-- Name: opps_monitoring opps_monitoring_pkey; Type: CONSTRAINT; Schema: public; Owner: reuelrivera
+--
+
+ALTER TABLE ONLY public.opps_monitoring
+    ADD CONSTRAINT opps_monitoring_pkey PRIMARY KEY (uid);
+
+
+--
+-- Name: opps_monitoring opps_monitoring_uid_key; Type: CONSTRAINT; Schema: public; Owner: reuelrivera
+--
+
+ALTER TABLE ONLY public.opps_monitoring
+    ADD CONSTRAINT opps_monitoring_uid_key UNIQUE (uid);
+
+
+--
+-- Name: roles roles_name_key; Type: CONSTRAINT; Schema: public; Owner: reuelrivera
+--
+
+ALTER TABLE ONLY public.roles
+    ADD CONSTRAINT roles_name_key UNIQUE (name);
+
+
+--
+-- Name: roles roles_pkey; Type: CONSTRAINT; Schema: public; Owner: reuelrivera
+--
+
+ALTER TABLE ONLY public.roles
+    ADD CONSTRAINT roles_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: user_column_preferences user_column_preferences_pkey; Type: CONSTRAINT; Schema: public; Owner: reuelrivera
+--
+
+ALTER TABLE ONLY public.user_column_preferences
+    ADD CONSTRAINT user_column_preferences_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: user_column_preferences user_column_preferences_user_id_page_name_key; Type: CONSTRAINT; Schema: public; Owner: reuelrivera
+--
+
+ALTER TABLE ONLY public.user_column_preferences
+    ADD CONSTRAINT user_column_preferences_user_id_page_name_key UNIQUE (user_id, page_name);
+
+
+--
+-- Name: user_roles user_roles_pkey; Type: CONSTRAINT; Schema: public; Owner: reuelrivera
+--
+
+ALTER TABLE ONLY public.user_roles
+    ADD CONSTRAINT user_roles_pkey PRIMARY KEY (user_id, role_id);
+
+
+--
+-- Name: users users_email_key; Type: CONSTRAINT; Schema: public; Owner: reuelrivera
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_email_key UNIQUE (email);
+
+
+--
+-- Name: users users_pkey; Type: CONSTRAINT; Schema: public; Owner: reuelrivera
+--
+
+ALTER TABLE ONLY public.users
+    ADD CONSTRAINT users_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: idx_forecast_revisions_uid; Type: INDEX; Schema: public; Owner: reuelrivera
+--
+
+CREATE INDEX idx_forecast_revisions_uid ON public.forecast_revisions USING btree (opportunity_uid);
+
+
+--
+-- Name: opportunity_revisions opportunity_revisions_opportunity_uid_fkey; Type: FK CONSTRAINT; Schema: public; Owner: reuelrivera
+--
+
+ALTER TABLE ONLY public.opportunity_revisions
+    ADD CONSTRAINT opportunity_revisions_opportunity_uid_fkey FOREIGN KEY (opportunity_uid) REFERENCES public.opps_monitoring(uid) ON DELETE CASCADE;
+
+
+--
+-- Name: user_column_preferences user_column_preferences_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: reuelrivera
+--
+
+ALTER TABLE ONLY public.user_column_preferences
+    ADD CONSTRAINT user_column_preferences_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: user_roles user_roles_role_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: reuelrivera
+--
+
+ALTER TABLE ONLY public.user_roles
+    ADD CONSTRAINT user_roles_role_id_fkey FOREIGN KEY (role_id) REFERENCES public.roles(id) ON DELETE CASCADE;
+
+
+--
+-- Name: user_roles user_roles_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: reuelrivera
+--
+
+ALTER TABLE ONLY public.user_roles
+    ADD CONSTRAINT user_roles_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.users(id) ON DELETE CASCADE;
+
+
+--
+-- PostgreSQL database dump complete
+--
+
