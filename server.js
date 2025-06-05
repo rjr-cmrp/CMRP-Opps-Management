@@ -10,9 +10,16 @@ const fs = require('fs');
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretkey'; // Use env var in production
 const { body, validationResult } = require('express-validator');
 const rateLimit = require('express-rate-limit');
+const cors = require('cors');
 
 const app = express();
-const port = 3000; // You can change the port if needed
+const port = process.env.PORT || 3000; // Use environment port for Render
+
+// CORS configuration for production
+app.use(cors({
+  origin: process.env.FRONTEND_URL || '*', // Allow all origins in development
+  credentials: true
+}));
 
 // PostgreSQL connection pool
 const pool = new Pool({
