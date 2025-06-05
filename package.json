@@ -27,7 +27,8 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
     "dev": "vite",
-    "read-excel": "node readExcel.js"
+    "read-excel": "node readExcel.js",
+    "postinstall": "npm rebuild bcrypt --build-from-source"
   },
   "keywords": [],
   "author": "",
