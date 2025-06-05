@@ -106,7 +106,7 @@ async function fetchForecastData(statusFilter = 'all') {
 }
 async function fetchForecastWeekSummary() {
     try {
-        const res = await fetch('/api/forecast-dashboard-weeks');
+        const res = await fetch(getApiUrl('/api/forecast-dashboard-weeks'));
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         return await res.json();
     } catch (error) {
@@ -1154,7 +1154,7 @@ async function saveForecastDate() {
     saveBtn.textContent = 'Saving...';
     
     try {
-        const response = await fetch('/api/update-forecast-date', {
+        const response = await fetch(getApiUrl('/api/update-forecast-date'), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

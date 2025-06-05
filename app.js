@@ -1146,7 +1146,7 @@ function populateTableBody(data) {
             if (confirm('Are you sure you want to delete this opportunity?')) {
                 try {
                     const token = getAuthToken();
-                    const response = await fetch(`/api/opportunities/${encodeURIComponent(row.uid)}`, {
+                    const response = await fetch(getApiUrl(`/api/opportunities/${encodeURIComponent(row.uid)}`), {
                         method: 'DELETE',
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
@@ -1624,7 +1624,7 @@ async function saveEdit(newValue, header, uid) {
             changed_by: getCurrentUserName()
         };
         
-        const response = await fetch(`/api/opportunities/${encodeURIComponent(uid)}`, {
+        const response = await fetch(getApiUrl(`/api/opportunities/${encodeURIComponent(uid)}`), {
             method: 'PUT',
             headers: { 
                 'Content-Type': 'application/json',
@@ -1720,7 +1720,7 @@ async function handleEditFormSubmit(e) {
             // Add metadata
             opportunityData.changed_by = getCurrentUserName();
             
-            const response = await fetch('/api/opportunities', {
+            const response = await fetch(getApiUrl('/api/opportunities'), {
                 method: 'POST',
                 headers: { 
                     'Content-Type': 'application/json',
@@ -1828,7 +1828,7 @@ async function handleEditFormSubmit(e) {
                 throw new Error('No UID found for update operation');
             }
             
-            const response = await fetch(`/api/opportunities/${uid}`, {
+            const response = await fetch(getApiUrl(`/api/opportunities/${uid}`), {
                 method: 'PUT',
                 headers: { 
                     'Content-Type': 'application/json',
@@ -2618,7 +2618,7 @@ async function loadUserColumnPreferences(pageName) {
             return null; // Not authenticated, can't load user preferences
         }
         
-        const response = await fetch(`/api/user-column-preferences/${pageName}`, {
+        const response = await fetch(getApiUrl(`/api/user-column-preferences/${pageName}`), {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -2647,7 +2647,7 @@ async function saveUserColumnPreferences(pageName, columnSettings) {
             return false;
         }
         
-        const response = await fetch(`/api/user-column-preferences/${pageName}`, {
+        const response = await fetch(getApiUrl(`/api/user-column-preferences/${pageName}`), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -2684,7 +2684,7 @@ async function resetUserColumnPreferences(pageName) {
             return false;
         }
         
-        const response = await fetch(`/api/user-column-preferences/${pageName}`, {
+        const response = await fetch(getApiUrl(`/api/user-column-preferences/${pageName}`), {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`
