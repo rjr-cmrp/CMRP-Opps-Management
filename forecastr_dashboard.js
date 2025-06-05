@@ -1,3 +1,9 @@
+// --- API Configuration ---
+function getApiUrl(endpoint) {
+    const baseUrl = window.APP_CONFIG?.API_BASE_URL || '';
+    return `${baseUrl}${endpoint}`;
+}
+
 // --- Global Variables ---
 let forecastDataCache = null;
 let projectDetailsCache = [];

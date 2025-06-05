@@ -1,3 +1,9 @@
+// --- API Configuration ---
+function getApiUrl(endpoint) {
+    const baseUrl = window.APP_CONFIG?.API_BASE_URL || '';
+    return `${baseUrl}${endpoint}`;
+}
+
 // --- Global Variables ---
 let opportunities = [];
 let headers = [];
@@ -250,7 +256,7 @@ async function initializeApp() {
         loadingText.style.display = 'block';
 
         // Fetch opportunities data
-        const response = await fetch('/api/opportunities', {
+        const response = await fetch(getApiUrl('/api/opportunities'), {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -535,7 +541,7 @@ async function handleAuthSubmit(e) {
     }
     
     try {
-        const res = await fetch('/api/login', {
+        const res = await fetch(getApiUrl('/api/login'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
