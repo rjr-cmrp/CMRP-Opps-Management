@@ -183,10 +183,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const isDark = document.documentElement.classList.contains('dark');
         applyTheme(isDark ? 'light' : 'dark');
     }
-    // Set initial theme
+    // Set initial theme - default to dark mode
     const savedTheme = localStorage.getItem('theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
+    const initialTheme = savedTheme || 'dark';
+    if (savedTheme === null) {
+        localStorage.setItem('theme', 'dark');
+    }
     applyTheme(initialTheme);
     if (themeToggle) themeToggle.addEventListener('click', toggleTheme);
     // --- NAV BUTTON HIGHLIGHT ---

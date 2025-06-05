@@ -899,10 +899,12 @@ async function handleAuthSubmit(e) {
 
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', function() {
-    // Set initial theme
+    // Set initial theme - default to dark mode
     const savedTheme = localStorage.getItem('theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
+    const initialTheme = savedTheme || 'dark';
+    if (savedTheme === null) {
+        localStorage.setItem('theme', 'dark');
+    }
     applyTheme(initialTheme);
     
     // Highlight current nav button

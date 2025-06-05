@@ -591,8 +591,10 @@ window.addEventListener('storage', function(e) {
 
 document.addEventListener('DOMContentLoaded', () => {
     const savedTheme = localStorage.getItem('theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    const initialTheme = savedTheme || (prefersDark ? 'dark' : 'light');
+    const initialTheme = savedTheme || 'dark';
+    if (savedTheme === null) {
+        localStorage.setItem('theme', 'dark');
+    }
     if (initialTheme === 'dark') document.documentElement.classList.add('dark');
     else document.documentElement.classList.remove('dark');
     const logo = document.getElementById('cmrpLogo');

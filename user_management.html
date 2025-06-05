@@ -163,8 +163,8 @@
       function applyThemeFromStorage() {
         var theme = localStorage.getItem('theme');
         if (!theme) {
-          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-          theme = prefersDark ? 'dark' : 'light';
+          // Default to dark theme instead of system preference
+          theme = 'dark';
           localStorage.setItem('theme', theme);
         }
         if (theme === 'dark') {

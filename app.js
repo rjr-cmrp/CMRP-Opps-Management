@@ -574,12 +574,16 @@ function handleLogout() {
 // --- Theme Management ---
 function initializeTheme() {
     const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) {
-        document.documentElement.classList.toggle('dark', savedTheme === 'dark');
-        const logo = document.getElementById('cmrpLogo');
-        if (logo) {
-            logo.src = savedTheme === 'dark' ? 'Logo/CMRP Logo Light.svg' : 'Logo/CMRP Logo Dark.svg';
-        }
+    // Default to dark theme if no saved preference
+    const theme = savedTheme || 'dark';
+    if (savedTheme === null) {
+        localStorage.setItem('theme', 'dark');
+    }
+    
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+    const logo = document.getElementById('cmrpLogo');
+    if (logo) {
+        logo.src = theme === 'dark' ? 'Logo/CMRP Logo Light.svg' : 'Logo/CMRP Logo Dark.svg';
     }
 }
 
