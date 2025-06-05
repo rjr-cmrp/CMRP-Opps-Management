@@ -351,6 +351,16 @@ function requireAdmin(req, res, next) {
   next();
 }
 
+// --- Health Check Endpoint ---
+app.get('/api/health', (req, res) => {
+  res.json({ 
+    status: 'healthy', 
+    timestamp: new Date().toISOString(),
+    service: 'CMRP Opps Management Backend',
+    version: '1.0.0'
+  });
+});
+
 // --- Rate Limiting for Auth Endpoints ---
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
