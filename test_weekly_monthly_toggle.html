@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Toggle Test</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        
+        .test-section {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .toggle-container {
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            padding: 4px;
+            display: inline-flex;
+            gap: 2px;
+        }
+        
+        .toggle-btn {
+            padding: 8px 16px;
+            font-size: 14px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            background: transparent;
+            color: #6b7280;
+            transition: all 0.2s ease;
+        }
+        
+        .toggle-btn:hover {
+            background: #f9fafb;
+            color: #111827;
+        }
+        
+        .toggle-btn.active {
+            background: #1877f2;
+            color: white;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+        
+        .save-btn {
+            background: #10b981;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-left: 20px;
+        }
+        
+        .save-btn:hover {
+            background: #059669;
+        }
+        
+        .dashboard-card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 8px;
+            min-width: 180px;
+            text-align: center;
+        }
+        
+        .dashboard-title {
+            font-size: 12px;
+            color: #6b7280;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+        
+        .dashboard-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #111827;
+        }
+        
+        .dashboard-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        
+        .test-controls {
+            margin: 20px 0;
+        }
+        
+        .test-controls button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        .test-controls button:hover {
+            background: #2563eb;
+        }
+        
+        .results {
+            background: #f1f5f9;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 15px;
+            margin: 15px 0;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎯 Dashboard Weekly/Monthly Toggle Test</h1>
+    
+    <div class="test-section">
+        <h2>Toggle Controls</h2>
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <span style="font-size: 14px; color: #4b5563;">Show changes from:</span>
+                <div class="toggle-container">
+                    <button id="weeklyToggle" class="toggle-btn active">Last Week</button>
+                    <button id="monthlyToggle" class="toggle-btn">Last Month</button>
+                    <button id="noCompareToggle" class="toggle-btn">No Comparison</button>
+                </div>
+            </div>
+            <button id="saveSnapshotBtn" class="save-btn">Save Snapshot</button>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Sample Dashboard Cards</h2>
+        <div class="dashboard-grid">
+            <div class="dashboard-card">
+                <div class="dashboard-title">Total Opportunities</div>
+                <div id="totalOpportunities" class="dashboard-value">361</div>
+            </div>
+            <div class="dashboard-card">
+                <div class="dashboard-title">Total Submitted</div>
+                <div id="totalSubmitted" class="dashboard-value">222</div>
+            </div>
+            <div class="dashboard-card">
+                <div class="dashboard-title">OP100 (Count / Amount)</div>
+                <div id="op100Summary" class="dashboard-value">30 / ₱55.2M</div>
+            </div>
+            <div class="dashboard-card">
+                <div class="dashboard-title">OP90 (Count / Amount)</div>
+                <div id="op90Summary" class="dashboard-value">25 / ₱49M</div>
+            </div>
+            <div class="dashboard-card">
+                <div class="dashboard-title">Total Declined</div>
+                <div id="totalDeclined" class="dashboard-value">88</div>
+            </div>
+            <div class="dashboard-card">
+                <div class="dashboard-title">Total Inactive</div>
+                <div id="totalInactive" class="dashboard-value">7</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Test Controls</h2>
+        <div class="test-controls">
+            <button onclick="createTestData()">Create Test Data</button>
+            <button onclick="clearAllData()">Clear All Data</button>
+            <button onclick="showStoredData()">Show Stored Data</button>
+            <button onclick="testToggleFunctionality()">Test Toggle Functionality</button>
+        </div>
+        <div id="results" class="results">Ready for testing...</div>
+    </div>
+
+    <script>
+        // Sample data for testing
+        const sampleData = {
+            current: {
+                totalOpportunities: 361,
+                op100Count: 30,
+                op90Count: 25,
+                totalInactive: 7,
+                totalSubmitted: 222,
+                totalDeclined: 88
+            },
+            weekly: {
+                totalOpportunities: 335,
+                op100Count: 18,
+                op90Count: 17,
+                totalInactive: 4,
+                totalSubmitted: 217,
+                totalDeclined: 86
+            },
+            monthly: {
+                totalOpportunities: 272,
+                op100Count: 5,
+                op90Count: 7,
+                totalInactive: -5,
+                totalSubmitted: 191,
+                totalDeclined: 73
+            }
+        };
+
+        let currentMode = 'weekly';
+
+        function log(message) {
+            const results = document.getElementById('results');
+            results.textContent += new Date().toLocaleTimeString() + ': ' + message + '\n';
+            console.log(message);
+        }
+
+        function withDelta(current, last, mode = currentMode) {
+            if (mode === 'none' || typeof last !== 'number') {
+                return `${current}`;
+            }
+            
+            const diff = current - last;
+            if (diff === 0) return `${current}`;
+            const sign = diff > 0 ? '+' : '';
+            return `${current} (${sign}${diff})`;
+        }
+
+        function updateDashboard() {
+            const comparisonData = currentMode === 'weekly' ? sampleData.weekly : 
+                                 currentMode === 'monthly' ? sampleData.monthly : {};
+            
+            document.getElementById('totalOpportunities').textContent = 
+                withDelta(sampleData.current.totalOpportunities, comparisonData.totalOpportunities);
+            
+            document.getElementById('totalSubmitted').textContent = 
+                withDelta(sampleData.current.totalSubmitted, comparisonData.totalSubmitted);
+            
+            document.getElementById('op100Summary').textContent = 
+                `${withDelta(sampleData.current.op100Count, comparisonData.op100Count)} / ₱55.2M`;
+            
+            document.getElementById('op90Summary').textContent = 
+                `${withDelta(sampleData.current.op90Count, comparisonData.op90Count)} / ₱49M`;
+            
+            document.getElementById('totalDeclined').textContent = 
+                withDelta(sampleData.current.totalDeclined, comparisonData.totalDeclined);
+            
+            document.getElementById('totalInactive').textContent = 
+                withDelta(sampleData.current.totalInactive, comparisonData.totalInactive);
+        }
+
+        function setComparisonMode(mode) {
+            currentMode = mode;
+            localStorage.setItem('dashboardComparisonMode', mode);
+            updateToggleStates(mode);
+            updateDashboard();
+            log(`Switched to ${mode} comparison mode`);
+        }
+
+        function updateToggleStates(activeMode) {
+            const buttons = ['weeklyToggle', 'monthlyToggle', 'noCompareToggle'];
+            
+            buttons.forEach(id => {
+                const btn = document.getElementById(id);
+                if (btn) {
+                    btn.className = 'toggle-btn';
+                }
+            });
+            
+            const activeButtonId = activeMode === 'weekly' ? 'weeklyToggle' :
+                                 activeMode === 'monthly' ? 'monthlyToggle' : 'noCompareToggle';
+            
+            const activeBtn = document.getElementById(activeButtonId);
+            if (activeBtn) {
+                activeBtn.className = 'toggle-btn active';
+            }
+        }
+
+        function createTestData() {
+            localStorage.setItem('dashboardLastWeek', JSON.stringify(sampleData.weekly));
+            localStorage.setItem('dashboardLastMonth', JSON.stringify(sampleData.monthly));
+            log('✅ Test data created for weekly and monthly comparisons');
+        }
+
+        function clearAllData() {
+            localStorage.removeItem('dashboardLastWeek');
+            localStorage.removeItem('dashboardLastMonth');
+            localStorage.removeItem('dashboardComparisonMode');
+            currentMode = 'weekly';
+            updateToggleStates('weekly');
+            updateDashboard();
+            log('🗑️ All stored data cleared');
+        }
+
+        function showStoredData() {
+            const weekly = localStorage.getItem('dashboardLastWeek');
+            const monthly = localStorage.getItem('dashboardLastMonth');
+            const mode = localStorage.getItem('dashboardComparisonMode');
+            
+            log('📊 Stored Data:');
+            log(`Mode: ${mode || 'not set'}`);
+            log(`Weekly: ${weekly ? JSON.stringify(JSON.parse(weekly), null, 2) : 'not set'}`);
+            log(`Monthly: ${monthly ? JSON.stringify(JSON.parse(monthly), null, 2) : 'not set'}`);
+        }
+
+        function testToggleFunctionality() {
+            log('🧪 Testing toggle functionality...');
+            
+            // Test each mode
+            setTimeout(() => {
+                setComparisonMode('weekly');
+                setTimeout(() => {
+                    setComparisonMode('monthly');
+                    setTimeout(() => {
+                        setComparisonMode('none');
+                        setTimeout(() => {
+                            setComparisonMode('weekly');
+                            log('✅ Toggle functionality test completed');
+                        }, 1000);
+                    }, 1000);
+                }, 1000);
+            }, 1000);
+        }
+
+        function saveSnapshot() {
+            const snapshot = {
+                ...sampleData.current,
+                savedDate: new Date().toISOString()
+            };
+            
+            localStorage.setItem('dashboardLastWeek', JSON.stringify(snapshot));
+            localStorage.setItem('dashboardLastMonth', JSON.stringify(snapshot));
+            log('💾 Manual snapshot saved');
+            updateDashboard();
+        }
+
+        // Initialize
+        window.onload = function() {
+            // Set up event listeners
+            document.getElementById('weeklyToggle').addEventListener('click', () => setComparisonMode('weekly'));
+            document.getElementById('monthlyToggle').addEventListener('click', () => setComparisonMode('monthly'));
+            document.getElementById('noCompareToggle').addEventListener('click', () => setComparisonMode('none'));
+            document.getElementById('saveSnapshotBtn').addEventListener('click', saveSnapshot);
+            
+            // Load saved mode
+            const savedMode = localStorage.getItem('dashboardComparisonMode') || 'weekly';
+            setComparisonMode(savedMode);
+            
+            // Create initial test data
+            createTestData();
+            
+            log('🚀 Dashboard toggle test initialized');
+            log('📌 Expected results:');
+            log('  Weekly: +26 opps, +12 OP100, +8 OP90, +3 inactive, +5 submitted, +2 declined');
+            log('  Monthly: +89 opps, +25 OP100, +18 OP90, +12 inactive, +31 submitted, +15 declined');
+            log('  No Comparison: Just the raw numbers without deltas');
+        };
+    </script>
+</body>
+</html>

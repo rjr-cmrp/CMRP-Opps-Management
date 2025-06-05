@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CMRP Executive Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body class="min-h-screen">
+    <nav class="sidebar">
+        <!-- Sidebar content -->
+    </nav>
+    <div class="main-content">
+        <div class="simple-header">
+            <div class="title-group">
+                <a href="index.html" title="Go to Home" style="text-decoration: none; color: inherit;">
+                    <img id="cmrpLogo" src="Logo/CMRP Logo Light.svg" alt="CMRP Logo" style="height:2.2rem;width:auto;display:inline-block;vertical-align:middle;transition:filter 0.2s;cursor:pointer;" />
+                </a>
+                <span class="subtitle">Executive Dashboard</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <nav class="flex gap-2" id="mainNav">
+                    <a href="index.html" class="nav-square-btn" title="Opportunities Management - View and manage all opportunities"><span class="material-icons">dashboard</span></a>
+                    <a href="win-loss_dashboard.html" class="nav-square-btn" title="Win-Loss Dashboard - Analyze won and lost opportunities"><span class="material-icons">line_axis</span></a>
+                    <a href="forecastr_dashboard.html" class="nav-square-btn" title="Forecast Dashboard - View revenue forecasts and trends"><span class="material-icons">insights</span></a>
+                    <a href="executive_dashboard.html" class="nav-square-btn active" title="Executive Dashboard - Comprehensive business metrics"><span class="material-icons">analytics</span></a>
+                    <a href="user_management.html" class="nav-square-btn" id="userMgmtNavBtn" title="User Management - Manage users and permissions (Admin only)"><span class="material-icons">group</span></a>
+                </nav>
+                <button id="themeToggle" class="nav-square-btn" title="Toggle between light and dark theme"><span class="material-icons">light_mode</span></button>
+                <button id="changePasswordBtn" class="nav-square-btn" title="Change your account password"><span class="material-icons">lock</span></button>
+                <button id="logoutBtn" class="nav-square-btn" title="Sign out of your account"><span class="material-icons">logout</span></button>
+            </div>
+        </div>
+        
+        <div class="main-container container mx-auto p-6 rounded-lg shadow-md">
+            <!-- Period Selector -->
+            <div class="mb-6">
+                <div class="flex flex-wrap gap-2 items-center mb-4">
+                    <span class="text-sm font-medium mr-2">Comparison Period:</span>
+                    <button id="weeklyView" class="filter-button px-3 py-1 rounded text-xs active">Weekly Changes</button>
+                    <button id="monthlyView" class="filter-button px-3 py-1 rounded text-xs">Monthly Changes</button>
+                </div>
+            </div>
+
+            <!-- Main Metrics Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
+                <!-- Total Opportunity Count -->
+                <div class="dashboard-card">
+                    <div class="dashboard-title">Total Opportunities</div>
+                    <div id="totalOpportunities" class="dashboard-value">--</div>
+                    <div id="totalOpportunitiesChange" class="dashboard-change">--</div>
+                </div>
+
+                <!-- Total Submitted Count & Amount -->
+                <div class="dashboard-card">
+                    <div class="dashboard-title">Submitted Count</div>
+                    <div id="submittedCount" class="dashboard-value">--</div>
+                    <div id="submittedCountChange" class="dashboard-change">--</div>
+                </div>
+                
+                <div class="dashboard-card">
+                    <div class="dashboard-title">Submitted Amount</div>
+                    <div id="submittedAmount" class="dashboard-value">--</div>
+                    <div id="submittedAmountChange" class="dashboard-change">--</div>
+                </div>
+
+                <!-- OP100 -->
+                <div class="dashboard-card">
+                    <div class="dashboard-title">OP100 Count</div>
+                    <div id="op100Count" class="dashboard-value">--</div>
+                    <div id="op100CountChange" class="dashboard-change">--</div>
+                </div>
+                
+                <div class="dashboard-card">
+                    <div class="dashboard-title">OP100 Amount</div>
+                    <div id="op100Amount" class="dashboard-value">--</div>
+                    <div id="op100AmountChange" class="dashboard-change">--</div>
+                </div>
+
+                <!-- OP90 -->
+                <div class="dashboard-card">
+                    <div class="dashboard-title">OP90 Count</div>
+                    <div id="op90Count" class="dashboard-value">--</div>
+                    <div id="op90CountChange" class="dashboard-change">--</div>
+                </div>
+                
+                <div class="dashboard-card">
+                    <div class="dashboard-title">OP90 Amount</div>
+                    <div id="op90Amount" class="dashboard-value">--</div>
+                    <div id="op90AmountChange" class="dashboard-change">--</div>
+                </div>
+
+                <!-- OP60 -->
+                <div class="dashboard-card">
+                    <div class="dashboard-title">OP60 Count</div>
+                    <div id="op60Count" class="dashboard-value">--</div>
+                    <div id="op60CountChange" class="dashboard-change">--</div>
+                </div>
+                
+                <div class="dashboard-card">
+                    <div class="dashboard-title">OP60 Amount</div>
+                    <div id="op60Amount" class="dashboard-value">--</div>
+                    <div id="op60AmountChange" class="dashboard-change">--</div>
+                </div>
+
+                <!-- OP30 -->
+                <div class="dashboard-card">
+                    <div class="dashboard-title">OP30 Count</div>
+                    <div id="op30Count" class="dashboard-value">--</div>
+                    <div id="op30CountChange" class="dashboard-change">--</div>
+                </div>
+                
+                <div class="dashboard-card">
+                    <div class="dashboard-title">OP30 Amount</div>
+                    <div id="op30Amount" class="dashboard-value">--</div>
+                    <div id="op30AmountChange" class="dashboard-change">--</div>
+                </div>
+
+                <!-- LOST -->
+                <div class="dashboard-card">
+                    <div class="dashboard-title">Lost Count</div>
+                    <div id="lostCount" class="dashboard-value">--</div>
+                    <div id="lostCountChange" class="dashboard-change">--</div>
+                </div>
+                
+                <div class="dashboard-card">
+                    <div class="dashboard-title">Lost Amount</div>
+                    <div id="lostAmount" class="dashboard-value">--</div>
+                    <div id="lostAmountChange" class="dashboard-change">--</div>
+                </div>
+
+                <!-- Inactive -->
+                <div class="dashboard-card">
+                    <div class="dashboard-title">Inactive Count</div>
+                    <div id="inactiveCount" class="dashboard-value">--</div>
+                    <div id="inactiveCountChange" class="dashboard-change">--</div>
+                </div>
+
+                <!-- On-Going -->
+                <div class="dashboard-card">
+                    <div class="dashboard-title">On-Going Count</div>
+                    <div id="ongoingCount" class="dashboard-value">--</div>
+                    <div id="ongoingCountChange" class="dashboard-change">--</div>
+                </div>
+
+                <!-- Pending -->
+                <div class="dashboard-card">
+                    <div class="dashboard-title">Pending Count</div>
+                    <div id="pendingCount" class="dashboard-value">--</div>
+                    <div id="pendingCountChange" class="dashboard-change">--</div>
+                </div>
+
+                <!-- Decline -->
+                <div class="dashboard-card">
+                    <div class="dashboard-title">Declined Count</div>
+                    <div id="declinedCount" class="dashboard-value">--</div>
+                    <div id="declinedCountChange" class="dashboard-change">--</div>
+                </div>
+
+                <!-- Revised -->
+                <div class="dashboard-card">
+                    <div class="dashboard-title">Revised Count</div>
+                    <div id="revisedCount" class="dashboard-value">--</div>
+                    <div id="revisedCountChange" class="dashboard-change">--</div>
+                </div>
+            </div>
+
+            <!-- Trends Charts Section -->
+            <div class="chart-section-container p-6 mb-8">
+                <h3 class="text-lg font-semibold mb-4">Business Metrics Trends</h3>
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Opportunity Pipeline Chart -->
+                    <div>
+                        <h4 class="text-md font-medium mb-2">Opportunity Pipeline</h4>
+                        <div class="chart-container" style="position: relative; height: 400px;">
+                            <canvas id="pipelineChart"></canvas>
+                        </div>
+                    </div>
+                    
+                    <!-- Status Distribution Chart -->
+                    <div>
+                        <h4 class="text-md font-medium mb-2">Status Distribution</h4>
+                        <div class="chart-container" style="position: relative; height: 400px;">
+                            <canvas id="statusChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Historical Trends -->
+            <div class="chart-section-container p-6 mb-8">
+                <h3 class="text-lg font-semibold mb-4">Historical Performance</h3>
+                <div class="chart-container" style="position: relative; height: 500px;">
+                    <canvas id="historicalChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Detailed Tables Section -->
+            <div class="mb-4">
+                <div class="flex gap-2 mb-4">
+                    <button id="showSummaryTable" class="filter-button px-3 py-1 rounded text-xs active">Summary Table</button>
+                    <button id="showDetailedTable" class="filter-button px-3 py-1 rounded text-xs">Detailed Breakdown</button>
+                </div>
+            </div>
+
+            <!-- Summary Table -->
+            <div id="summaryTableContainer" class="table-section-container p-6">
+                <h3 class="text-lg font-semibold mb-4">Current Period Summary</h3>
+                <div class="table-container">
+                    <table class="dashboard-table" id="summaryTable">
+                        <thead>
+                            <tr>
+                                <th>Metric</th>
+                                <th class="text-right">Current</th>
+                                <th class="text-right">Previous</th>
+                                <th class="text-right">Change</th>
+                                <th class="text-right">% Change</th>
+                            </tr>
+                        </thead>
+                        <tbody id="summaryTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Detailed Table -->
+            <div id="detailedTableContainer" class="table-section-container p-6" style="display: none;">
+                <h3 class="text-lg font-semibold mb-4">Detailed Opportunity Breakdown</h3>
+                <div class="table-container">
+                    <table class="dashboard-table" id="detailedTable">
+                        <thead>
+                            <tr>
+                                <th>Project Name</th>
+                                <th>Client</th>
+                                <th>Status</th>
+                                <th class="text-right">Amount</th>
+                                <th>Date Received</th>
+                                <th>Account Manager</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detailedTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <script src="executive_dashboard.js" defer></script>
+
+    <!-- Unified Auth Modal -->
+    <div id="authModalOverlay" class="auth-modal-overlay" style="display:none;"></div>
+    <div id="authModal" class="auth-modal" style="display:none;">
+        <h2 id="authModalTitle">Login</h2>
+        <form id="authForm">
+            <div class="auth-form-group">
+                <label for="authEmail">Email:</label>
+                <input type="email" id="authEmail" required>
+            </div>
+            <div class="auth-form-group">
+                <label for="authPassword">Password:</label>
+                <input type="password" id="authPassword" required>
+            </div>
+            <div id="authNameGroup" class="auth-form-group" style="display:none;">
+                <label for="authName">Name:</label>
+                <input type="text" id="authName">
+            </div>
+            <button type="submit" id="authSubmitBtn">Login</button>
+            <div id="authError" class="auth-error" style="display:none;"></div>
+            <div id="authSuccess" class="auth-success" style="display:none;"></div>
+        </form>
+        <p id="authToggle">
+            Don't have an account? <a href="#" id="authToggleLink">Register here</a>
+        </p>
+    </div>
+</body>
+</html>

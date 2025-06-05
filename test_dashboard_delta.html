@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Dashboard Delta</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .dashboard-card { border: 1px solid #ccc; padding: 15px; margin: 10px; border-radius: 5px; }
+        .dashboard-value { font-size: 2em; font-weight: bold; }
+        .console-output { background: #f0f0f0; padding: 10px; margin: 10px 0; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <h1>Dashboard Delta Test</h1>
+    
+    <div class="dashboard-card">
+        <div>Total Opportunities</div>
+        <div id="totalOpportunities" class="dashboard-value">--</div>
+    </div>
+    
+    <div class="dashboard-card">
+        <div>OP100 (Count / Amount)</div>
+        <div id="op100Summary" class="dashboard-value">--</div>
+    </div>
+    
+    <div class="dashboard-card">
+        <div>OP90 (Count / Amount)</div>
+        <div id="op90Summary" class="dashboard-value">--</div>
+    </div>
+    
+    <div class="dashboard-card">
+        <div>Total Inactive</div>
+        <div id="totalInactive" class="dashboard-value">--</div>
+    </div>
+    
+    <div class="dashboard-card">
+        <div>Total Submitted</div>
+        <div id="totalSubmitted" class="dashboard-value">--</div>
+    </div>
+    
+    <div class="dashboard-card">
+        <div>Total Declined</div>
+        <div id="totalDeclined" class="dashboard-value">--</div>
+    </div>
+    
+    <button onclick="testDeltaFunction()">Test Delta Function</button>
+    <button onclick="clearLocalStorage()">Clear LocalStorage</button>
+    <button onclick="createTestData()">Create Test Data</button>
+    
+    <div id="console" class="console-output"></div>
+    
+    <script>
+        function log(message) {
+            const consoleDiv = document.getElementById('console');
+            consoleDiv.innerHTML += message + '<br>';
+        }
+        
+        function withDelta(current, last) {
+            log(`withDelta: current=${current}, last=${last}, type=${typeof last}`);
+            if (typeof last === 'number') {
+                const diff = current - last;
+                if (diff === 0) return `${current}`;
+                const sign = diff > 0 ? '+' : '';
+                const result = `${current} (${sign}${diff})`;
+                log(`withDelta result: ${result}`);
+                return result;
+            }
+            log(`withDelta result (no last value): ${current}`);
+            return `${current}`;
+        }
+        
+        function setDashboardValue(id, value) {
+            const el = document.getElementById(id);
+            if (el) {
+                log(`Setting ${id} to: ${value}`);
+                el.textContent = value;
+            } else {
+                log(`Dashboard element not found: ${id}`);
+            }
+        }
+        
+        function abbreviateAmount(value) {
+            if (!value) return '₱0';
+            if (value >= 1000000) return '₱' + (value / 1000000).toFixed(1) + 'M';
+            if (value >= 1000) return '₱' + (value / 1000).toFixed(1) + 'K';
+            return '₱' + value.toLocaleString();
+        }
+        
+        function testDeltaFunction() {
+            document.getElementById('console').innerHTML = '';
+            
+            // Simulate current dashboard values
+            const totalOppsCount = 440;
+            const op100Count = 157;
+            const op90Count = 33;
+            const inactiveCount = 107;
+            const submittedOppsCount = 30;
+            const declinedCount = 7;
+            const op100Amount = 54200000;
+            const op90Amount = 60000000;
+            
+            // Get last week's values from localStorage (if any)
+            const lastWeekDashboard = JSON.parse(localStorage.getItem('dashboardLastWeek') || '{}');
+            log('Last week dashboard data: ' + JSON.stringify(lastWeekDashboard));
+            
+            // Test if no data exists
+            if (Object.keys(lastWeekDashboard).length === 0) {
+                log('Creating test last week data for demonstration...');
+                const testLastWeekData = {
+                    totalOpportunities: Math.max(0, totalOppsCount - 26),
+                    op100Count: Math.max(0, op100Count - 12),
+                    op90Count: Math.max(0, op90Count - 8),
+                    totalInactive: Math.max(0, inactiveCount - 3),
+                    totalSubmitted: Math.max(0, submittedOppsCount - 5),
+                    totalDeclined: Math.max(0, declinedCount - 2)
+                };
+                localStorage.setItem('dashboardLastWeek', JSON.stringify(testLastWeekData));
+                log('Test data created: ' + JSON.stringify(testLastWeekData));
+                
+                // Re-run with test data
+                const newLastWeekDashboard = testLastWeekData;
+                setDashboardValue('totalOpportunities', withDelta(totalOppsCount, newLastWeekDashboard.totalOpportunities));
+                setDashboardValue('op100Summary', `${withDelta(op100Count, newLastWeekDashboard.op100Count)} / ${abbreviateAmount(op100Amount)}`);
+                setDashboardValue('op90Summary', `${withDelta(op90Count, newLastWeekDashboard.op90Count)} / ${abbreviateAmount(op90Amount)}`);
+                setDashboardValue('totalInactive', withDelta(inactiveCount, newLastWeekDashboard.totalInactive));
+                setDashboardValue('totalSubmitted', withDelta(submittedOppsCount, newLastWeekDashboard.totalSubmitted));
+                setDashboardValue('totalDeclined', withDelta(declinedCount, newLastWeekDashboard.totalDeclined));
+            } else {
+                // Use existing data
+                setDashboardValue('totalOpportunities', withDelta(totalOppsCount, lastWeekDashboard.totalOpportunities));
+                setDashboardValue('op100Summary', `${withDelta(op100Count, lastWeekDashboard.op100Count)} / ${abbreviateAmount(op100Amount)}`);
+                setDashboardValue('op90Summary', `${withDelta(op90Count, lastWeekDashboard.op90Count)} / ${abbreviateAmount(op90Amount)}`);
+                setDashboardValue('totalInactive', withDelta(inactiveCount, lastWeekDashboard.totalInactive));
+                setDashboardValue('totalSubmitted', withDelta(submittedOppsCount, lastWeekDashboard.totalSubmitted));
+                setDashboardValue('totalDeclined', withDelta(declinedCount, lastWeekDashboard.totalDeclined));
+            }
+        }
+        
+        function clearLocalStorage() {
+            localStorage.removeItem('dashboardLastWeek');
+            log('LocalStorage cleared');
+        }
+        
+        function createTestData() {
+            const testData = {
+                totalOpportunities: 414,
+                op100Count: 145,
+                op90Count: 25,
+                totalInactive: 104,
+                totalSubmitted: 25,
+                totalDeclined: 5
+            };
+            localStorage.setItem('dashboardLastWeek', JSON.stringify(testData));
+            log('Test data created: ' + JSON.stringify(testData));
+        }
+    </script>
+</body>
+</html>

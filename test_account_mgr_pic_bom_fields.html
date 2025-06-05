@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Account Manager, PIC, BOM Fields</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            line-height: 1.6;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-section { 
+            margin: 20px 0; 
+            padding: 20px; 
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        h1 { color: #2563eb; margin-bottom: 20px; }
+        h2 { color: #1d4ed8; margin-top: 30px; }
+        .success { color: green; }
+        .failure { color: red; }
+        .pending { color: orange; }
+        .field-test { 
+            margin: 15px 0; 
+            padding: 15px; 
+            background: #fff;
+            border: 1px solid #e5e5e5;
+            border-radius: 4px;
+        }
+        .log-area {
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+            background: #2d3748;
+            color: #a0aec0;
+            font-family: monospace;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 5px;
+            transition: background 0.3s;
+        }
+        button:hover { background: #1d4ed8; }
+        .big-button {
+            font-size: 18px;
+            padding: 15px 30px;
+            background: #10b981;
+        }
+        .big-button:hover { background: #059669; }
+        ul li { margin-bottom: 8px; }
+        .result-entry {
+            margin: 8px 0;
+            padding: 8px;
+            border-radius: 4px;
+        }
+        .result-entry.success { background-color: rgba(16, 185, 129, 0.1); }
+        .result-entry.failure { background-color: rgba(239, 68, 68, 0.1); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Account Manager, PIC, BOM Dropdown Test</h1>
+        
+        <div class="test-section">
+            <h2>Test Overview</h2>
+            <p>This test is designed to verify that the <code>account_mgr</code>, <code>pic</code>, and <code>bom</code> fields properly appear as dropdown fields in both the Edit and Create modals.</p>
+            
+            <div class="field-test">
+                <h3>Fields to Test:</h3>
+                <ul>
+                    <li><strong>account_mgr</strong> - Should be a dropdown with values from the database</li>
+                    <li><strong>pic</strong> - Should be a dropdown with values from the database</li>
+                    <li><strong>bom</strong> - Should be a dropdown with values from the database</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Testing Instructions</h2>
+            <ol>
+                <li><strong>Edit Modal Test:</strong>
+                    <ul>
+                        <li>Open the main app</li>
+                        <li>Click the edit button on any row</li>
+                        <li>Verify that account_mgr, pic, and bom fields show up as dropdowns</li>
+                        <li>Verify that each dropdown contains options from the database</li>
+                    </ul>
+                </li>
+                <li><strong>Create Modal Test:</strong>
+                    <ul>
+                        <li>Click the "Create New Opportunity" button</li>
+                        <li>Verify that account_mgr, pic, and bom fields show up as dropdowns</li>
+                        <li>Verify that each dropdown contains options from the database</li>
+                    </ul>
+                </li>
+            </ol>
+        </div>
+        
+        <div class="test-section">
+            <h2>Actions</h2>
+            <button class="big-button" onclick="openMainApp()">🚀 Open Main Application & Test</button>
+            <button onclick="runDropdownAnalysis()">🔍 Run Console Analyzer</button>
+            <button onclick="showConsoleInstructions()">📋 View Console Instructions</button>
+        </div>
+        
+        <div class="test-section">
+            <h2>Test Results</h2>
+            <div id="testResults">
+                <p class="pending">Run the tests and record your findings here...</p>
+            </div>
+            
+            <div class="log-area" id="debugLog">
+// Debug logs will appear here after running the analyzer
+            </div>
+            
+            <button onclick="recordSuccess()">✅ Record Success</button>
+            <button onclick="recordFailure()">❌ Record Failure</button>
+        </div>
+    </div>
+
+    <script>
+        function openMainApp() {
+            window.open('http://localhost:3000', '_blank');
+        }
+        
+        function showConsoleInstructions() {
+            alert('To open browser console:\n\n' +
+                  '1. Press F12 or right-click and select "Inspect"\n' +
+                  '2. Select the "Console" tab\n' +
+                  '3. Run the dropdown analyzer from this page\n' +
+                  '4. Look for results showing account_mgr, pic, and bom fields having options');
+        }
+        
+        function runDropdownAnalysis() {
+            const analyzerCode = `
+// Dropdown Field Analysis Tool
+console.log('=== DROPDOWN FIELD ANALYSIS ===');
+
+// Check if we have the getFieldOptions function
+function analyzeFieldOptions() {
+    console.log('\\n1. TESTING getFieldOptions():');
+    
+    if (typeof window.getFieldOptions !== 'function') {
+        console.error('getFieldOptions function not found!');
+        return false;
+    }
+    
+    // Test our fields specifically
+    const testFields = ['account_mgr', 'pic', 'bom'];
+    let success = true;
+    
+    testFields.forEach(field => {
+        const options = window.getFieldOptions(field);
+        
+        if (options && Array.isArray(options) && options.length > 0) {
+            console.log(\`✅ Field "\${field}" has options: [\${options.join(', ')}]\`);
+        } else {
+            console.error(\`❌ Field "\${field}" has NO options: \${options}\`);
+            success = false;
+        }
+    });
+    
+    return success;
+}
+
+// Check the edit modal if it's open
+function analyzeEditModal() {
+    console.log('\\n2. CHECKING EDIT MODAL:');
+    
+    const editModal = document.getElementById('editRowModal');
+    if (!editModal || editModal.classList.contains('hidden')) {
+        console.log('Edit modal not open - open it to analyze fields');
+        return null;
+    }
+    
+    return analyzeModalFields(editModal, ['account_mgr', 'pic', 'bom']);
+}
+
+// Check the create modal if it's open
+function analyzeCreateModal() {
+    console.log('\\n3. CHECKING CREATE MODAL:');
+    
+    const createModal = document.getElementById('createOpportunityModal');
+    if (!createModal || createModal.classList.contains('hidden')) {
+        console.log('Create modal not open - open it to analyze fields');
+        return null;
+    }
+    
+    return analyzeModalFields(createModal, ['account_mgr', 'pic', 'bom']);
+}
+
+// Helper to analyze fields in any modal
+function analyzeModalFields(modal, fieldsToCheck) {
+    const results = {};
+    let success = true;
+    
+    fieldsToCheck.forEach(field => {
+        // Try to find the field by ID, name, or contains text
+        let input = modal.querySelector(\`#\${field}, [name="\${field}"]\`);
+        
+        if (!input) {
+            const labels = Array.from(modal.querySelectorAll('label')).filter(
+                label => label.textContent.toLowerCase().includes(field.toLowerCase().replace('_', ' '))
+            );
+            
+            if (labels.length > 0) {
+                const labelFor = labels[0].getAttribute('for');
+                if (labelFor) {
+                    input = modal.querySelector(\`#\${labelFor}\`);
+                }
+            }
+        }
+        
+        if (!input) {
+            console.error(\`❌ Could not find field "\${field}" in modal\`);
+            results[field] = {
+                found: false,
+                isDropdown: false,
+                options: []
+            };
+            success = false;
+            return;
+        }
+        
+        const isDropdown = input.tagName.toLowerCase() === 'select';
+        const options = isDropdown ? Array.from(input.options).map(opt => opt.value) : [];
+        
+        if (isDropdown && options.length > 0) {
+            console.log(\`✅ Field "\${field}" is a dropdown with \${options.length} options: [\${options.join(', ')}]\`);
+        } else if (isDropdown) {
+            console.error(\`❌ Field "\${field}" is a dropdown but has NO options\`);
+            success = false;
+        } else {
+            console.error(\`❌ Field "\${field}" is NOT a dropdown (found: \${input.tagName.toLowerCase()})\`);
+            success = false;
+        }
+        
+        results[field] = {
+            found: true,
+            isDropdown,
+            options
+        };
+    });
+    
+    return {
+        success,
+        results
+    };
+}
+
+// Check the DROPDOWN_FIELDS constant
+function analyzeDROPDOWN_FIELDS() {
+    console.log('\\n4. CHECKING DROPDOWN_FIELDS CONSTANT:');
+    
+    if (!window.DROPDOWN_FIELDS) {
+        console.error('DROPDOWN_FIELDS constant not found!');
+        return false;
+    }
+    
+    const fieldsToCheck = ['account_mgr', 'pic', 'bom'];
+    let allFound = true;
+    
+    fieldsToCheck.forEach(field => {
+        if (window.DROPDOWN_FIELDS.includes(field)) {
+            console.log(\`✅ Field "\${field}" is in DROPDOWN_FIELDS array\`);
+        } else {
+            console.error(\`❌ Field "\${field}" is NOT in DROPDOWN_FIELDS array\`);
+            allFound = false;
+        }
+    });
+    
+    return allFound;
+}
+
+// Run all tests
+const getFieldOptionsSuccess = analyzeFieldOptions();
+const dropdownFieldsSuccess = analyzeDROPDOWN_FIELDS();
+const editModalResult = analyzeEditModal();
+const createModalResult = analyzeCreateModal();
+
+console.log('\\n=== TEST SUMMARY ===');
+console.log(\`getFieldOptions function: \${getFieldOptionsSuccess ? '✅ SUCCESS' : '❌ FAILURE'}\`);
+console.log(\`DROPDOWN_FIELDS constant: \${dropdownFieldsSuccess ? '✅ SUCCESS' : '❌ FAILURE'}\`);
+
+if (editModalResult === null) {
+    console.log('Edit Modal: ⚠️ Not tested (modal not open)');
+} else {
+    console.log(\`Edit Modal: \${editModalResult.success ? '✅ SUCCESS' : '❌ FAILURE'}\`);
+}
+
+if (createModalResult === null) {
+    console.log('Create Modal: ⚠️ Not tested (modal not open)');
+} else {
+    console.log(\`Create Modal: \${createModalResult.success ? '✅ SUCCESS' : '❌ FAILURE'}\`);
+}
+
+// Overall result
+const overallSuccess = 
+    getFieldOptionsSuccess && 
+    dropdownFieldsSuccess && 
+    (editModalResult === null || editModalResult.success) && 
+    (createModalResult === null || createModalResult.success);
+
+console.log(\`\\n=== OVERALL RESULT: \${overallSuccess ? '✅ SUCCESS' : '❌ FAILURE'} ===\`);
+console.log('To properly test, please open either the Edit or Create modal and run this script again.');`;
+            
+            // Open the main app and inject the analyzer script
+            const mainWindow = window.open('http://localhost:3000', '_blank');
+            
+            setTimeout(() => {
+                if (mainWindow && !mainWindow.closed) {
+                    alert('Once the application loads, press OK to inject the dropdown analyzer.\n\nAfter that, open either the Edit or Create modal and run the analyzer again to fully test those components.');
+                    try {
+                        const result = mainWindow.eval(analyzerCode);
+                        document.getElementById('debugLog').textContent = 'Analyzer script injected successfully. Check the console in the main app window.';
+                    } catch (error) {
+                        document.getElementById('debugLog').textContent = `Error injecting analyzer: ${error.message}`;
+                    }
+                } else {
+                    document.getElementById('debugLog').textContent = 'Could not access the main app window. Make sure it loaded correctly.';
+                }
+            }, 2000);
+        }
+        
+        function recordSuccess() {
+            const notes = prompt('Enter any notes about the successful test:');
+            if (notes !== null) {
+                const resultEntry = document.createElement('div');
+                resultEntry.className = 'result-entry success';
+                resultEntry.innerHTML = `
+                    <strong>✅ TEST PASSED</strong> - ${new Date().toLocaleString()}<br>
+                    <p>${notes || 'All dropdown fields working as expected!'}</p>
+                `;
+                document.getElementById('testResults').innerHTML = '';
+                document.getElementById('testResults').appendChild(resultEntry);
+            }
+        }
+        
+        function recordFailure() {
+            const notes = prompt('Enter details about what failed:');
+            if (notes !== null) {
+                const resultEntry = document.createElement('div');
+                resultEntry.className = 'result-entry failure';
+                resultEntry.innerHTML = `
+                    <strong>❌ TEST FAILED</strong> - ${new Date().toLocaleString()}<br>
+                    <p>${notes || 'Some dropdown fields are not working correctly.'}</p>
+                `;
+                document.getElementById('testResults').innerHTML = '';
+                document.getElementById('testResults').appendChild(resultEntry);
+            }
+        }
+    </script>
+</body>
+</html>

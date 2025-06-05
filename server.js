@@ -16,7 +16,7 @@ const port = 3000; // You can change the port if needed
 
 // PostgreSQL connection pool
 const pool = new Pool({
-  connectionString: 'postgresql://opps_management_owner:npg_Br9RoWqlTPZ0@ep-quiet-dawn-a1jwkxgx-pooler.ap-southeast-1.aws.neon.tech/opps_management?sslmode=require',
+  connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false }
 });
 

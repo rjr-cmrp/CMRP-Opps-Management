@@ -46,7 +46,7 @@ let lostSummary;
 let declinedSummary;
 
 // --- Constants ---
-const DROPDOWN_FIELDS = ['solutions', 'sol_particulars', 'industries', 'ind_particulars', 'decision', 'account_mgr', 'pic', 'bom', 'status', 'opp_status', 'lost_rca', 'l_particulars', 'a', 'c', 'r', 'u', 'd', 'submitted'];
+const DROPDOWN_FIELDS = ['solutions', 'sol_particulars', 'industries', 'ind_particulars', 'decision', 'account_mgr', 'pic', 'bom', 'status', 'opp_status', 'lost_rca', 'l_particulars', 'a', 'c', 'r', 'u', 'd'];
 const DROPDOWN_FIELDS_NORM = DROPDOWN_FIELDS.map(field => field.toLowerCase().replace(/[^a-z0-9]/g, ''));
 const encodedDateHeaders = ['encodeddate'];
 const withDayHeaders = ['datereceived', 'clientdeadline', 'submitteddate', 'dateawardedlost', 'forecastdate'];
@@ -654,6 +654,9 @@ function showEditRowModal(rowIndex, isDuplicate = false) {
         return;
     }
 
+    // Update dropdown options before showing the modal
+    dropdownOptions = getDropdownOptions(headers, opportunities);
+
     // Set mode variables
     isCreateMode = isDuplicate;
     currentEditRowIndex = isDuplicate ? -1 : rowIndex;
@@ -676,10 +679,10 @@ function showEditRowModal(rowIndex, isDuplicate = false) {
     
     // Create form fields for each editable column
     const editableFields = [
-        'project_name', 'rev', 'client', 'solution', 'solutions', 'sol_particulars', 'industry', 'industries', 'ind_particulars',
-        'proposal_due_date', 'decision_due_date', 'decision',
-        'account_mgr', 'pic', 'bom', 'status', 'submitted',
-        'margin', 'final_amount', 'opp_status', 'date_awarded',
+        'project_name', 'rev', 'client', 'solutions', 'sol_particulars', 'industries', 'ind_particulars',
+        'date_received', 'client_deadline', 'decision',
+        'account_mgr', 'pic', 'bom', 'status', 'submitted_date',
+        'margin', 'final_amt', 'opp_status', 'date_awarded_lost',
         'a', 'c', 'r', 'u', 'd',
         'remarks_comments', 'forecast_date'
     ];
@@ -696,68 +699,79 @@ function showEditRowModal(rowIndex, isDuplicate = false) {
             console.log(`[DEBUG] ACRUD field detected: "${field}"`);
         }
         
-        if (headerExists || normalizedHeaderExists) {
-            const actualHeader = headers.find(h => normalizeField(h) === normalizedField) || field;
-            const value = rowData[actualHeader] || '';
-            
-            console.log(`[DEBUG] Creating form field "${field}" with actualHeader="${actualHeader}" and value="${value}"`);
-            
-            const formGroup = document.createElement('div');
-            formGroup.className = 'form-group';
-            
-            const label = document.createElement('label');
-            label.textContent = actualHeader.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-            label.setAttribute('for', field);
-            
-            let input;
-            // Use dropdown if getFieldOptions returns options
-            const options = getFieldOptions(field);
-            console.log(`[DEBUG] Field "${field}" getFieldOptions returned:`, options);
-            if (options && options.length > 0) {
-                console.log(`[DEBUG] Creating SELECT dropdown for field "${field}" (${options.join(', ')})`);
-                input = document.createElement('select');
-                input.className = 'w-full p-2 border rounded';
-                // Clear any existing options first
-                input.innerHTML = '';
-                console.log(`[DEBUG] Adding ${options.length} options to ${field} dropdown`);
-                options.forEach(option => {
-                    const optionEl = document.createElement('option');
-                    optionEl.value = option;
-                    optionEl.textContent = option;
-                    input.appendChild(optionEl);
-                });
-            } else if (field === 'remarks_comments') {
-                input = document.createElement('textarea');
-                input.rows = 4;
-                input.className = 'w-full p-2 border rounded';
-            } else if (field.includes('date')) {
-                input = document.createElement('input');
-                input.type = 'date';
-                input.className = 'w-full p-2 border rounded';
-            } else if (field === 'margin' || field === 'final_amount') {
-                input = document.createElement('input');
-                input.type = 'number';
-                input.step = '0.01';
-                input.className = 'w-full p-2 border rounded';
-            } else {
-                input = document.createElement('input');
-                input.type = 'text';
-                input.className = 'w-full p-2 border rounded';
+        // Always create field inputs for all editable fields to match create modal behavior
+        const actualHeader = headers.find(h => normalizeField(h) === normalizedField) || field;
+        const value = rowData[actualHeader] || '';
+        
+        console.log(`[DEBUG] Creating form field "${field}" with actualHeader="${actualHeader}" and value="${value}"`);
+        
+        const formGroup = document.createElement('div');
+        formGroup.className = 'form-group';
+        
+        const label = document.createElement('label');
+        label.textContent = actualHeader.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        label.setAttribute('for', field);
+        
+        let input;
+        // Use dropdown if getFieldOptions returns options
+        const options = getFieldOptions(field);
+        console.log(`[DEBUG] Field "${field}" getFieldOptions returned:`, options);
+        if (options && options.length > 0) {
+            input = document.createElement('select');
+            input.className = 'w-full p-2 border rounded dropdown-field';
+            // Clear any existing options first
+            input.innerHTML = '';
+            options.forEach(option => {
+                const optionEl = document.createElement('option');
+                optionEl.value = option;
+                optionEl.textContent = option;
+                if (option === value) {
+                    optionEl.selected = true;
+                }
+                input.appendChild(optionEl);
+            });
+        } else if (field === 'remarks_comments') {
+            input = document.createElement('textarea');
+            input.rows = 4;
+            input.className = 'w-full p-2 border rounded';
+        } else if (field.includes('date') || field === 'client_deadline') {
+            input = document.createElement('input');
+            input.type = 'date';
+            input.className = 'w-full p-2 border rounded';
+            if (value) {
+                // Format date properly for date inputs
+                try {
+                    const dateObj = new Date(value);
+                    if (!isNaN(dateObj)) {
+                        input.value = dateObj.toISOString().split('T')[0];
+                    }
+                } catch (e) {
+                    console.error(`Error formatting date for field ${field}:`, e);
+                }
             }
-            
-            input.id = field;
-            input.name = field;
-            if (input.type !== 'date') {
-                input.value = value;
-            }
-            
-            // Store original value for change detection
-            window.originalFormValues[field] = value;
-            
-            formGroup.appendChild(label);
-            formGroup.appendChild(input);
-            form.appendChild(formGroup);
+        } else if (field === 'margin' || field === 'final_amount') {
+            input = document.createElement('input');
+            input.type = 'number';
+            input.step = '0.01';
+            input.className = 'w-full p-2 border rounded';
+        } else {
+            input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'w-full p-2 border rounded';
         }
+        
+        input.id = field;
+        input.name = field;
+        if (input.type !== 'date') {
+            input.value = value;
+        }
+            
+        // Store original value for change detection
+        window.originalFormValues[field] = value;
+        
+        formGroup.appendChild(label);
+        formGroup.appendChild(input);
+        form.appendChild(formGroup);
     });
     
     // Update modal title
@@ -775,13 +789,16 @@ function showCreateOpportunityModal() {
     const modal = document.getElementById('createOpportunityModal');
     const form = document.getElementById('createOpportunityForm');
     if (!overlay || !modal || !form) return;
+    
+    // Update dropdown options before showing the modal
+    dropdownOptions = getDropdownOptions(headers, opportunities);
 
     // Use the same editable fields as edit modal
     const editableFields = [
-        'project_name', 'rev', 'client', 'solution', 'solutions', 'sol_particulars', 'industry', 'industries', 'ind_particulars',
-        'proposal_due_date', 'decision_due_date', 'decision',
-        'account_mgr', 'pic', 'bom', 'status', 'submitted',
-        'margin', 'final_amount', 'opp_status', 'date_awarded',
+        'project_name', 'rev', 'client', 'solutions', 'sol_particulars', 'industries', 'ind_particulars',
+        'date_received', 'client_deadline', 'decision',
+        'account_mgr', 'pic', 'bom', 'status', 'submitted_date',
+        'margin', 'final_amt', 'opp_status', 'date_awarded_lost',
         'a', 'c', 'r', 'u', 'd',
         'remarks_comments', 'forecast_date'
     ];
@@ -797,12 +814,10 @@ function showCreateOpportunityModal() {
         const options = getFieldOptions(field);
         console.log(`[DEBUG] Create Modal - Field "${field}" getFieldOptions returned:`, options);
         if (options && options.length > 0) {
-            console.log(`[DEBUG] Create Modal - Creating SELECT dropdown for field "${field}" (${options.join(', ')})`);
             input = document.createElement('select');
-            input.className = 'w-full p-2 border rounded';
+            input.className = 'w-full p-2 border rounded dropdown-field';
             // Clear any existing options first
             input.innerHTML = '';
-            console.log(`[DEBUG] Create Modal - Adding ${options.length} options to ${field} dropdown`);
             options.forEach(option => {
                 const optionEl = document.createElement('option');
                 optionEl.value = option;
@@ -813,7 +828,7 @@ function showCreateOpportunityModal() {
             input = document.createElement('textarea');
             input.rows = 4;
             input.className = 'w-full p-2 border rounded';
-        } else if (field.includes('date')) {
+        } else if (field.includes('date') || field === 'client_deadline') {
             input = document.createElement('input');
             input.type = 'date';
             input.className = 'w-full p-2 border rounded';
@@ -841,9 +856,9 @@ function showCreateOpportunityModal() {
 function getFieldOptions(field) {
     switch (field) {
         case 'decision':
-            return ['', 'GO', 'DECLINE'];
+            return ['', 'GO', 'DECLINE', 'Pending'];
         case 'status':
-            return ['', 'Submitted', 'For Revision'];
+            return ['', 'On-Going', 'For Revision', 'For Approval', 'Submitted', 'No Decision Yet', 'Not Yet Started'];
         case 'opp_status':
             return ['', 'OP100', 'LOST', 'OP90', 'OP60', 'OP30'];
         case 'a':
@@ -864,8 +879,15 @@ function getFieldOptions(field) {
             return ['', 'Manufacturing', 'Buildings', 'Power'];
         case 'ind_particulars':
             return ['', 'F&B', 'CONSTRUCTION', 'MANUFACTURING', 'POWER PLANT', 'CEMENT', 'SEMICON', 'OIL & GAS', 'OTHERS', 'UTILITIES', 'COLD STORAGE', 'PHARMA'];
-        case 'submitted':
-            return ['', 'Yes', 'No'];
+        case 'account_mgr':
+            // Get values from dropdownOptions if available, otherwise return empty array with blank option
+            return dropdownOptions.accountmgr ? ['', ...dropdownOptions.accountmgr] : [''];
+        case 'pic':
+            // Get values from dropdownOptions if available, otherwise return empty array with blank option
+            return dropdownOptions.pic ? ['', ...dropdownOptions.pic] : [''];
+        case 'bom':
+            // Get values from dropdownOptions if available, otherwise return empty array with blank option
+            return dropdownOptions.bom ? ['', ...dropdownOptions.bom] : [''];
         default:
             return [];
     }
@@ -957,13 +979,35 @@ function getDropdownOptions(headersToUse, data) {
             });
         }
 
-        // Special handling for Account Manager and PIC
-        for (let i = 0; i < headersToUse.length; i++) {
-            if (normalizeField(headersToUse[i]) === 'accountmanager') {
-                data.forEach(row => {
-                    const value = row[headersToUse[i]];
-                    if (value) values.add(value);
-                });
+        // Special handling for Account Manager, PIC and BOM
+        if (normField === 'accountmgr') {
+            for (let i = 0; i < headersToUse.length; i++) {
+                if (normalizeField(headersToUse[i]) === 'accountmgr') {
+                    data.forEach(row => {
+                        const value = row[headersToUse[i]];
+                        if (value) values.add(value);
+                    });
+                }
+            }
+        } 
+        else if (normField === 'pic') {
+            for (let i = 0; i < headersToUse.length; i++) {
+                if (normalizeField(headersToUse[i]) === 'pic') {
+                    data.forEach(row => {
+                        const value = row[headersToUse[i]];
+                        if (value) values.add(value);
+                    });
+                }
+            }
+        }
+        else if (normField === 'bom') {
+            for (let i = 0; i < headersToUse.length; i++) {
+                if (normalizeField(headersToUse[i]) === 'bom') {
+                    data.forEach(row => {
+                        const value = row[headersToUse[i]];
+                        if (value) values.add(value);
+                    });
+                }
             }
         }
 
@@ -1950,7 +1994,7 @@ async function loadDashboardData() {
                 op90Count: op90Count,
                 totalInactive: inactiveCount,
                 totalSubmitted: submittedOppsCount,
-                totalDeclined: declinedCount,
+                               totalDeclined: declinedCount,
                 savedDate: today.toISOString()
             }));
             console.log('Weekly snapshot saved (Monday)');

@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Delta Test</title>
+</head>
+<body>
+    <h1>Dashboard Delta Test</h1>
+    
+    <div>
+        <h2>Test Controls</h2>
+        <button onclick="clearLastWeekData()">Clear Last Week Data</button>
+        <button onclick="createTestData()">Create Test Data</button>
+        <button onclick="showCurrentData()">Show Current localStorage</button>
+    </div>
+    
+    <div>
+        <h2>Results</h2>
+        <pre id="results"></pre>
+    </div>
+
+    <script>
+        function log(message) {
+            const results = document.getElementById('results');
+            results.textContent += message + '\n';
+            console.log(message);
+        }
+        
+        function clearLastWeekData() {
+            localStorage.removeItem('dashboardLastWeek');
+            log('✅ Cleared last week data from localStorage');
+        }
+        
+        function createTestData() {
+            const testData = {
+                totalOpportunities: 414,  // Current would be 440 (+26)
+                op100Count: 88,          // Current would be 100 (+12)
+                op90Count: 42,           // Current would be 50 (+8)
+                totalInactive: 17,       // Current would be 20 (+3)
+                totalSubmitted: 35,      // Current would be 40 (+5)
+                totalDeclined: 8         // Current would be 10 (+2)
+            };
+            
+            localStorage.setItem('dashboardLastWeek', JSON.stringify(testData));
+            log('✅ Created test last week data:');
+            log(JSON.stringify(testData, null, 2));
+        }
+        
+        function showCurrentData() {
+            const data = localStorage.getItem('dashboardLastWeek');
+            if (data) {
+                log('📊 Current localStorage data:');
+                log(JSON.stringify(JSON.parse(data), null, 2));
+            } else {
+                log('❌ No last week data found in localStorage');
+            }
+        }
+        
+        function testDeltaCalculation() {
+            // Test the delta calculation logic
+            function withDelta(current, last) {
+                if (typeof last === 'number') {
+                    const diff = current - last;
+                    if (diff === 0) return `${current}`;
+                    const sign = diff > 0 ? '+' : '';
+                    return `${current} (${sign}${diff})`;
+                }
+                return `${current}`;
+            }
+            
+            // Test cases
+            log('🧪 Testing delta calculation:');
+            log(`withDelta(440, 414) = "${withDelta(440, 414)}"`);
+            log(`withDelta(100, 88) = "${withDelta(100, 88)}"`);
+            log(`withDelta(50, 50) = "${withDelta(50, 50)}"`);
+            log(`withDelta(20, 25) = "${withDelta(20, 25)}"`);
+            log(`withDelta(40, undefined) = "${withDelta(40, undefined)}"`);
+        }
+        
+        // Run initial tests
+        window.onload = function() {
+            log('🚀 Dashboard Delta Live Test Started');
+            showCurrentData();
+            testDeltaCalculation();
+        };
+    </script>
+</body>
+</html>

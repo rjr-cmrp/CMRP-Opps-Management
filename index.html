@@ -253,11 +253,12 @@
                         <input type="date" id="newDecisionDueDate" name="decision_due_date" class="w-full p-2 border rounded" />
                     </div>
                     <div class="form-group mb-4">
-                        <label for="newDecision">Decision</label>
-                        <select id="newDecision" name="decision" class="w-full p-2 border rounded">
+                        <label for="newDecision">Decision <span class="dropdown-arrow">&#9662;</span></label>
+                        <select id="newDecision" name="decision" class="w-full p-2 border rounded dropdown-field">
                             <option value="">-- Select --</option>
                             <option value="GO">GO</option>
                             <option value="DECLINE">DECLINE</option>
+                            <option value="Pending">Pending</option>
                         </select>
                     </div>
                     <div class="form-group mb-4">
@@ -273,21 +274,20 @@
                         <input type="text" id="newBOM" name="bom" class="w-full p-2 border rounded" />
                     </div>
                     <div class="form-group mb-4">
-                        <label for="newStatus">Status</label>
-                        <select id="newStatus" name="status" class="w-full p-2 border rounded">
+                        <label for="newStatus">Status <span class="dropdown-arrow">&#9662;</span></label>
+                        <select id="newStatus" name="status" class="w-full p-2 border rounded dropdown-field">
                             <option value="">-- Select --</option>
+                            <option value="On-Going">On-Going</option>
+                            <option value="For Revision">For Revision</option>
+                            <option value="For Approval">For Approval</option>
                             <option value="Submitted">Submitted</option>
-                            <option value="Ongoing">Ongoing</option>
-                            <option value="Not Yet Started">Not Yet Started</option>
                             <option value="No Decision Yet">No Decision Yet</option>
-                            <option value="Lost">Lost</option>
-                            <option value="Declined">Declined</option>
-                            <option value="Inactive">Inactive</option>
+                            <option value="Not Yet Started">Not Yet Started</option>
                         </select>
                     </div>
                     <div class="form-group mb-4">
-                        <label for="newSubmitted">Submitted</label>
-                        <select id="newSubmitted" name="submitted" class="w-full p-2 border rounded">
+                        <label for="newSubmitted">Submitted <span class="dropdown-arrow">&#9662;</span></label>
+                        <select id="newSubmitted" name="submitted" class="w-full p-2 border rounded dropdown-field">
                             <option value="">-- Select --</option>
                             <option value="Yes">Yes</option>
                             <option value="No">No</option>
@@ -302,8 +302,8 @@
                         <input type="number" id="newFinalAmount" name="final_amount" class="w-full p-2 border rounded" step="0.01" />
                     </div>
                     <div class="form-group mb-4">
-                        <label for="newOppStatus">Opportunity Status</label>
-                        <select id="newOppStatus" name="opp_status" class="w-full p-2 border rounded">
+                        <label for="newOppStatus">Opportunity Status <span class="dropdown-arrow">&#9662;</span></label>
+                        <select id="newOppStatus" name="opp_status" class="w-full p-2 border rounded dropdown-field">
                             <option value="">-- Select --</option>
                             <option value="OP100">OP100</option>
                             <option value="OP90">OP90</option>
