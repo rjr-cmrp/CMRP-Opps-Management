@@ -46,7 +46,7 @@ let lostSummary;
 let declinedSummary;
 
 // --- Constants ---
-const DROPDOWN_FIELDS = ['solutions', 'sol_particulars', 'industries', 'ind_particulars', 'decision', 'account_mgr', 'pic', 'bom', 'status', 'opp_status', 'lost_rca', 'l_particulars'];
+const DROPDOWN_FIELDS = ['solutions', 'sol_particulars', 'industries', 'ind_particulars', 'decision', 'account_mgr', 'pic', 'bom', 'status', 'opp_status', 'lost_rca', 'l_particulars', 'a', 'c', 'r', 'u', 'd', 'submitted'];
 const DROPDOWN_FIELDS_NORM = DROPDOWN_FIELDS.map(field => field.toLowerCase().replace(/[^a-z0-9]/g, ''));
 const encodedDateHeaders = ['encodeddate'];
 const withDayHeaders = ['datereceived', 'clientdeadline', 'submitteddate', 'dateawardedlost', 'forecastdate'];
@@ -277,6 +277,9 @@ async function initializeApp() {
         // Hide loading state
         loadingText.style.display = 'none';
         
+        // Initialize dashboard comparison toggles
+        initializeDashboardToggles();
+        
     } catch (error) {
         console.error('Error initializing app:', error);
         showAuthErrorBanner(error.message);
@@ -344,28 +347,32 @@ document.addEventListener('DOMContentLoaded', function() {
 
 function initializeEventListeners() {
     // Theme toggle
-    themeToggle.addEventListener('click', toggleTheme);
+    if (themeToggle) themeToggle.addEventListener('click', toggleTheme);
 
     // Auth form submission
-    authForm.addEventListener('submit', handleAuthSubmit);
+    if (authForm) authForm.addEventListener('submit', handleAuthSubmit);
 
     // Switch auth mode
-    switchAuthMode.addEventListener('click', () => setAuthMode(!isLoginMode));
+    if (switchAuthMode) switchAuthMode.addEventListener('click', () => setAuthMode(!isLoginMode));
 
     // Close auth modal on overlay click
-    authModalOverlay.addEventListener('click', (e) => {
-        if (e.target === authModalOverlay) {
-            hideAuthModal();
-        }
-    });
+    if (authModalOverlay) {
+        authModalOverlay.addEventListener('click', (e) => {
+            if (e.target === authModalOverlay) {
+                hideAuthModal();
+            }
+        });
+    }
     
     // Prevent modal from closing when clicking inside the modal
-    authModal.addEventListener('click', (e) => {
-        e.stopPropagation();
-    });
+    if (authModal) {
+        authModal.addEventListener('click', (e) => {
+            e.stopPropagation();
+        });
+    }
 
     // Logout button
-    logoutBtn.addEventListener('click', handleLogout);
+    if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
 
     // Change password button
     const changePasswordBtn = document.getElementById('changePasswordBtn');
@@ -376,43 +383,50 @@ function initializeEventListeners() {
     }
 
     // Search input
-    searchInput.addEventListener('input', debounce(() => {
-        filterAndSortData();
-    }, 300));
+    if (searchInput) {
+        searchInput.addEventListener('input', debounce(() => {
+            filterAndSortData();
+        }, 300));
+    }
 
     // Status filter buttons
-    statusFilterButtonsContainer.addEventListener('click', function(e) {
-        if (e.target.matches('button.filter-button')) {
-            // Remove active class from all buttons first
-            statusFilterButtonsContainer.querySelectorAll('.filter-button').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            // Add active class to clicked button
-            e.target.classList.add('active');
-            filterAndSortData();
-        }
-    });
+    if (statusFilterButtonsContainer) {
+        statusFilterButtonsContainer.addEventListener('click', function(e) {
+            if (e.target.matches('button.filter-button')) {
+                // Remove active class from all buttons first
+                statusFilterButtonsContainer.querySelectorAll('.filter-button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                // Add active class to clicked button
+                e.target.classList.add('active');
+                filterAndSortData();
+            }
+        });
+    }
 
     // Account Manager and PIC filters
-    accountMgrFilterDropdown.addEventListener('change', filterAndSortData);
-    picFilterDropdown.addEventListener('change', filterAndSortData);
+    if (accountMgrFilterDropdown) accountMgrFilterDropdown.addEventListener('change', filterAndSortData);
+    if (picFilterDropdown) picFilterDropdown.addEventListener('change', filterAndSortData);
 
     // Create opportunity button
-    createOpportunityButton.addEventListener('click', function() {
-        isCreateMode = true;
-        showEditRowModal();
-    });
+    if (createOpportunityButton) {
+        createOpportunityButton.addEventListener('click', showCreateOpportunityModal);
+    }
 
     // Export to Excel button
-    exportExcelButton.addEventListener('click', function() {
-        const wb = XLSX.utils.table_to_book(opportunitiesTable, {sheet: "Opportunities"});
-        XLSX.writeFile(wb, "opportunities.xlsx");
-    });
+    if (exportExcelButton) {
+        exportExcelButton.addEventListener('click', function() {
+            const wb = XLSX.utils.table_to_book(opportunitiesTable, {sheet: "Opportunities"});
+            XLSX.writeFile(wb, "opportunities.xlsx");
+        });
+    }
 
     // Toggle columns button
-    toggleColumnsButton.addEventListener('click', () => {
-        columnToggleContainer.classList.toggle('hidden');
-    });
+    if (toggleColumnsButton) {
+        toggleColumnsButton.addEventListener('click', () => {
+            columnToggleContainer.classList.toggle('hidden');
+        });
+    }
 
     // Storage event listener (for multi-tab support)
     window.addEventListener('storage', function(e) {
@@ -455,6 +469,44 @@ function initializeEventListeners() {
     document.getElementById('editRowModalOverlay').addEventListener('click', function(e) {
         if (e.target === this) {
             hideEditRowModal();
+        }
+    });
+
+    // Create Opportunity modal events
+    var createOpportunityButton = document.getElementById('createOpportunityButton');
+    var createOpportunityModal = document.getElementById('createOpportunityModal');
+    var createOpportunityModalOverlay = document.getElementById('createOpportunityModalOverlay');
+    var closeCreateOpportunityModalButton = document.getElementById('closeCreateOpportunityModalButton');
+    var createOpportunityModalCloseX = document.getElementById('createOpportunityModalCloseX');
+    var createOpportunityForm = document.getElementById('createOpportunityForm');
+
+    if (createOpportunityButton && createOpportunityModal && createOpportunityModalOverlay) {
+        createOpportunityButton.addEventListener('click', function() {
+            // Call our function to dynamically create the form with proper dropdowns
+            showCreateOpportunityModal();
+        });
+    }
+    function closeCreateModal() {
+        createOpportunityModal.classList.add('hidden');
+        createOpportunityModalOverlay.classList.add('hidden');
+        // Clear form content completely, don't just reset values
+        if (createOpportunityForm) createOpportunityForm.innerHTML = '';
+    }
+    if (closeCreateOpportunityModalButton) {
+        closeCreateOpportunityModalButton.addEventListener('click', closeCreateModal);
+    }
+    if (createOpportunityModalCloseX) {
+        createOpportunityModalCloseX.addEventListener('click', closeCreateModal);
+    }
+    if (createOpportunityModalOverlay) {
+        createOpportunityModalOverlay.addEventListener('click', function(e) {
+            if (e.target === createOpportunityModalOverlay) closeCreateModal();
+        });
+    }
+    // Optionally: ESC key closes modal
+    document.addEventListener('keydown', function(e) {
+        if (!createOpportunityModal.classList.contains('hidden') && e.key === 'Escape') {
+            closeCreateModal();
         }
     });
 }
@@ -624,21 +676,28 @@ function showEditRowModal(rowIndex, isDuplicate = false) {
     
     // Create form fields for each editable column
     const editableFields = [
-        'project_name', 'rev', 'client', 'solution', 'industry',
+        'project_name', 'rev', 'client', 'solution', 'solutions', 'sol_particulars', 'industry', 'industries', 'ind_particulars',
         'proposal_due_date', 'decision_due_date', 'decision',
         'account_mgr', 'pic', 'bom', 'status', 'submitted',
         'margin', 'final_amount', 'opp_status', 'date_awarded',
+        'a', 'c', 'r', 'u', 'd',
         'remarks_comments', 'forecast_date'
     ];
     
     editableFields.forEach(field => {
         const headerExists = headers.includes(field);
-        const normalizedHeaderExists = headers.some(h => normalizeField(h) === field);
+        const normalizedField = normalizeField(field);
+        const normalizedHeaderExists = headers.some(h => normalizeField(h) === normalizedField);
         
-        console.log(`[DEBUG] Checking field "${field}": headerExists=${headerExists}, normalizedHeaderExists=${normalizedHeaderExists}`);
+        console.log(`[DEBUG] Checking field "${field}" (normalized: "${normalizedField}"): headerExists=${headerExists}, normalizedHeaderExists=${normalizedHeaderExists}`);
+        
+        // Special debug for ACRUD fields
+        if (['a', 'c', 'r', 'u', 'd'].includes(field.toLowerCase())) {
+            console.log(`[DEBUG] ACRUD field detected: "${field}"`);
+        }
         
         if (headerExists || normalizedHeaderExists) {
-            const actualHeader = headers.find(h => normalizeField(h) === field) || field;
+            const actualHeader = headers.find(h => normalizeField(h) === normalizedField) || field;
             const value = rowData[actualHeader] || '';
             
             console.log(`[DEBUG] Creating form field "${field}" with actualHeader="${actualHeader}" and value="${value}"`);
@@ -651,37 +710,39 @@ function showEditRowModal(rowIndex, isDuplicate = false) {
             label.setAttribute('for', field);
             
             let input;
-            if (field === 'remarks_comments') {
-                input = document.createElement('textarea');
-                input.rows = 4;
-            } else if (field.includes('date')) {
-                input = document.createElement('input');
-                input.type = 'date';
-                if (value) {
-                    // Convert date format if needed
-                    const dateValue = new Date(value);
-                    if (!isNaN(dateValue.getTime())) {
-                        input.value = dateValue.toISOString().split('T')[0];
-                    }
-                }
-            } else if (field === 'margin' || field === 'final_amount') {
-                input = document.createElement('input');
-                input.type = 'number';
-                input.step = '0.01';
-            } else if (['decision', 'status', 'submitted', 'opp_status'].includes(field)) {
+            // Use dropdown if getFieldOptions returns options
+            const options = getFieldOptions(field);
+            console.log(`[DEBUG] Field "${field}" getFieldOptions returned:`, options);
+            if (options && options.length > 0) {
+                console.log(`[DEBUG] Creating SELECT dropdown for field "${field}" (${options.join(', ')})`);
                 input = document.createElement('select');
-                // Add options based on field type
-                const options = getFieldOptions(field);
+                input.className = 'w-full p-2 border rounded';
+                // Clear any existing options first
+                input.innerHTML = '';
+                console.log(`[DEBUG] Adding ${options.length} options to ${field} dropdown`);
                 options.forEach(option => {
                     const optionEl = document.createElement('option');
                     optionEl.value = option;
                     optionEl.textContent = option;
-                    optionEl.selected = value === option;
                     input.appendChild(optionEl);
                 });
+            } else if (field === 'remarks_comments') {
+                input = document.createElement('textarea');
+                input.rows = 4;
+                input.className = 'w-full p-2 border rounded';
+            } else if (field.includes('date')) {
+                input = document.createElement('input');
+                input.type = 'date';
+                input.className = 'w-full p-2 border rounded';
+            } else if (field === 'margin' || field === 'final_amount') {
+                input = document.createElement('input');
+                input.type = 'number';
+                input.step = '0.01';
+                input.className = 'w-full p-2 border rounded';
             } else {
                 input = document.createElement('input');
                 input.type = 'text';
+                input.className = 'w-full p-2 border rounded';
             }
             
             input.id = field;
@@ -709,19 +770,104 @@ function showEditRowModal(rowIndex, isDuplicate = false) {
     overlay.classList.remove('hidden');
 }
 
+function showCreateOpportunityModal() {
+    const overlay = document.getElementById('createOpportunityModalOverlay');
+    const modal = document.getElementById('createOpportunityModal');
+    const form = document.getElementById('createOpportunityForm');
+    if (!overlay || !modal || !form) return;
+
+    // Use the same editable fields as edit modal
+    const editableFields = [
+        'project_name', 'rev', 'client', 'solution', 'solutions', 'sol_particulars', 'industry', 'industries', 'ind_particulars',
+        'proposal_due_date', 'decision_due_date', 'decision',
+        'account_mgr', 'pic', 'bom', 'status', 'submitted',
+        'margin', 'final_amount', 'opp_status', 'date_awarded',
+        'a', 'c', 'r', 'u', 'd',
+        'remarks_comments', 'forecast_date'
+    ];
+    form.innerHTML = '';
+    editableFields.forEach(field => {
+        const formGroup = document.createElement('div');
+        formGroup.className = 'form-group mb-4';
+        const label = document.createElement('label');
+        label.textContent = field.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+        label.setAttribute('for', field);
+        let input;
+        // Use dropdown if getFieldOptions returns options
+        const options = getFieldOptions(field);
+        console.log(`[DEBUG] Create Modal - Field "${field}" getFieldOptions returned:`, options);
+        if (options && options.length > 0) {
+            console.log(`[DEBUG] Create Modal - Creating SELECT dropdown for field "${field}" (${options.join(', ')})`);
+            input = document.createElement('select');
+            input.className = 'w-full p-2 border rounded';
+            // Clear any existing options first
+            input.innerHTML = '';
+            console.log(`[DEBUG] Create Modal - Adding ${options.length} options to ${field} dropdown`);
+            options.forEach(option => {
+                const optionEl = document.createElement('option');
+                optionEl.value = option;
+                optionEl.textContent = option;
+                input.appendChild(optionEl);
+            });
+        } else if (field === 'remarks_comments') {
+            input = document.createElement('textarea');
+            input.rows = 4;
+            input.className = 'w-full p-2 border rounded';
+        } else if (field.includes('date')) {
+            input = document.createElement('input');
+            input.type = 'date';
+            input.className = 'w-full p-2 border rounded';
+        } else if (field === 'margin' || field === 'final_amount') {
+            input = document.createElement('input');
+            input.type = 'number';
+            input.step = '0.01';
+            input.className = 'w-full p-2 border rounded';
+        } else {
+            input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'w-full p-2 border rounded';
+        }
+        input.id = field;
+        input.name = field;
+        formGroup.appendChild(label);
+        formGroup.appendChild(input);
+        form.appendChild(formGroup);
+    });
+    overlay.classList.remove('hidden');
+    modal.classList.remove('hidden');
+}
+
 // Helper function to get field options for dropdowns
 function getFieldOptions(field) {
     switch (field) {
         case 'decision':
-            return ['', 'Win', 'Loss', 'No Decision'];
+            return ['', 'GO', 'DECLINE'];
         case 'status':
-            return ['', 'Active', 'Inactive', 'On Hold'];
-        case 'submitted':
-            return ['', 'Yes', 'No', 'Pending'];
+            return ['', 'Submitted', 'For Revision'];
         case 'opp_status':
-            return ['', 'Op25', 'Op50', 'Op75', 'Op100', 'Lost', 'Declined'];
+            return ['', 'OP100', 'LOST', 'OP90', 'OP60', 'OP30'];
+        case 'a':
+            return ['', '10-Existing', '10-Strategic', '5-New Account, No Champion', '2-Existing account with No Orders'];
+        case 'c':
+            return ['', '10 -Existing Solution', '8 -Need to Customize', '5 -Need External Resource'];
+        case 'r':
+            return ['', '10 -Focus Business', '10 -Core Business', '8 -Strategic Business', '7 -Core + Peripheral', '5 -Peripheral Scope', '2 -Non Core for Subcon'];
+        case 'u':
+            return ['', '10 -Reasonable Time', '7 -Urgent', '5 -Budgetary'];
+        case 'd':
+            return ['', '10 -Complete', '5 -Limited', '2 -No Data'];
+        case 'solutions':
+            return ['', 'Automation', 'Electrification', 'Digitalization'];
+        case 'sol_particulars':
+            return ['', 'PLC / SCADA', 'CCTV', 'IT', 'ACS', 'INSTRUMENTATION', 'ELECTRICAL', 'FDAS', 'BMS', 'EE & AUX', 'PABGM', 'SOLAR', 'SCS', 'MECHANICAL', 'AUXILIARY', 'MEPFS', 'CIVIL'];
+        case 'industries':
+            return ['', 'Manufacturing', 'Buildings', 'Power'];
+        case 'ind_particulars':
+            return ['', 'F&B', 'CONSTRUCTION', 'MANUFACTURING', 'POWER PLANT', 'CEMENT', 'SEMICON', 'OIL & GAS', 'OTHERS', 'UTILITIES', 'COLD STORAGE', 'PHARMA'];
+        case 'submitted':
+            return ['', 'Yes', 'No'];
         default:
-            return [''];
+            return [];
     }
 }
 
@@ -1064,13 +1210,13 @@ function filterAndSortData() {
                         if (currentStatus !== 'not yet started') return false;
                         break;
                     case 'no_decision':
-                        if (decision !== 'pending') return false;
+                        if (decision === 'go' || decision === 'decline') return false;
                         break;
                     case 'lost':
                         if (oppStatus !== 'lost' && decision !== 'lost') return false;
                         break;
                     case 'declined':
-                        if (decision !== 'decline' && decision !== 'declined') return false;
+                        if (decision !== 'decline') return false;
                         break;
                     case 'inactive':
                         if (oppStatus !== 'inactive') return false;
@@ -1738,14 +1884,137 @@ async function loadDashboardData() {
             opp.decision?.toLowerCase() === 'decline'
         ).length;
 
+        // --- Enhancement: Show difference from last week/month ---
+        // Get comparison period preference
+        const comparisonMode = localStorage.getItem('dashboardComparisonMode') || 'weekly';
+        
+        // Get last week's and last month's values from localStorage
+        const lastWeekDashboard = JSON.parse(localStorage.getItem('dashboardLastWeek') || '{}');
+        const lastMonthDashboard = JSON.parse(localStorage.getItem('dashboardLastMonth') || '{}');
+        
+        let comparisonData = {};
+        let comparisonLabel = '';
+        
+        if (comparisonMode === 'weekly') {
+            comparisonData = lastWeekDashboard;
+            comparisonLabel = 'vs last week';
+        } else if (comparisonMode === 'monthly') {
+            comparisonData = lastMonthDashboard;
+            comparisonLabel = 'vs last month';
+        }
+        
+        console.log(`Dashboard comparison mode: ${comparisonMode}`, comparisonData);
+        
+        // Helper to format value with delta
+        function withDelta(current, last, mode = comparisonMode) {
+            console.log(`withDelta: current=${current}, last=${last}, mode=${mode}, type=${typeof last}`);
+            if (mode === 'none' || typeof last !== 'number') {
+                console.log(`withDelta result (no comparison): ${current}`);
+                return `${current}`;
+            }
+            
+            const diff = current - last;
+            if (diff === 0) return `${current}`;
+            const sign = diff > 0 ? '+' : '';
+            const result = `${current} (${sign}${diff})`;
+            console.log(`withDelta result: ${result}`);
+            return result;
+        }
         // Update dashboard cards (use correct IDs)
-        document.getElementById('totalOpportunities').textContent = totalOppsCount;
-        document.getElementById('op100Summary').textContent = `${op100Count} / ${abbreviateAmount(op100Amount)}`;
-        document.getElementById('op90Summary').textContent = `${op90Count} / ${abbreviateAmount(op90Amount)}`;
-        document.getElementById('totalInactive').textContent = inactiveCount;
-        document.getElementById('totalSubmitted').textContent = submittedOppsCount;
-        document.getElementById('totalDeclined').textContent = declinedCount;
+        function setDashboardValue(id, value) {
+            const el = document.getElementById(id);
+            if (el) {
+                console.log(`Setting ${id} to: ${value}`);
+                el.textContent = value;
+            } else {
+                console.warn('Dashboard element not found:', id);
+            }
+        }
+        setDashboardValue('totalOpportunities', withDelta(totalOppsCount, comparisonData.totalOpportunities));
+        setDashboardValue('op100Summary', `${withDelta(op100Count, comparisonData.op100Count)} / ${abbreviateAmount(op100Amount)}`);
+        setDashboardValue('op90Summary', `${withDelta(op90Count, comparisonData.op90Count)} / ${abbreviateAmount(op90Amount)}`);
+        setDashboardValue('totalInactive', withDelta(inactiveCount, comparisonData.totalInactive));
+        setDashboardValue('totalSubmitted', withDelta(submittedOppsCount, comparisonData.totalSubmitted));
+        setDashboardValue('totalDeclined', withDelta(declinedCount, comparisonData.totalDeclined));
 
+        // Save snapshots based on day of week/month
+        const today = new Date();
+        const dayOfWeek = today.getDay(); // 0 = Sunday, 1 = Monday
+        const dayOfMonth = today.getDate(); // 1-31
+        
+        // Save weekly snapshot on Mondays
+        if (dayOfWeek === 1) {
+            localStorage.setItem('dashboardLastWeek', JSON.stringify({
+                totalOpportunities: totalOppsCount,
+                op100Count: op100Count,
+                op90Count: op90Count,
+                totalInactive: inactiveCount,
+                totalSubmitted: submittedOppsCount,
+                totalDeclined: declinedCount,
+                savedDate: today.toISOString()
+            }));
+            console.log('Weekly snapshot saved (Monday)');
+        }
+        
+        // Save monthly snapshot on the 1st of each month
+        if (dayOfMonth === 1) {
+            localStorage.setItem('dashboardLastMonth', JSON.stringify({
+                totalOpportunities: totalOppsCount,
+                op100Count: op100Count,
+                op90Count: op90Count,
+                totalInactive: inactiveCount,
+                totalSubmitted: submittedOppsCount,
+                totalDeclined: declinedCount,
+                savedDate: today.toISOString()
+            }));
+            console.log('Monthly snapshot saved (1st of month)');
+        }
+        
+        // DEBUG: For testing purposes, create sample data if none exists
+        if (Object.keys(lastWeekDashboard).length === 0) {
+            console.log('Creating test weekly data for demonstration...');
+            const testLastWeekData = {
+                totalOpportunities: Math.max(0, totalOppsCount - 26),
+                op100Count: Math.max(0, op100Count - 12),
+                op90Count: Math.max(0, op90Count - 8),
+                totalInactive: Math.max(0, inactiveCount - 3),
+                totalSubmitted: Math.max(0, submittedOppsCount - 5),
+                totalDeclined: Math.max(0, declinedCount - 2),
+                savedDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString() // 7 days ago
+            };
+            localStorage.setItem('dashboardLastWeek', JSON.stringify(testLastWeekData));
+            console.log('Test weekly data created:', testLastWeekData);
+        }
+        
+        if (Object.keys(lastMonthDashboard).length === 0) {
+            console.log('Creating test monthly data for demonstration...');
+            const testLastMonthData = {
+                totalOpportunities: Math.max(0, totalOppsCount - 89),
+                op100Count: Math.max(0, op100Count - 25),
+                op90Count: Math.max(0, op90Count - 18),
+                totalInactive: Math.max(0, inactiveCount - 12),
+                totalSubmitted: Math.max(0, submittedOppsCount - 31),
+                totalDeclined: Math.max(0, declinedCount - 15),
+                savedDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days ago
+            };
+            localStorage.setItem('dashboardLastMonth', JSON.stringify(testLastMonthData));
+            console.log('Test monthly data created:', testLastMonthData);
+        }
+        
+        // Re-run the calculation with current comparison mode
+        const currentComparisonData = comparisonMode === 'weekly' ? 
+            JSON.parse(localStorage.getItem('dashboardLastWeek') || '{}') :
+            comparisonMode === 'monthly' ? 
+            JSON.parse(localStorage.getItem('dashboardLastMonth') || '{}') : {};
+            
+        if (comparisonMode !== 'none' && Object.keys(currentComparisonData).length > 0) {
+            setDashboardValue('totalOpportunities', withDelta(totalOppsCount, currentComparisonData.totalOpportunities));
+            setDashboardValue('op100Summary', `${withDelta(op100Count, currentComparisonData.op100Count)} / ${abbreviateAmount(op100Amount)}`);
+            setDashboardValue('op90Summary', `${withDelta(op90Count, currentComparisonData.op90Count)} / ${abbreviateAmount(op90Amount)}`);
+            setDashboardValue('totalInactive', withDelta(inactiveCount, currentComparisonData.totalInactive));
+            setDashboardValue('totalSubmitted', withDelta(submittedOppsCount, currentComparisonData.totalSubmitted));
+            setDashboardValue('totalDeclined', withDelta(declinedCount, currentComparisonData.totalDeclined));
+        }
     } catch (error) {
         console.error('Error loading dashboard data:', error);
     }
@@ -1754,6 +2023,7 @@ async function loadDashboardData() {
 function updateSummaryCounters(data) {
     // Update summary counters based on the data
     if (!data) return;
+
     
     // Calculate counts and amounts
     const op100Opportunities = data.filter(opp => 
@@ -1794,7 +2064,7 @@ function updateSummaryCounters(data) {
     if (op90Summary) op90Summary.textContent = `${op90Count} / ${abbreviateAmount(op90Amount)}`;
     if (totalInactive) totalInactive.textContent = inactiveCount;
     if (totalSubmitted) totalSubmitted.textContent = submittedOppsCount;
-    if (totalDeclined) totalDeclined.textContent = declinedCount;
+       if (totalDeclined) totalDeclined.textContent = declinedCount;
     if (lostSummary) lostSummary.textContent = lostCount;
 }
 
@@ -1818,10 +2088,19 @@ async function initializeTable() {
 
     // Get headers from the first row and reorder so project_name is first, and remove UID
     let rawHeaders = Object.keys(opportunities[0]);
+    console.log(`[DEBUG] Raw headers from database:`, rawHeaders);
     let norm = s => (s || '').toLowerCase().replace(/[^a-z0-9]/g, '');
     let projectNameHeader = rawHeaders.find(h => norm(h) === 'projectname');
     let otherHeaders = rawHeaders.filter(h => norm(h) !== 'projectname' && norm(h) !== 'uid');
     headers = [projectNameHeader, ...otherHeaders].filter(Boolean);
+    console.log(`[DEBUG] Final headers for table:`, headers);
+    
+    // Check if A,C,R,U,D fields are present
+    const acrudFields = ['a', 'c', 'r', 'u', 'd'];
+    acrudFields.forEach(field => {
+        const found = headers.includes(field);
+        console.log(`[DEBUG] Field "${field}" present in headers:`, found);
+    });
 
     // Build headerIndices
     headerIndices = {};
@@ -1882,7 +2161,7 @@ function initializeTableHeader() {
     let visibleColumnIndex = 0; // Track visible column position
     
     headers.forEach((header, index) => {
-        // Check if columnVisibility is properly configured - if not, make all columns visible
+               // Check if columnVisibility is properly configured - if not, make all columns visible
         if (!columnVisibility) {
             columnVisibility = {};
             headers.forEach(h => columnVisibility[h] = true);
@@ -1995,12 +2274,8 @@ function setupHorizontalScroll() {
     if (tableContainer) {
         // FIXED: Only enable horizontal scroll when SHIFT+wheel or when primarily horizontal movement
         tableContainer.addEventListener('wheel', function(e) {
-            // Only intercept if shift is held OR if horizontal movement is dominant
-            const isHorizontalDominant = Math.abs(e.deltaX) > Math.abs(e.deltaY);
-            const hasHorizontalScroll = this.scrollWidth > this.clientWidth;
-            
-            // Only interfere if user wants horizontal scroll (shift key) or horizontal movement dominates
-            if (hasHorizontalScroll && (e.shiftKey || isHorizontalDominant)) {
+            // Only intercept if shift is held
+            if (e.shiftKey) {
                 e.preventDefault();
                 
                 // Use deltaY for shift+wheel, deltaX for normal horizontal wheel
@@ -2379,6 +2654,114 @@ async function resetUserColumnPreferences(pageName) {
     }
 }
 
+// --- Dashboard Comparison Toggle Functions ---
+function initializeDashboardToggles() {
+    const weeklyToggle = document.getElementById('weeklyToggle');
+    const monthlyToggle = document.getElementById('monthlyToggle');
+    const noCompareToggle = document.getElementById('noCompareToggle');
+    const saveSnapshotBtn = document.getElementById('saveSnapshotBtn');
+    
+    if (!weeklyToggle || !monthlyToggle || !noCompareToggle || !saveSnapshotBtn) {
+        console.log('Dashboard toggle elements not found, skipping initialization');
+        return;
+    }
+    
+    // Get current comparison mode
+    const currentMode = localStorage.getItem('dashboardComparisonMode') || 'weekly';
+    updateToggleStates(currentMode);
+    
+    // Event listeners
+    weeklyToggle.addEventListener('click', () => setComparisonMode('weekly'));
+    monthlyToggle.addEventListener('click', () => setComparisonMode('monthly'));
+    noCompareToggle.addEventListener('click', () => setComparisonMode('none'));
+    saveSnapshotBtn.addEventListener('click', saveManualSnapshot);
+}
+
+function setComparisonMode(mode) {
+    localStorage.setItem('dashboardComparisonMode', mode);
+    updateToggleStates(mode);
+    
+    // Refresh dashboard with new comparison mode
+    loadDashboardData();
+    
+    console.log('Comparison mode set to:', mode);
+}
+
+function updateToggleStates(activeMode) {
+    const weeklyToggle = document.getElementById('weeklyToggle');
+    const monthlyToggle = document.getElementById('monthlyToggle');
+    const noCompareToggle = document.getElementById('noCompareToggle');
+    
+    if (!weeklyToggle || !monthlyToggle || !noCompareToggle) return;
+    
+    // Reset all buttons
+    [weeklyToggle, monthlyToggle, noCompareToggle].forEach(btn => {
+        btn.className = 'dashboard-toggle-btn';
+    });
+    
+    // Activate current mode
+    let activeButton;
+    switch (activeMode) {
+        case 'weekly':
+            activeButton = weeklyToggle;
+            break;
+        case 'monthly':
+            activeButton = monthlyToggle;
+            break;
+        case 'none':
+            activeButton = noCompareToggle;
+            break;
+    }
+    
+    if (activeButton) {
+        activeButton.className = 'dashboard-toggle-btn active';
+    }
+}
+
+function saveManualSnapshot() {
+    if (!opportunities || !opportunities.length) {
+        alert('No data available to save');
+        return;
+    }
+    
+    try {
+        // Calculate current dashboard metrics
+        const totalOppsCount = opportunities.length;
+        const op100Count = opportunities.filter(opp => opp.opp_status?.toLowerCase() === 'op100').length;
+        const op90Count = opportunities.filter(opp => opp.opp_status?.toLowerCase() === 'op90').length;
+        const inactiveCount = opportunities.filter(opp => opp.opp_status?.toLowerCase() === 'inactive').length;
+        const submittedOppsCount = opportunities.filter(opp => 
+            opp.opp_status?.toLowerCase() === 'op30' || opp.opp_status?.toLowerCase() === 'op60'
+        ).length;
+        const declinedCount = opportunities.filter(opp => opp.decision?.toLowerCase() === 'decline').length;
+        
+        const snapshotData = {
+            totalOpportunities: totalOppsCount,
+            op100Count: op100Count,
+            op90Count: op90Count,
+            totalInactive: inactiveCount,
+            totalSubmitted: submittedOppsCount,
+            totalDeclined: declinedCount,
+            savedDate: new Date().toISOString()
+        };
+        
+        // Save as both weekly and monthly snapshot
+        localStorage.setItem('dashboardLastWeek', JSON.stringify(snapshotData));
+        localStorage.setItem('dashboardLastMonth', JSON.stringify(snapshotData));
+        
+        // Show success message
+        alert('Snapshot saved successfully! This data will be used for future comparisons.');
+        console.log('Manual snapshot saved:', snapshotData);
+        
+        // Refresh dashboard
+        loadDashboardData();
+        
+    } catch (error) {
+        console.error('Error saving snapshot:', error);
+        alert('Error saving snapshot: ' + error.message);
+    }
+}
+
 // --- Initialize ---
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize tooltips
@@ -2504,7 +2887,7 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// --- Accessibility Enhancements ---
+// --- Accessibility Enhancements
 // Improved focus styles for keyboard navigation
 const focusStyle = document.createElement('style');
 focusStyle.textContent = `
@@ -2576,3 +2959,27 @@ function getCurrentUserName() {
         return 'Unknown User';
     }
 }
+
+// --- Temporary DEBUG function for testing dashboard delta ---
+window.testDashboardDelta = function() {
+    console.log('=== Testing Dashboard Delta Functionality ===');
+    
+    // Clear any existing data
+    localStorage.removeItem('dashboardLastWeek');
+    localStorage.removeItem('dashboardLastMonth');
+    localStorage.removeItem('dashboardComparisonMode');
+    
+    // Set to weekly mode for testing
+    localStorage.setItem('dashboardComparisonMode', 'weekly');
+    
+    // Re-run the loadDashboardData function
+    loadDashboardData();
+    
+    // Update toggle states
+    if (typeof updateToggleStates === 'function') {
+        updateToggleStates('weekly');
+    }
+    
+    console.log('Dashboard delta test completed. Check the dashboard cards for changes.');
+    console.log('Try switching between Weekly/Monthly/No Comparison modes using the toggle buttons.');
+};

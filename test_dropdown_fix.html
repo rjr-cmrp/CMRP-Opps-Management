@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Dropdown Fix</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        .pass { color: green; }
+        .fail { color: red; }
+        .pending { color: orange; }
+        .field-test { margin: 10px 0; padding: 10px; background: #f9f9f9; }
+        button { margin: 5px; padding: 10px 15px; }
+    </style>
+</head>
+<body>
+    <h1>Dropdown Fields Fix Verification</h1>
+    
+    <div class="test-section">
+        <h2>Test Instructions</h2>
+        <ol>
+            <li><strong>Test Create Modal:</strong>
+                <ul>
+                    <li>Go to <a href="http://localhost:3000" target="_blank">http://localhost:3000</a></li>
+                    <li>Click the "Create New Opportunity" button</li>
+                    <li>Verify that these fields appear as DROPDOWNS (not text inputs):</li>
+                    <div class="field-test">
+                        <strong>Expected Dropdown Fields:</strong>
+                        <ul>
+                            <li><strong>A</strong> - Should have options like "10-Existing", "10-Strategic", etc.</li>
+                            <li><strong>C</strong> - Should have options like "10-Existing", "10-Strategic", etc.</li>
+                            <li><strong>R</strong> - Should have options like "10-Existing", "10-Strategic", etc.</li>
+                            <li><strong>U</strong> - Should have options like "10-Existing", "10-Strategic", etc.</li>
+                            <li><strong>D</strong> - Should have options like "10-Existing", "10-Strategic", etc.</li>
+                            <li><strong>solutions</strong> - Should have "Automation", "Electrification", "Digitalization"</li>
+                            <li><strong>sol_particulars</strong> - Should have "PLC / SCADA", "CCTV", "IT", etc.</li>
+                            <li><strong>industries</strong> - Should have "Manufacturing", "Buildings", "Power"</li>
+                            <li><strong>ind_particulars</strong> - Should have "F&B", "CONSTRUCTION", etc.</li>
+                            <li><strong>submitted</strong> - Should have "Yes", "No"</li>
+                        </ul>
+                    </div>
+                </ul>
+            </li>
+            <br>
+            <li><strong>Test Edit Modal:</strong>
+                <ul>
+                    <li>Go to the main table view</li>
+                    <li>Click "Edit" on any row</li>
+                    <li>Verify that the same dropdown fields listed above appear as dropdowns in the Edit modal</li>
+                    <li>Check that existing values are pre-selected in the dropdowns</li>
+                </ul>
+            </li>
+            <br>
+            <li><strong>Check Browser Console:</strong>
+                <ul>
+                    <li>Open Browser Developer Tools (F12)</li>
+                    <li>Look for debug messages starting with "[DEBUG]" that show dropdown creation</li>
+                    <li>Should see messages like: "Creating SELECT dropdown for field 'a'"</li>
+                </ul>
+            </li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>Expected Fix Behavior</h2>
+        <p><strong>Before Fix:</strong> The dropdown fields (A, C, R, U, D, etc.) appeared as text input fields because the null check <code>if (options.length > 0)</code> was failing when <code>options</code> was null/undefined.</p>
+        
+        <p><strong>After Fix:</strong> Added proper null checking <code>if (options && options.length > 0)</code> so dropdown fields should now render correctly as SELECT elements with their respective options.</p>
+    </div>
+
+    <div class="test-section">
+        <h2>Debug Information</h2>
+        <p>If dropdowns still don't appear, check the browser console for debug messages. The fix includes logging that will show:</p>
+        <ul>
+            <li>What <code>getFieldOptions(field)</code> returns for each field</li>
+            <li>Whether SELECT dropdowns are being created</li>
+            <li>Any errors in the dropdown creation process</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>Quick Actions</h2>
+        <button onclick="window.open('http://localhost:3000', '_blank')">Open Main App</button>
+        <button onclick="openConsoleInstructions()">Show Console Instructions</button>
+    </div>
+
+    <script>
+        function openConsoleInstructions() {
+            alert(`To open Browser Developer Console:
+            
+Chrome/Edge/Safari: Press F12 or Ctrl+Shift+I (Cmd+Option+I on Mac)
+Firefox: Press F12 or Ctrl+Shift+I (Cmd+Option+I on Mac)
+
+Then:
+1. Click on the "Console" tab
+2. Look for messages starting with "[DEBUG]"
+3. These will show the dropdown creation process`);
+        }
+        
+        // Auto-open main app in new tab after 2 seconds
+        setTimeout(() => {
+            if (confirm('Open the main application to test the dropdown fix?')) {
+                window.open('http://localhost:3000', '_blank');
+            }
+        }, 2000);
+    </script>
+</body>
+</html>

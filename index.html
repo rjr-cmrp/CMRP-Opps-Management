@@ -29,6 +29,7 @@
                     <a href="index.html" class="nav-square-btn active" title="Opportunities Management - View and manage all opportunities"><span class="material-icons">dashboard</span></a>
                     <a href="win-loss_dashboard.html" class="nav-square-btn" title="Win-Loss Dashboard - Analyze won and lost opportunities"><span class="material-icons">line_axis</span></a>
                     <a href="forecastr_dashboard.html" class="nav-square-btn" title="Forecast Dashboard - View revenue forecasts and trends"><span class="material-icons">insights</span></a>
+                    <a href="executive_dashboard.html" class="nav-square-btn" title="Executive Dashboard - Comprehensive business metrics"><span class="material-icons">analytics</span></a>
                     <a href="user_management.html" class="nav-square-btn" id="userMgmtNavBtn" title="User Management - Manage users and permissions (Admin only)"><span class="material-icons">group</span></a>
                 </nav>
                 <button id="themeToggle" class="nav-square-btn" title="Toggle between light and dark theme"><span class="material-icons">light_mode</span></button>
@@ -41,6 +42,27 @@
 
             <div class="mb-4">
                 <input id="searchInput" type="text" placeholder="Search all fields..." class="w-full p-2 border rounded" />
+            </div>
+
+            <!-- Delta Comparison Toggle -->
+            <div class="mb-4 flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <label class="text-sm font-medium text-gray-700 dark:text-gray-300">Show changes from:</label>
+                    <div class="dashboard-toggle-container">
+                        <button id="weeklyToggle" class="dashboard-toggle-btn active">
+                            Last Week
+                        </button>
+                        <button id="monthlyToggle" class="dashboard-toggle-btn">
+                            Last Month
+                        </button>
+                        <button id="noCompareToggle" class="dashboard-toggle-btn">
+                            No Comparison
+                        </button>
+                    </div>
+                </div>
+                <button id="saveSnapshotBtn" class="dashboard-save-snapshot-btn" title="Save current data as snapshot">
+                    Save Snapshot
+                </button>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
@@ -195,6 +217,118 @@
             </div>
             <div class="modal-actions">
                 <button id="oppsChartModalCloseBtn" class="modal-close-btn" type="button">Close</button>
+            </div>
+        </div>
+
+        <!-- Create New Opportunity Modal -->
+        <div id="createOpportunityModalOverlay" class="modal-overlay hidden">
+            <div id="createOpportunityModal" class="modal hidden" style="max-width: 600px;">
+                <div class="modal-header">
+                    <h2>Create New Opportunity</h2>
+                    <button id="createOpportunityModalCloseX" type="button" aria-label="Close" class="modal-close-x">&times;</button>
+                </div>
+                <form id="createOpportunityForm" class="modal-body">
+                    <div class="form-group mb-4">
+                        <label for="newProjectName">Project Name</label>
+                        <input type="text" id="newProjectName" name="project_name" class="w-full p-2 border rounded" required />
+                    </div>
+                    <div class="form-group mb-4">
+                        <label for="newClient">Client</label>
+                        <input type="text" id="newClient" name="client" class="w-full p-2 border rounded" required />
+                    </div>
+                    <div class="form-group mb-4">
+                        <label for="newSolution">Solution</label>
+                        <input type="text" id="newSolution" name="solution" class="w-full p-2 border rounded" />
+                    </div>
+                    <div class="form-group mb-4">
+                        <label for="newIndustry">Industry</label>
+                        <input type="text" id="newIndustry" name="industry" class="w-full p-2 border rounded" />
+                    </div>
+                    <div class="form-group mb-4">
+                        <label for="newProposalDueDate">Proposal Due Date</label>
+                        <input type="date" id="newProposalDueDate" name="proposal_due_date" class="w-full p-2 border rounded" />
+                    </div>
+                    <div class="form-group mb-4">
+                        <label for="newDecisionDueDate">Decision Due Date</label>
+                        <input type="date" id="newDecisionDueDate" name="decision_due_date" class="w-full p-2 border rounded" />
+                    </div>
+                    <div class="form-group mb-4">
+                        <label for="newDecision">Decision</label>
+                        <select id="newDecision" name="decision" class="w-full p-2 border rounded">
+                            <option value="">-- Select --</option>
+                            <option value="GO">GO</option>
+                            <option value="DECLINE">DECLINE</option>
+                        </select>
+                    </div>
+                    <div class="form-group mb-4">
+                        <label for="newAccountMgr">Account Manager</label>
+                        <input type="text" id="newAccountMgr" name="account_mgr" class="w-full p-2 border rounded" />
+                    </div>
+                    <div class="form-group mb-4">
+                        <label for="newPIC">PIC</label>
+                        <input type="text" id="newPIC" name="pic" class="w-full p-2 border rounded" />
+                    </div>
+                    <div class="form-group mb-4">
+                        <label for="newBOM">BOM</label>
+                        <input type="text" id="newBOM" name="bom" class="w-full p-2 border rounded" />
+                    </div>
+                    <div class="form-group mb-4">
+                        <label for="newStatus">Status</label>
+                        <select id="newStatus" name="status" class="w-full p-2 border rounded">
+                            <option value="">-- Select --</option>
+                            <option value="Submitted">Submitted</option>
+                            <option value="Ongoing">Ongoing</option>
+                            <option value="Not Yet Started">Not Yet Started</option>
+                            <option value="No Decision Yet">No Decision Yet</option>
+                            <option value="Lost">Lost</option>
+                            <option value="Declined">Declined</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
+                    </div>
+                    <div class="form-group mb-4">
+                        <label for="newSubmitted">Submitted</label>
+                        <select id="newSubmitted" name="submitted" class="w-full p-2 border rounded">
+                            <option value="">-- Select --</option>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                        </select>
+                    </div>
+                    <div class="form-group mb-4">
+                        <label for="newMargin">Margin (%)</label>
+                        <input type="number" id="newMargin" name="margin" class="w-full p-2 border rounded" step="0.01" />
+                    </div>
+                    <div class="form-group mb-4">
+                        <label for="newFinalAmount">Final Amount</label>
+                        <input type="number" id="newFinalAmount" name="final_amount" class="w-full p-2 border rounded" step="0.01" />
+                    </div>
+                    <div class="form-group mb-4">
+                        <label for="newOppStatus">Opportunity Status</label>
+                        <select id="newOppStatus" name="opp_status" class="w-full p-2 border rounded">
+                            <option value="">-- Select --</option>
+                            <option value="OP100">OP100</option>
+                            <option value="OP90">OP90</option>
+                            <option value="OP60">OP60</option>
+                            <option value="OP30">OP30</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
+                    </div>
+                    <div class="form-group mb-4">
+                        <label for="newDateAwarded">Date Awarded/Lost</label>
+                        <input type="date" id="newDateAwarded" name="date_awarded" class="w-full p-2 border rounded" />
+                    </div>
+                    <div class="form-group mb-4">
+                        <label for="newRemarksComments">Remarks / Comments</label>
+                        <textarea id="newRemarksComments" name="remarks_comments" class="w-full p-2 border rounded" rows="3"></textarea>
+                    </div>
+                    <div class="form-group mb-4">
+                        <label for="newForecastDate">Forecast Date</label>
+                        <input type="date" id="newForecastDate" name="forecast_date" class="w-full p-2 border rounded" />
+                    </div>
+                </form>
+                <div class="modal-actions">
+                    <button id="closeCreateOpportunityModalButton" class="modal-close-btn" type="button">Cancel</button>
+                    <button id="saveCreateOpportunityButton" class="modal-save-btn" type="submit" form="createOpportunityForm">Create</button>
+                </div>
             </div>
         </div>
     </div>

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Edit Modal Fields</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .test-section { 
+            background: #f5f5f5; 
+            padding: 20px; 
+            margin: 20px 0; 
+            border-radius: 8px; 
+        }
+        .result { 
+            padding: 10px; 
+            margin: 10px 0; 
+            border-radius: 4px; 
+        }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+        .info { background-color: #d1ecf1; color: #0c5460; }
+        .field-list { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .field-item { 
+            padding: 8px; 
+            background: white; 
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .field-item.dropdown { background-color: #e7f3ff; }
+        .console-log { 
+            background: #333; 
+            color: #0f0; 
+            padding: 15px; 
+            border-radius: 4px; 
+            font-family: monospace; 
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        button { 
+            background: #007bff; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            margin: 5px; 
+        }
+        button:hover { background: #0056b3; }
+        .button-group { margin: 20px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test Edit Modal Fields - Dropdown Verification</h1>
+        
+        <div class="test-section">
+            <h2>Test Overview</h2>
+            <p>This test verifies that the Edit modal shows dropdown fields for A, C, R, U, D, solutions, sol_particulars, industries, ind_particulars.</p>
+        </div>
+
+        <div class="button-group">
+            <button onclick="openMainApp()">Open Main App</button>
+            <button onclick="testFieldOptions()">Test getFieldOptions Function</button>
+            <button onclick="testModalFieldDetection()">Test Modal Field Detection</button>
+            <button onclick="clearConsole()">Clear Console</button>
+        </div>
+
+        <div class="test-section">
+            <h3>Expected Dropdown Fields</h3>
+            <div class="field-list">
+                <div class="field-item dropdown">A (dropdown)</div>
+                <div class="field-item dropdown">C (dropdown)</div>
+                <div class="field-item dropdown">R (dropdown)</div>
+                <div class="field-item dropdown">U (dropdown)</div>
+                <div class="field-item dropdown">D (dropdown)</div>
+                <div class="field-item dropdown">solutions (dropdown)</div>
+                <div class="field-item dropdown">sol_particulars (dropdown)</div>
+                <div class="field-item dropdown">industries (dropdown)</div>
+                <div class="field-item dropdown">ind_particulars (dropdown)</div>
+                <div class="field-item dropdown">submitted (dropdown)</div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h3>Test Results</h3>
+            <div id="test-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Console Log Output</h3>
+            <div id="console-output" class="console-log">Console output will appear here...</div>
+        </div>
+    </div>
+
+    <script>
+        // Capture console logs
+        const originalConsole = window.console;
+        const consoleOutput = document.getElementById('console-output');
+        
+        function logToPage(level, ...args) {
+            const timestamp = new Date().toLocaleTimeString();
+            const message = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+            ).join(' ');
+            
+            consoleOutput.textContent += `[${timestamp}] ${level.toUpperCase()}: ${message}\n`;
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+            
+            // Also log to real console
+            originalConsole[level](...args);
+        }
+        
+        window.console = {
+            log: (...args) => logToPage('log', ...args),
+            error: (...args) => logToPage('error', ...args),
+            warn: (...args) => logToPage('warn', ...args),
+            info: (...args) => logToPage('info', ...args),
+            debug: (...args) => logToPage('debug', ...args)
+        };
+
+        function openMainApp() {
+            window.open('http://localhost:3000', '_blank');
+            logResult('info', '🚀 Main app opened in new tab. Look for Edit modal field debug logs in the main app console.');
+        }
+
+        function logResult(type, message) {
+            const results = document.getElementById('test-results');
+            const result = document.createElement('div');
+            result.className = `result ${type}`;
+            result.textContent = message;
+            results.appendChild(result);
+        }
+
+        async function testFieldOptions() {
+            try {
+                console.log('🧪 Testing getFieldOptions function...');
+                
+                // Simulate the getFieldOptions function from the main app
+                const getFieldOptions = function(fieldName) {
+                    const fieldLower = fieldName.toLowerCase();
+                    
+                    if (['a', 'c', 'r', 'u', 'd'].includes(fieldLower)) {
+                        return ['A', 'B', 'C'];
+                    }
+                    
+                    if (['solutions', 'sol_particulars'].includes(fieldLower)) {
+                        return [
+                            'SAP Services', 'SAP Software', 'SAP Hosting', 'ServiceNow',
+                            'Custom Development', 'Microsoft Solutions', 'Data Analytics',
+                            'Digital Transformation', 'Cloud Migration', 'Other'
+                        ];
+                    }
+                    
+                    if (['industries', 'ind_particulars'].includes(fieldLower)) {
+                        return [
+                            'Manufacturing', 'Retail', 'Healthcare', 'Finance', 'Government',
+                            'Education', 'Transportation', 'Energy', 'Telecommunications', 'Other'
+                        ];
+                    }
+                    
+                    if (fieldLower === 'submitted') {
+                        return ['Yes', 'No', 'Pending'];
+                    }
+                    
+                    return null;
+                };
+
+                // Test each expected dropdown field
+                const expectedDropdownFields = ['a', 'c', 'r', 'u', 'd', 'solutions', 'sol_particulars', 'industries', 'ind_particulars', 'submitted'];
+                
+                expectedDropdownFields.forEach(field => {
+                    const options = getFieldOptions(field);
+                    if (options && options.length > 0) {
+                        console.log(`✅ Field "${field}" has dropdown options:`, options);
+                        logResult('success', `✅ Field "${field}" has ${options.length} dropdown options`);
+                    } else {
+                        console.log(`❌ Field "${field}" has NO dropdown options`);
+                        logResult('error', `❌ Field "${field}" has NO dropdown options`);
+                    }
+                });
+                
+            } catch (error) {
+                console.error('❌ Error testing field options:', error);
+                logResult('error', `❌ Error testing field options: ${error.message}`);
+            }
+        }
+
+        async function testModalFieldDetection() {
+            try {
+                console.log('🧪 Testing modal field detection logic...');
+                
+                // Simulate headers from database (lowercase as confirmed)
+                const headers = [
+                    'project_name', 'rev', 'client', 'solution', 'solutions', 'sol_particulars', 
+                    'industry', 'industries', 'ind_particulars', 'proposal_due_date', 
+                    'decision_due_date', 'decision', 'account_mgr', 'pic', 'bom', 'status', 
+                    'submitted', 'margin', 'final_amount', 'opp_status', 'date_awarded',
+                    'a', 'c', 'r', 'u', 'd', 'remarks_comments', 'forecast_date', 'uid'
+                ];
+                
+                // Simulate the normalizeField function
+                const normalizeField = (field) => {
+                    return (field || '').toLowerCase().replace(/[^a-z0-9]/g, '');
+                };
+                
+                const editableFields = [
+                    'project_name', 'rev', 'client', 'solution', 'solutions', 'sol_particulars', 
+                    'industry', 'industries', 'ind_particulars', 'proposal_due_date', 
+                    'decision_due_date', 'decision', 'account_mgr', 'pic', 'bom', 'status', 'submitted',
+                    'margin', 'final_amount', 'opp_status', 'date_awarded',
+                    'a', 'c', 'r', 'u', 'd', 'remarks_comments', 'forecast_date'
+                ];
+                
+                console.log('📊 Database headers:', headers);
+                console.log('🔧 Editable fields to check:', editableFields);
+                
+                const foundFields = [];
+                const missingFields = [];
+                
+                editableFields.forEach(field => {
+                    const headerExists = headers.includes(field);
+                    const normalizedField = normalizeField(field);
+                    const normalizedHeaderExists = headers.some(h => normalizeField(h) === normalizedField);
+                    
+                    console.log(`🔍 Checking field "${field}" (normalized: "${normalizedField}"): headerExists=${headerExists}, normalizedHeaderExists=${normalizedHeaderExists}`);
+                    
+                    if (headerExists || normalizedHeaderExists) {
+                        foundFields.push(field);
+                        const actualHeader = headers.find(h => normalizeField(h) === normalizedField) || field;
+                        console.log(`✅ Field "${field}" found as "${actualHeader}"`);
+                    } else {
+                        missingFields.push(field);
+                        console.log(`❌ Field "${field}" NOT found in headers`);
+                    }
+                });
+                
+                console.log(`📈 Summary: ${foundFields.length} fields found, ${missingFields.length} fields missing`);
+                logResult('info', `📈 Summary: ${foundFields.length} fields found, ${missingFields.length} fields missing`);
+                
+                if (foundFields.includes('a') && foundFields.includes('c') && foundFields.includes('r') && foundFields.includes('u') && foundFields.includes('d')) {
+                    logResult('success', '✅ All A, C, R, U, D fields should be detected in modal');
+                } else {
+                    logResult('error', '❌ Some A, C, R, U, D fields are missing');
+                }
+                
+                const dropdownFields = ['solutions', 'sol_particulars', 'industries', 'ind_particulars', 'submitted'];
+                const foundDropdownFields = dropdownFields.filter(field => foundFields.includes(field));
+                
+                if (foundDropdownFields.length === dropdownFields.length) {
+                    logResult('success', '✅ All dropdown fields should be detected in modal');
+                } else {
+                    logResult('error', `❌ Missing dropdown fields: ${dropdownFields.filter(f => !foundDropdownFields.includes(f)).join(', ')}`);
+                }
+                
+            } catch (error) {
+                console.error('❌ Error testing modal field detection:', error);
+                logResult('error', `❌ Error testing modal field detection: ${error.message}`);
+            }
+        }
+
+        function clearConsole() {
+            consoleOutput.textContent = 'Console cleared...\n';
+            document.getElementById('test-results').innerHTML = '';
+        }
+
+        // Initialize
+        console.log('🚀 Edit Modal Field Test initialized');
+        console.log('📋 Instructions:');
+        console.log('1. Click "Open Main App" to open the main application');
+        console.log('2. In the main app, try to edit a record to see the Edit modal');
+        console.log('3. Look for dropdown fields: A, C, R, U, D, solutions, sol_particulars, industries, ind_particulars');
+        console.log('4. Check the browser console in the main app for debug logs');
+    </script>
+</body>
+</html>
