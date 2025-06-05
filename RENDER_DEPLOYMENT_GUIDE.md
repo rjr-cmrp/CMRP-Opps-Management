@@ -1,6 +1,20 @@
 # CMRP Opps Management - Render Deployment Guide
 
-## 🚀 **DEPLOYMENT READY!** 
+## ## **Step 3: Configuration Complete**
+
+✅ **Already Done**: Your backend URL has been configured!
+
+1. **Backend URL configured**: `https://cmrp-opps-backend.onrender.com`
+
+2. **config.js already updated** with your backend URL:
+   ```javascript
+   // Your actual backend URL is already configured
+   API_BASE_URL: 'https://cmrp-opps-backend.onrender.com'
+   ```
+
+3. **After frontend is deployed**: Update FRONTEND_URL environment variable in your backend service with your frontend URL
+
+4. **No need to commit again** - the configuration is already pushed to GitHub!Y!** 
 
 Your code is now prepared and pushed to GitHub. Follow these steps to deploy to Render:
 
@@ -59,7 +73,7 @@ After both services are deployed:
 
 2. **Update config.js** with your actual backend URL:
    ```javascript
-   // Replace 'https://your-backend-url.onrender.com' with your actual backend URL
+   // Your actual backend URL is already configured
    API_BASE_URL: 'https://cmrp-opps-backend.onrender.com'
    ```
 

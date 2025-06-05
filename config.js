@@ -4,7 +4,7 @@ const config = {
     // For development, use localhost
     API_BASE_URL: window.location.hostname === 'localhost' 
         ? 'http://localhost:3000' 
-        : 'https://your-backend-url.onrender.com', // Replace with your actual backend URL
+        : 'https://cmrp-opps-backend.onrender.com', // Your actual backend URL
     
     // Other configuration options
     APP_NAME: 'CMRP Opps Management',
