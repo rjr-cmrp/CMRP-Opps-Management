@@ -1,5 +1,14 @@
 // win-loss_dashboard.js - All logic moved from inline <script> in win-loss_dashboard.html
 
+// --- API URL Helper ---
+function getApiUrl(endpoint) {
+    if (typeof window !== 'undefined' && window.APP_CONFIG) {
+        return window.APP_CONFIG.API_BASE_URL + endpoint;
+    }
+    // Fallback for development
+    return (window.location.hostname === 'localhost' ? 'http://localhost:3000' : 'https://cmrp-opps-backend.onrender.com') + endpoint;
+}
+
 // --- Global Variables ---
 let dashboardDataCache = null; // Cache fetched data (includes ALL opportunities)
 let winChartInstance = null;   // Instance for the Wins chart
@@ -344,7 +353,7 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const token = localStorage.getItem('authToken');
             if (!token) throw new Error('Not authenticated');
-            const res = await fetch('/api/opportunities', {
+            const res = await fetch(getApiUrl('/api/opportunities'), {
                 headers: { 'Authorization': 'Bearer ' + token }
             });
             if (!res.ok) throw new Error('Failed to fetch data: ' + res.status);
@@ -383,7 +392,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!validateEmail(email)) { authError.textContent = 'Invalid email.'; authError.style.display = 'block'; authSubmitBtn.disabled = false; return; }
             if (!validatePassword(password)) { authError.textContent = 'Password must be 8-100 characters.'; authError.style.display = 'block'; authSubmitBtn.disabled = false; return; }
             try {
-                const res = await fetch('/api/login', {
+                const res = await fetch(getApiUrl('/api/login'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
@@ -406,7 +415,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!validateName(name)) { authError.textContent = 'Name must be 2-100 characters.'; authError.style.display = 'block'; authSubmitBtn.disabled = false; return; }
             if (!validateRoles(roles)) { authError.textContent = 'Select at least one role.'; authError.style.display = 'block'; authSubmitBtn.disabled = false; return; }
             try {
-                const res = await fetch('/api/register', {
+                const res = await fetch(getApiUrl('/api/register'), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password, name, roles })
