@@ -1,20 +1,6 @@
 # CMRP Opps Management - Render Deployment Guide
 
-## ## **Step 3: Configuration Complete**
-
-✅ **Already Done**: Your backend URL has been configured!
-
-1. **Backend URL configured**: `https://cmrp-opps-backend.onrender.com`
-
-2. **config.js already updated** with your backend URL:
-   ```javascript
-   // Your actual backend URL is already configured
-   API_BASE_URL: 'https://cmrp-opps-backend.onrender.com'
-   ```
-
-3. **After frontend is deployed**: Update FRONTEND_URL environment variable in your backend service with your frontend URL
-
-4. **No need to commit again** - the configuration is already pushed to GitHub!Y!** 
+## 🚀 **DEPLOYMENT READY!** 
 
 Your code is now prepared and pushed to GitHub. Follow these steps to deploy to Render:
 
@@ -34,7 +20,7 @@ Your code is now prepared and pushed to GitHub. Follow these steps to deploy to 
    Root Directory: (leave empty)
    Environment: Node
    Build Command: npm install
-   Start Command: npm start
+   Start Command: node server.js
    Instance Type: Free (or paid if needed)
    ```
 
@@ -65,26 +51,21 @@ Your code is now prepared and pushed to GitHub. Follow these steps to deploy to 
 
 ---
 
-## **Step 3: Update Configuration**
+## **Step 3: Configuration Complete**
 
-After both services are deployed:
+✅ **Already Done**: Your backend URL has been configured!
 
-1. **Get your backend URL** from Render (e.g., `https://cmrp-opps-backend.onrender.com`)
+1. **Backend URL configured**: `https://cmrp-opps-backend.onrender.com`
 
-2. **Update config.js** with your actual backend URL:
+2. **config.js already updated** with your backend URL:
    ```javascript
    // Your actual backend URL is already configured
    API_BASE_URL: 'https://cmrp-opps-backend.onrender.com'
    ```
 
-3. **Update FRONTEND_URL environment variable** in your backend service with your frontend URL
+3. **After frontend is deployed**: Update FRONTEND_URL environment variable in your backend service with your frontend URL
 
-4. **Commit and push** the config.js update:
-   ```bash
-   git add config.js
-   git commit -m "Update API URL for production"
-   git push origin main
-   ```
+4. **No need to commit again** - the configuration is already pushed to GitHub!
 
 ---
 
@@ -113,6 +94,7 @@ After both services are deployed:
 - **API not found**: Verify backend URL in config.js
 - **Database errors**: Check DATABASE_URL environment variable
 - **Authentication issues**: Verify JWT_SECRET is set
+- **Module not found**: Ensure Start Command is `node server.js` not `npm start`
 
 ---
 
